@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/24 14:22:15 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/25 11:58:10 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 #include <map>
 #include <string>
-#include "WebSrv.hpp"
+#include "../WebSrv.hpp"
 
 class HttpRequest {
 	private:
