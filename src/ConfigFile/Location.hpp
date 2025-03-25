@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/25 16:42:36 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/25 17:52:10 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,37 +19,37 @@
 
 class Location {
 	public:
-		Location(const std::string &serverName);
+		Location(const str &serverName);
 		Location(const Location &other);
 		Location& operator=(const Location &other);
 		~Location();
 
 		//Getters
 		std::vector<RequestType>	getMethods() const;
-		std::string					getRedirect() const;
+		str					getRedirect() const;
 		bool						getUploadEnable() const;
-		std::string					getRoot() const;
+		str					getRoot() const;
 		bool						getAutoindex() const;
-		std::string					getIndex() const;
-		std::string					getUploadPath() const;
+		str					getIndex() const;
+		str					getUploadPath() const;
 
 		//Setters
 		void						setMethods(std::vector<RequestType> methods);
-		void						setRedirect(std::string redirect);
+		void						setRedirect(str redirect);
 		void						setUploadEnable(bool uploadEnable);
-		void						setRoot(std::string root);
+		void						setRoot(str root);
 		void						setAutoindex(bool autoIndex);
-		void						setIndex(std::string index);
-		void						setUploadPath(std::string uploadPath);
+		void						setIndex(str index);
+		void						setUploadPath(str uploadPath);
 
 	private:
 		std::vector<RequestType>	_methods;
-		std::string					_redirect;
+		str					_redirect;
 		bool						_uploadEnable;
-		std::string					_root;
+		str					_root;
 		bool						_autoIndex;
-		std::string					_index;
-		std::string					_uploadPath;
+		str					_index;
+		str					_uploadPath;
 };
 
 #endif

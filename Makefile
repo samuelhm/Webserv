@@ -6,13 +6,13 @@
 #    By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/03/25 11:58:02 by shurtado         ###   ########.fr        #
+#    Updated: 2025/03/25 17:21:03 by shurtado         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME		=	PmergeMe
+NAME		=	Web_Server
 CC			=	c++
-CPPFLAGS	=	-std=c++98 -g -Wall -Werror -Wextra -MMD -MP -fsanitize=address -pedantic
+CPPFLAGS	=	-std=c++98 -g -Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
 
 SRC			=	src/main.cpp \
 				src/ConfigFile/Location.cpp src/ConfigFile/Server.cpp \
@@ -34,11 +34,20 @@ obj/%.o: %.cpp Makefile
 clean:
 	rm -rf obj
 
-fclean: clean
+f fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
 
+v: $(NAME)
+	clear
+	@valgrind --leak-check=full --track-origins=yes ./$(NAME)
+
+r: $(NAME)
+	clear
+	@./$(NAME)
+
+
 -include $(DEPS)
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re r f v

@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/25 16:26:38 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/25 17:53:10 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ Server::Server() {
 	Location location(_serverName);
 	_locations.push_back(location);
 	_hostName = "localhost";
-	_port = 8080;
+	_port = "8080";
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 1048576;
@@ -51,26 +51,26 @@ Server::~Server() {}
 
 //Getters
 std::vector<Location>		Server::getLocations() const { return this->_locations; }
-std::map<int, std::string>	Server::getErrorPages() const { return this->_errorPages; }
-std::string					Server::getServerName() const { return this->_serverName; }
-std::string					Server::getHostName() const { return this->_hostName; }
-int							Server::getPort() const { return this->_port; }
-std::string					Server::getRoot() const { return this->_root; }
+std::map<int, str>	Server::getErrorPages() const { return this->_errorPages; }
+str					Server::getServerName() const { return this->_serverName; }
+str					Server::getHostName() const { return this->_hostName; }
+str					Server::getPort() const { return this->_port; }
+str					Server::getRoot() const { return this->_root; }
 bool						Server::getIsdefault() const { return this->_isDefault; }
 size_t						Server::getBodySize() const { return this->_bodySize; }
 bool						Server::getCgiEnable() const { return this->_cgiEnable; }
-std::string					Server::getCgiExtension() const { return this->_cgiExtension; }
-std::string					Server::getCgiPath() const { return this->_cgiPath; }
+str					Server::getCgiExtension() const { return this->_cgiExtension; }
+str					Server::getCgiPath() const { return this->_cgiPath; }
 
 //Setters
 void						Server::setLocations(std::vector<Location> locations) {this->_locations = locations;}
-void						Server::setErrorPages(std::map<int, std::string> errorPages) {this->_errorPages = errorPages;}
-void						Server::setServerName(std::string serverName) {this->_serverName = serverName;}
-void						Server::setHostName(std::string hostName) {this->_hostName = hostName;}
-void						Server::setPort(int port) {this->_port = port;}
-void						Server::setRoot(std::string root) {this->_root = root;}
+void						Server::setErrorPages(std::map<int, str> errorPages) {this->_errorPages = errorPages;}
+void						Server::setServerName(str serverName) {this->_serverName = serverName;}
+void						Server::setHostName(str hostName) {this->_hostName = hostName;}
+void						Server::setPort(str port) {this->_port = port;}
+void						Server::setRoot(str root) {this->_root = root;}
 void						Server::setIsdefault(bool isDefault) {this->_isDefault = isDefault;}
 void						Server::setBodySize(size_t bodySize) {this->_bodySize = bodySize;}
 void						Server::setCgiEnable(bool cgiEnable) {this->_cgiEnable = cgiEnable;}
-void						Server::setCgiExtension(std::string cgiExtension) {this->_cgiExtension = cgiExtension;}
-void						Server::setCgiPath(std::string cgiPath) {this->_cgiPath = cgiPath;}
+void						Server::setCgiExtension(str cgiExtension) {this->_cgiExtension = cgiExtension;}
+void						Server::setCgiPath(str cgiPath) {this->_cgiPath = cgiPath;}
