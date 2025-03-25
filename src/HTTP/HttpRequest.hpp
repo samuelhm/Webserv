@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/24 14:22:15 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/25 17:52:10 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,14 @@
 
 #include <map>
 #include <string>
-#include "WebSrv.hpp"
+#include "../WebSrv.hpp"
 
 class HttpRequest {
 	private:
 		RequestType							_type;
-		std::string							_path;
-		std::map<std::string, std::string>	_header;
-		std::string							_body;
+		str							_path;
+		std::map<str, str>	_header;
+		str							_body;
 	public:
 		HttpRequest();
 		HttpRequest(const HttpRequest &other);
@@ -31,9 +31,9 @@ class HttpRequest {
 		~HttpRequest();
 
 		RequestType get_type() const;
-		const std::string& get_path() const;
-		const std::string& get_header(const std::string& key) const;
-		const std::string& get_body() const;
+		const str& get_path() const;
+		const str& get_header(const str& key) const;
+		const str& get_body() const;
 };
 
 #endif
