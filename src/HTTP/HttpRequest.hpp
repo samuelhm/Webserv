@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/25 17:52:10 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/26 16:22:40 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@
 
 class HttpRequest {
 	private:
-		RequestType							_type;
+		RequestType					_type;
 		str							_path;
-		std::map<str, str>	_header;
+		std::map<str, str>			_header;
 		str							_body;
 	public:
 		HttpRequest();

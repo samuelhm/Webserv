@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/26 13:11:39 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/26 15:01:31 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,6 @@ class Server {
 		int					_reuseOption;
 		struct addrinfo*	_response;
 		struct addrinfo		_hints;
-
 };
 
 #endif
