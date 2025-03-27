@@ -18,6 +18,8 @@
 #include "HttpRequest.hpp"
 
 class HttpResponse : public AHttp {
+	private:
+		int	_status;
 	public:
 		HttpResponse(const HttpRequest &request);
 		HttpResponse(const HttpResponse &other);

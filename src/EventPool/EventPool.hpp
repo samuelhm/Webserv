@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/27 16:39:56 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/27 18:30:35 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,16 @@ class EventPool {
 
 		EventPool(const EventPool &other);
 		EventPool& operator=(const EventPool &other);
+		bool isServerFd(std::vector<Server *> &Servers, int fdTmp);
+
 	public:
 		EventPool(std::vector<Server*> &Servers);
 		~EventPool();
 		void	poolLoop(std::vector<Server*> &Servers);
 		str		getRequest(int fdTmp);
 		void	sendResponse(HttpResponse &response, int fdTmp);
+		void	acceptConnection(int fdTmp);
+
 
 		class socketReadException : public std::exception
 		{

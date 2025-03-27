@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/27 16:36:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/27 18:20:08 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,14 @@
 #include "AHttp.hpp"
 
 class HttpRequest : public AHttp {
+	private:
+		RequestType	_type;
 	public:
 		HttpRequest(str request);
 		HttpRequest(const HttpRequest &other);
 		~HttpRequest();
+
+		RequestType get_type() const;
 };
 
 #endif

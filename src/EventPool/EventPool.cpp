@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/27 16:36:15 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/27 18:31:30 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,34 @@ void	EventPool::sendResponse(HttpResponse &response, int fdTmp)
 	close(fdTmp);
 }
 
+void	EventPool::acceptConnection(int fdTmp)
+{
+	struct sockaddr_in client_address;
+	socklen_t client_len = sizeof(client_address);
+
+	int client_fd = accept(fdTmp, (struct sockaddr *)&client_address, &client_len);
+	if (client_fd == -1)
+		throw new std::exception;
+	std::cout << "Nueva conexión en fd: " << client_fd << std::endl;
+	fcntl(client_fd, F_SETFL, O_NONBLOCK);
+
+	struct epoll_event client_ev;
+	client_ev.events = EPOLLIN;
+	client_ev.data.fd = client_fd;
+
+	epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev);
+}
+
+bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp)
+{
+	for (size_t s = 0; s < Servers.size(); ++s)
+	{
+		if (fdTmp == Servers[s]->getServerFd())
+			return true;
+	}
+	return false;
+}
+
 void	EventPool::poolLoop(std::vector<Server*> &Servers)
 {
 	while (1)
@@ -104,33 +132,15 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 				close(fdTmp);
 				continue;
 			}
-			bool is_server_fd = false;
-			for (size_t s = 0; s < Servers.size(); ++s) {
-				if (fdTmp == Servers[s]->getServerFd()) {
-					is_server_fd = true;
-					break;
-				}
-			}
-			if (is_server_fd)
-			{
-				// 📌 ACEPTAR NUEVA CONEXIÓN
-				struct sockaddr_in client_address;
-				socklen_t client_len = sizeof(client_address);
 
-				int client_fd = accept(fdTmp, (struct sockaddr *)&client_address, &client_len);
-				if (client_fd == -1) {
-					perror("accept");
+			if (isServerFd(Servers, fdTmp))
+			{
+				try {
+					acceptConnection(fdTmp);
+				} catch(const std::exception& e) {
+					std::cout << e.what() << std::endl;
 					continue;
 				}
-
-				std::cout << "Nueva conexión en fd: " << client_fd << std::endl;
-				fcntl(client_fd, F_SETFL, O_NONBLOCK);
-
-				struct epoll_event client_ev;
-				client_ev.events = EPOLLIN;
-				client_ev.data.fd = client_fd;
-
-				epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev);
 			}
 			else
 			{

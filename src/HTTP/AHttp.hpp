@@ -20,7 +20,6 @@
 
 class AHttp {
 	private:
-		RequestType					_type;
 		str							_path;
 		std::map<str, str>			_header;
 		str							_body;
@@ -31,7 +30,6 @@ class AHttp {
 		AHttp& operator=(const AHttp &other);
 		virtual ~AHttp();
 
-		RequestType get_type() const;
 		const str& get_path() const;
 		const str& get_header(const str& key) const;
 		const str& get_body() const;

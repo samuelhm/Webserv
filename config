@@ -1,8 +1,8 @@
 {
-	server_name: MIhost
+	server_name:"defaultName"
 	listen:localhost:8080
 	is_default:on
-	root:/var/www/html
+	root:/www/html
 	client_max_body_size:1048576
 
 	error_400:/var/www/errors/400.html
@@ -28,9 +28,11 @@
 		autoindex:off
 		index:index.html
 		upload_path:/var/www/uploads
+		cgi_enable:on
+		cgi_extension:.py
+		cgi_path:/usr/bin/python3
 	]
-	error_502:/var/www/errors/502.html
-	location:/files
+
 	[
 		allowed_methods:GET
 		root:/var/www/public
@@ -41,9 +43,6 @@
 	[
 		allowed_methods:GET POST
 		root:/var/www/cgi-bin
-		cgi_enable:on
-		cgi_extension:.py
-		cgi_path:/usr/bin/python3
 		index:index.py
 	]
 }

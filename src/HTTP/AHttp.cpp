@@ -22,7 +22,9 @@ AHttp::AHttp(const AHttp &other) { *this = other; }
 AHttp& AHttp::operator=(const AHttp &other) {
 
 	if (this != &other) {
-		// Copiar los atributos necesarios
+		_path = other._path ;
+		_header = other._header ;
+		_body = other._body ;
 	}
 	return *this;
 }
