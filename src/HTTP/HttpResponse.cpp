@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
+/*   HttpResponse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -11,12 +11,15 @@
 /* ************************************************************************** */
 
 
-#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
-HttpRequest::HttpRequest(str request) : AHttp(request) {}
+HttpResponse::HttpResponse(const HttpRequest &request) : AHttp()
+{
+	
+}
 
-HttpRequest::HttpRequest(const HttpRequest &other) : AHttp(other) { *this = other; }
+HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) { *this = other; }
 
-HttpRequest::~HttpRequest() {}
+HttpResponse::~HttpResponse() {}
 
 

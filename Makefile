@@ -6,17 +6,19 @@
 #    By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/03/25 17:21:03 by shurtado         ###   ########.fr        #
+#    Updated: 2025/03/27 16:32:50 by shurtado         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME		=	Web_Server
 CC			=	c++
-CPPFLAGS	=	-std=c++98 -g -Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
+CPPFLAGS	=	-std=c++98 -g #-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
 
 SRC			=	src/main.cpp \
+				src/EventPool/EventPool.cpp \
 				src/ConfigFile/Location.cpp src/ConfigFile/Server.cpp \
-				src/HTTP/HttpRequest.cpp
+				src/HTTP/HttpRequest.cpp src/HTTP/HttpResponse.cpp \
+				src/HTTP/AHttp.cpp
 
 OBJS		=	$(SRC:%.cpp=obj/%.o)
 DEPS		=	$(OBJS:.o=.d)
