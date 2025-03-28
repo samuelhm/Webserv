@@ -10,10 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "EventPool.hpp"
 #include <stdio.h>
-
 
 EventPool::EventPool(std::vector<Server*> &Servers) {
 	_pollFd = epoll_create(1);
@@ -93,13 +91,19 @@ void	EventPool::acceptConnection(int fdTmp)
 	if (client_fd == -1)
 		throw new std::exception;
 	std::cout << "Nueva conexión en fd: " << client_fd << std::endl;
-	fcntl(client_fd, F_SETFL, O_NONBLOCK);
-
+	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
+        perror("fcntl failed");
+		close(client_fd);
+		throw new std::exception;
+	}
 	struct epoll_event client_ev;
 	client_ev.events = EPOLLIN;
 	client_ev.data.fd = client_fd;
-
-	epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev);
+    if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev) == -1) {
+        perror("epoll_ctl failed");
+        close(client_fd);
+		throw new std::exception;
+    }
 }
 
 bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp)
@@ -128,7 +132,9 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 			uint32_t flags = events[i].events;
 			if (flags & (EPOLLHUP | EPOLLERR)) {
 				std::cout << "Cerrando conexión con fd: " << fdTmp << std::endl;
-				epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
+				if (epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL) == -1) {
+					perror("epoll_ctl failed");
+				}
 				close(fdTmp);
 				continue;
 			}

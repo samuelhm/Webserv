@@ -22,6 +22,7 @@
 #include <string.h> // memset
 #include <iostream> // cout, endl
 #include <unistd.h> // close
+#include <stdio.h> // perror
 
 class Server {
 	public:

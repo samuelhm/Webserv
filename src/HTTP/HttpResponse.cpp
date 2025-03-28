@@ -13,10 +13,7 @@
 
 #include "HttpResponse.hpp"
 
-HttpResponse::HttpResponse(const HttpRequest &request) : AHttp()
-{
-	
-}
+HttpResponse::HttpResponse(const HttpRequest &request) : AHttp() {}
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) { *this = other; }
 
