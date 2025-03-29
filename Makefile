@@ -3,16 +3,17 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+         #
+#    By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/03/28 20:19:46 by erigonza         ###   ########.fr        #
+#    Updated: 2025/03/29 18:26:44 by erigonza         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME		=	Web_Server
 CC			=	c++
-CPPFLAGS	=	-std=c++98 -g #-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
+CPPFLAGS	=	-std=c++98 -g -MMD -MP
+# CPPFLAGS	+=	-Wall -Werror -Wextra -MMD -MP -pedantic -fsanitize=address
 
 SRC			=	src/main.cpp \
 				src/EventPool/EventPool.cpp \
