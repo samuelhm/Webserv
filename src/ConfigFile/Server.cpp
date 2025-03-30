@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "Server.hpp"
 
 Server::Server() {
@@ -81,8 +80,7 @@ Server& Server::operator=(const Server &other) {
 	return *this;
 }
 
-Server::~Server()
-{
+Server::~Server() {
 	freeaddrinfo(_response);
 	close(_serverFd);
 }
@@ -119,8 +117,16 @@ void						Server::socketUp()
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	_reuseOption = 1;
 // Poder reutilizar el mismo puerto sin tener que esperar en caso de fallo del programa
-	setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &_reuseOption, sizeof(int));
-	fcntl(_serverFd, F_SETFL, O_NONBLOCK);
+	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &_reuseOption, sizeof(int)) == -1) {
+		perror("setsockopt failed");
+		close(_serverFd);
+		throw new std::exception;
+	}
+	if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) == -1) {
+        perror("fcntl failed");
+		close(_serverFd);
+		throw new std::exception;
+	}
 // carga el host name y port en el addrinfo
 // hints -> asignamos opciones de config
 	memset(&_hints, 0, sizeof(_hints));
@@ -129,8 +135,7 @@ void						Server::socketUp()
 	_hints.ai_flags = AI_PASSIVE;		// Para bind() (escuchar)
 // con las opciones dadas en hints configura res
 	int err = getaddrinfo(getHostName().c_str(), getPort().c_str(), &_hints, &_response);
-	if (err)
-	{
+	if (err) {
 		std::cout << "error: getaddrinfo" << std::endl << gai_strerror(err) << std::endl;
 		return ;
 	}
@@ -140,5 +145,9 @@ void						Server::socketUp()
 		return ;
 	}
 // habilitamos el fd para que se quede escuchando
-	listen(_serverFd, SOMAXCONN);
+	if (listen(_serverFd, SOMAXCONN) == -1) {
+		perror("listen failed");
+		close(_serverFd);
+		throw new std::exception;
+	}
 }

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "ConfigFile/Server.hpp"
+#include "EventPool/EventPool.hpp"
 
 #include <netdb.h> // getaddrinfo, addrinfo
 #include <sys/socket.h> // socket, SOL_SOCKET, SO_REUSEADDR, setsockopt, AF_INET, SOCK_STREAM
@@ -22,7 +23,6 @@
 #include <stdio.h>
 #include <cerrno>
 #include <cstdlib>
-#include "EventPool/EventPool.hpp"
 
 int main(int ac, char **av)
 {

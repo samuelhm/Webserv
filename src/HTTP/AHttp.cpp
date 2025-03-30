@@ -29,8 +29,6 @@ AHttp& AHttp::operator=(const AHttp &other) {
 	return *this;
 }
 
-AHttp::~AHttp() {
-
-}
+AHttp::~AHttp() {}
 
 
