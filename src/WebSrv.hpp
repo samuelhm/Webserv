@@ -8,7 +8,7 @@ enum	RequestType
 	GET,
 	POST,
 	DELETE,
-	OPTION
+	OPTIONS
 };
 
 #endif

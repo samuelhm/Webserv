@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/26 15:02:14 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/30 16:13:47 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,12 +120,12 @@ void						Server::socketUp()
 	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &_reuseOption, sizeof(int)) == -1) {
 		perror("setsockopt failed");
 		close(_serverFd);
-		throw new std::exception;
+		throw std::exception();
 	}
 	if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) == -1) {
         perror("fcntl failed");
 		close(_serverFd);
-		throw new std::exception;
+		throw std::exception();
 	}
 // carga el host name y port en el addrinfo
 // hints -> asignamos opciones de config
@@ -148,6 +148,6 @@ void						Server::socketUp()
 	if (listen(_serverFd, SOMAXCONN) == -1) {
 		perror("listen failed");
 		close(_serverFd);
-		throw new std::exception;
+		throw std::exception();
 	}
 }
