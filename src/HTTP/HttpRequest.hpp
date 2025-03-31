@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/31 13:02:22 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/31 13:29:25 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ class HttpRequest : public AHttp {
 		HttpRequest(str request);
 		~HttpRequest();
 
-		RequestType get_type() const;
+		RequestType getType() const;
+		bool		getBadRequest() const;
 		class badHeaderException : public std::exception
 		{
 			private:
