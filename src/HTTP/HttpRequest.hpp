@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/30 16:53:49 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/31 13:02:22 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,17 +25,18 @@ class HttpRequest : public AHttp {
 		const str	saveHeader(const str &request);
 	public:
 		HttpRequest(str request);
-		HttpRequest(const HttpRequest &other);
 		~HttpRequest();
 
 		RequestType get_type() const;
 		class badHeaderException : public std::exception
 		{
+			private:
+				std::string _msg;
 			public:
-				const char *what() const throw();
+				badHeaderException(const std::string &msg);
+				virtual const char *what() const throw();
+				virtual ~badHeaderException() throw() {};
 		};
 };
 
 #endif
-
-
