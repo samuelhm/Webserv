@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/27 18:31:30 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/03/30 16:13:47 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ EventPool::EventPool(std::vector<Server*> &Servers) {
 	_pollFd = epoll_create(1);
 	if (_pollFd == -1) {
 		std::cout << "error: epoll_create1" << std::endl;
-		throw new std::exception;
+		throw std::exception();
 	}
 
 	struct epoll_event ev;
@@ -28,7 +28,7 @@ EventPool::EventPool(std::vector<Server*> &Servers) {
 		ev.data.fd = (*it)->getServerFd();
 		if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, (*it)->getServerFd(), &ev) == -1) {
 			perror("epoll_ctl");
-			throw new std::exception;
+			throw std::exception();
 		}
 
 	}
@@ -58,8 +58,8 @@ str		EventPool::getRequest(int fdTmp)
 
 	if (bytes_read <= 0) {
 		if (bytes_read == 0)
-			throw new disconnectedException(fdTmp);
-		throw new socketReadException(fdTmp);
+			throw disconnectedException(fdTmp);
+		throw socketReadException(fdTmp);
 	}
 	buffer[bytes_read] = '\0';
 	std::cout << buffer << std::endl;
@@ -89,12 +89,11 @@ void	EventPool::acceptConnection(int fdTmp)
 
 	int client_fd = accept(fdTmp, (struct sockaddr *)&client_address, &client_len);
 	if (client_fd == -1)
-		throw new std::exception;
-	std::cout << "Nueva conexión en fd: " << client_fd << std::endl;
+		throw std::exception();
 	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
         perror("fcntl failed");
 		close(client_fd);
-		throw new std::exception;
+		throw std::exception();
 	}
 	struct epoll_event client_ev;
 	client_ev.events = EPOLLIN;
@@ -102,7 +101,7 @@ void	EventPool::acceptConnection(int fdTmp)
     if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev) == -1) {
         perror("epoll_ctl failed");
         close(client_fd);
-		throw new std::exception;
+		throw std::exception();
     }
 }
 
@@ -123,7 +122,7 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 		_nfds = epoll_wait(_pollFd, events, 1024, -1); // -1 = bloquea indefinidamente
 		if (_nfds == -1) {
 			perror("epoll_wait");
-			throw new std::exception;
+			throw std::exception();
 		}
 		for (int i = 0; i < _nfds; ++i)
 		{
@@ -160,6 +159,9 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 				} catch(const socketReadException& e) {
 					std::cout << e.what() << std::endl;
 					continue;
+				} catch(...)
+				{
+					std::cout << "Error no manejado" << std::endl;
 				}
 			}
 		}

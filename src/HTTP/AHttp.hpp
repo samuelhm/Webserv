@@ -19,7 +19,7 @@
 #include "../WebSrv.hpp"
 
 class AHttp {
-	private:
+	protected:
 		str							_path;
 		std::map<str, str>			_header;
 		str							_body;
@@ -28,7 +28,7 @@ class AHttp {
 		AHttp(str request);
 		AHttp(const AHttp &other);
 		AHttp& operator=(const AHttp &other);
-		virtual ~AHttp();
+		virtual ~AHttp() = 0;
 
 		const str& get_path() const;
 		const str& get_header(const str& key) const;
