@@ -49,6 +49,7 @@ namespace Utils {
 		return s.substr(start, end - start);
 	}
 
+	//File se cierra automaticamente al salir de su ambito con su destructor, no es necesario usar close();
 	str fileToStr(const str &filePath) {
 		std::ifstream file(filePath.c_str());
 		if (!file.is_open())

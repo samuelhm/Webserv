@@ -13,6 +13,8 @@ std::vector<Server*>	parseConfigFile(const str &filepath);
 Server*					GetServer(const str &serverString);
 str						GetOption(const str &optionString);
 Location				getLocation(const str &locationString);
+bool					isValidOption(const str &line, int &type);
+void					insertOption(str &value, int type, Server* server);
 
 class ConfigFileException : public std::exception {
 	private:
@@ -22,4 +24,10 @@ class ConfigFileException : public std::exception {
 		virtual const char *what() const throw() {
 			return _msg.c_str();
 		}
+};
+
+class EmptyValueException : public std::exception
+{
+	public:
+		virtual const char* what() const throw();
 };

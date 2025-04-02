@@ -13,4 +13,15 @@ enum	RequestType
 	OPTIONS
 };
 
+enum OptionType
+{
+	SERVERNAME,
+	LISTEN,
+	ISDEFAULT,
+	ROOT,
+	BODYSIZE,
+	ERRORPAGE,
+	LOCATION
+};
+
 #endif

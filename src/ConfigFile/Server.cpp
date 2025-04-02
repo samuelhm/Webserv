@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/30 16:13:47 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/02 18:03:50 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,32 +15,22 @@
 Server::Server() {
 
 	_serverName = "server1";
-	Location location(_serverName);
-	_locations.push_back(location);
 	_hostName = "localhost";
 	_port = "8080";
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 1048576;
-	_cgiEnable = false;
-	_cgiExtension = ".py";
-	_cgiPath = "/usr/bin/python3";
 	socketUp();
 }
 
 Server::Server(const str &servername) {
 
 	_serverName = servername;
-	Location location(_serverName);
-	_locations.push_back(location);
 	_hostName = "localhost";
 	_port = "8080";
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 1048576;
-	_cgiEnable = false;
-	_cgiExtension = ".py";
-	_cgiPath = "/usr/bin/python3";
 	socketUp();
 }
 
@@ -48,16 +38,11 @@ Server::Server(const str &servername) {
 Server::Server(const str &servername, const str &port) {
 
 	_serverName = servername;
-	Location location(_serverName);
-	_locations.push_back(location);
 	_hostName = "localhost";
 	_port = port;
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 1048576;
-	_cgiEnable = false;
-	_cgiExtension = ".py";
-	_cgiPath = "/usr/bin/python3";
 	socketUp();
 }
 
@@ -73,9 +58,6 @@ Server& Server::operator=(const Server &other) {
 		this->_root = other._root;
 		this->_isDefault = other._isDefault;
 		this->_bodySize = other._bodySize;
-		this->_cgiEnable = other._cgiEnable;
-		this->_cgiExtension = other._cgiExtension;
-		this->_cgiPath = other._cgiPath;
 	}
 	return *this;
 }
@@ -94,9 +76,6 @@ str							Server::getPort() const { return this->_port; }
 str							Server::getRoot() const { return this->_root; }
 bool						Server::getIsdefault() const { return this->_isDefault; }
 size_t						Server::getBodySize() const { return this->_bodySize; }
-bool						Server::getCgiEnable() const { return this->_cgiEnable; }
-str							Server::getCgiExtension() const { return this->_cgiExtension; }
-str							Server::getCgiPath() const { return this->_cgiPath; }
 int							Server::getServerFd() const { return this->_serverFd; }
 
 //Setters
@@ -108,9 +87,6 @@ void						Server::setPort(str port) {this->_port = port;}
 void						Server::setRoot(str root) {this->_root = root;}
 void						Server::setIsdefault(bool isDefault) {this->_isDefault = isDefault;}
 void						Server::setBodySize(size_t bodySize) {this->_bodySize = bodySize;}
-void						Server::setCgiEnable(bool cgiEnable) {this->_cgiEnable = cgiEnable;}
-void						Server::setCgiExtension(str cgiExtension) {this->_cgiExtension = cgiExtension;}
-void						Server::setCgiPath(str cgiPath) {this->_cgiPath = cgiPath;}
 
 void						Server::socketUp()
 {

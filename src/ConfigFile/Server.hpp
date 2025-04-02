@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/26 15:01:31 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:39:24 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,9 +46,6 @@ class Server {
 		str							getRoot() const;
 		bool						getIsdefault() const;
 		size_t						getBodySize() const;
-		bool						getCgiEnable() const;
-		str							getCgiExtension() const;
-		str							getCgiPath() const;
 		int							getServerFd() const;
 
 		//Setters
@@ -60,24 +57,17 @@ class Server {
 		void						setRoot(str root);
 		void						setIsdefault(bool isDefault);
 		void						setBodySize(size_t bodySize);
-		void						setCgiEnable(bool cgiEnable);
-		void						setCgiExtension(str cgiExtension);
-		void						setCgiPath(str cgiPath);
 
 
 	private:
 		std::vector<Location>		_locations;
-		std::map<int, str>	_errorPages;
-		str					_serverName;
-		str					_hostName;
-		str					_port;
-		str					_root;
+		std::map<int, str>			_errorPages;
+		str							_serverName;
+		str							_hostName;
+		str							_port;
+		str							_root;
 		bool						_isDefault;
 		size_t						_bodySize;
-		bool						_cgiEnable;
-		str					_cgiExtension;
-		str					_cgiPath;
-
 
 		//SocketUp
 		int					_serverFd;
@@ -87,5 +77,3 @@ class Server {
 };
 
 #endif
-
-
