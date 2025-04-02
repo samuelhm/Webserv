@@ -16,15 +16,6 @@
 #include <exception>
 #include <iostream>
 
-template <typename K, typename V>
-void print_map(const std::map<K, V>& m) {
-    typename std::map<K, V>::const_iterator it;
-    
-    for (it = m.begin(); it != m.end(); ++it) {
-        std::cout << "Key: " << it->first << ", Value: " << it->second << std::endl;
-    }
-}
-
 const str HttpRequest::saveHeader(const str &request) {
     int end = request.find("\r\n");
     if (end == str::npos)
