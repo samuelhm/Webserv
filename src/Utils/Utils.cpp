@@ -30,4 +30,22 @@ namespace Utils {
 		tokens.push_back(input.substr(start));
 		return tokens;
 	}
+	/* isspace() incluye:
+	*	' ' (espacio)
+	*	'\t' (tabulación)
+	*	'\n' (salto de línea)
+	*	'\r' (retorno de carro)
+	*	'\v' (tab vertical)
+	*	'\f' (form feed)
+	*	Usa static_cast en c++98 para evitar errores con EOF https://en.cppreference.com/w/cpp/string/byte/isspace
+	*/
+	str trim(const str &s) {
+		str::size_type start = 0;
+		while (start < s.size() && std::isspace(static_cast<unsigned char>(s[start])))
+			++start;
+		str::size_type end = s.size();
+		while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1])))
+			--end;
+		return s.substr(start, end - start);
+	}
 }
