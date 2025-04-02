@@ -48,4 +48,13 @@ namespace Utils {
 			--end;
 		return s.substr(start, end - start);
 	}
+
+	str fileToStr(const str &filePath) {
+		std::ifstream file(filePath.c_str());
+		if (!file.is_open())
+			throw std::runtime_error("File not found: " + filePath);
+		std::stringstream buffer;
+		buffer << file.rdbuf();
+		return buffer.str();
+	}
 }
