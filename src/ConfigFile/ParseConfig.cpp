@@ -67,18 +67,18 @@ void	insertOption(const str &value, int type, Server* server)
 		server->setBodySize(std::atoi(value.c_str()));
 		break;
 	case LISTEN:
-	{
-		size_t sep = value.find(":");
-		if (sep == std::string::npos)
-			throw ConfigFileException("LISTEN must be in format hostname:port" + value);
-		str hostname = Utils::trim(value.substr(0, sep));
-		str port = Utils::trim(value.substr(sep + 1));
-		if (hostname.empty() || port.empty())
-			throw ConfigFileException("LISTEN has empty host or port: " + value);
-		server->setHostName(hostname);
-		server->setPort(port);
-		break;
-	}
+		{
+			size_t sep = value.find(":");
+			if (sep == std::string::npos)
+				throw ConfigFileException("LISTEN must be in format hostname:port" + value);
+			str hostname = Utils::trim(value.substr(0, sep));
+			str port = Utils::trim(value.substr(sep + 1));
+			if (hostname.empty() || port.empty())
+				throw ConfigFileException("LISTEN has empty host or port: " + value);
+			server->setHostName(hostname);
+			server->setPort(port);
+			break;
+		}
 	default:
 		throw std::exception();
 		break;
@@ -114,6 +114,8 @@ Server*	GetServer(const str &serverString)
 					str code_str = line.substr(code_start, 3); //guardamos los 3 numeros del error.
 					int code = std::atoi(code_str.c_str()); // Lo pasamos a integer para el map.
 					str path = Utils::trim(line.substr(line.find(":") + 1)); //sacamos el path, desde el : +1.
+					if (path.empty())
+						throw EmptyValueException();
 					if (code < 100 || code > 599)
 						throw ConfigFileException("Invalid error code: " + code_str);
 					server->getErrorPages()[code] = path;
