@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/31 13:31:03 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/02 08:48:09 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,32 +16,24 @@
 #include <exception>
 #include <iostream>
 
-#define DEFAULT_ERROR "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"
-
 const str HttpRequest::saveHeader(const str &request) {
-	size_t pos = 0;
-	size_t end;
-	bool headerClosed = false;
-	while ((end = request.find("\r\n", pos)) != str::npos) {
-		str line = request.substr(pos, end - pos);
-		pos = end + 2;
-		if (line.empty()) {
-			headerClosed = true;
-			break;
-		}
-
-		std::size_t separador = line.find(":");
-		if (separador == str::npos)
-			throw badHeaderException("Header has not : separator");
-
-		str key = line.substr(0, separador);
-		str value = line.substr(separador + 2);
-		_header[key] = value;
-	}
-	if (!headerClosed) // No hay \r\n\r\n
-		throw badHeaderException("Header not terminated properly: missing \\r\\n\\r\\n");
-	return request.substr(pos); // si no hay body, devuelve una linea vacia, '\0' o ("")
+    int end = request.find("\r\n");
+    if (end == str::npos)
+        return request;
+    str line = request.substr(0, end);
+    int separator = line.find(": ");
+    if (separator != str::npos) {
+        str key = line.substr(0, separator);
+        str value = line.substr(separator + 2);
+        _header[key] = value;
+    }
+    if (end + 2 < (int)request.length()) {
+        return saveHeader(request.substr(end + 2));
+    }
+    return request;
 }
+
+#define DEFAULT_ERROR "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"
 
 void HttpRequest::checkHeaderMRP(const str &line) {
 	std::size_t end = line.find(" ", 0);
