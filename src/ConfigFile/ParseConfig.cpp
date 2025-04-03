@@ -9,7 +9,7 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 	std::vector<Server*> result;
 	for (std::vector<str>::iterator it = serverStrings.begin(); it != serverStrings.end(); ++it) {
 		try {
-			result.push_back(GetServer(*it));
+			result.push_back(getServer(*it));
 		} catch (ConfigFileException &e) {
 			std::cout << "Error parsing server: " << e.what() << std::endl; // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
 		}
@@ -70,11 +70,11 @@ void	insertOption(const str &value, int type, Server* server)
 		{
 			size_t sep = value.find(":");
 			if (sep == std::string::npos)
-				throw ConfigFileException("LISTEN must be in format hostname:port" + value);
+				throw ConfigFileException("LISTEN must be in format hostname:port" + value); // IMPORTANT check if this information is needeed (to continue or stop)
 			str hostname = Utils::trim(value.substr(0, sep));
 			str port = Utils::trim(value.substr(sep + 1));
 			if (hostname.empty() || port.empty())
-				throw ConfigFileException("LISTEN has empty host or port: " + value);
+				throw ConfigFileException("LISTEN has empty host or port: " + value); // IMPORTANT check if this information is needeed (to continue or stop)
 			server->setHostName(hostname);
 			server->setPort(port);
 			break;
@@ -85,7 +85,7 @@ void	insertOption(const str &value, int type, Server* server)
 	}
 }
 
-Server*	GetServer(const str &serverString)
+Server*	getServer(const str &serverString)
 {
 	std::istringstream ss(serverString);
 	str line;
@@ -100,7 +100,7 @@ Server*	GetServer(const str &serverString)
 		if (line.empty())
 			continue ;
 		if (!isValidOption(line, type)) {
-			throw ConfigFileException("Wrong option: " + line);
+			throw ConfigFileException("Wrong option: " + line); // IMPORTANT check if it should continue or stop and give an error
 		}
 		if (type != LOCATION) //Todos menos location, que habrá que montar una string con varias lineas
 		{
@@ -116,7 +116,7 @@ Server*	GetServer(const str &serverString)
 					str path = Utils::trim(line.substr(line.find(":") + 1)); //sacamos el path, desde el : +1.
 					if (path.empty())
 						throw EmptyValueException();
-					if (code < 100 || code > 599)
+					if (code < 400 || code > 599)
 						throw ConfigFileException("Invalid error code: " + code_str);
 					server->getErrorPages()[code] = path;
 				}

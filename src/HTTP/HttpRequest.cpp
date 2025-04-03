@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/02 08:48:09 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/03 11:25:01 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,17 +17,17 @@
 #include <iostream>
 
 const str HttpRequest::saveHeader(const str &request) {
-    int end = request.find("\r\n");
+    str::size_type end = request.find("\r\n");
     if (end == str::npos)
         return request;
     str line = request.substr(0, end);
-    int separator = line.find(": ");
+    str::size_type separator = line.find(": ");
     if (separator != str::npos) {
         str key = line.substr(0, separator);
         str value = line.substr(separator + 2);
         _header[key] = value;
     }
-    if (end + 2 < (int)request.length()) {
+    if (end + 2 < request.length()) {
         return saveHeader(request.substr(end + 2));
     }
     return request;
@@ -60,7 +60,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 }
 
 HttpRequest::HttpRequest(str request) : AHttp(request), _badRequest(false) {
-	int end = request.find("\r\n");
+	str::size_type end = request.find("\r\n");
 	if (end == str::npos)
 		throw badHeaderException(DEFAULT_ERROR);
 	const str line = request.substr(0, end + 2);

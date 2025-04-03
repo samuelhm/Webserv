@@ -12,25 +12,24 @@
 	error_413:/var/www/errors/413.html
 	error_500:/var/www/errors/500.html
 
-	location:/
+	location:/images
 	[
 		allowed_methods:GET POST
 		index:index.html
 		autoindex:off
-	]
-
-	location:/upload
-	[
-		allowed_methods:POST
-		redirect:301:/nuevo
-		upload_enable:on
-		root:/var/www/html
-		autoindex:off
-		index:index.html
-		upload_path:/var/www/uploads
-		cgi_enable:on
-		cgi_extension:.py
-		cgi_path:/usr/bin/python3
+		location:/upload
+		[
+			allowed_methods:POST
+			redirect:301:/nuevo
+			upload_enable:on
+			root:/var/www/html
+			autoindex:off
+			index:index.html
+			upload_path:/var/www/uploads
+			cgi_enable:on
+			cgi_extension:.py
+			cgi_path:/usr/bin/python3
+		]
 	]
 
 	location:/cgi-bin
