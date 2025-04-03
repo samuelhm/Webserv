@@ -6,14 +6,14 @@
 #    By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/04/03 11:25:45 by shurtado         ###   ########.fr        #
+#    Updated: 2025/04/03 14:50:02 by shurtado         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME		=	Web_Server
 CC			=	c++
 CPPFLAGS	=	-std=c++98 -g -MMD -MP
-CPPFLAGS	+=	-Wall -Werror -Wextra -MMD -MP -pedantic -fsanitize=address
+# CPPFLAGS	+=	-Wall -Werror -Wextra -MMD -MP -pedantic -fsanitize=address
 
 SRC			=	src/main.cpp \
 				src/EventPool/EventPool.cpp \

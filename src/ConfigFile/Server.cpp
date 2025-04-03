@@ -3,23 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/02 18:03:50 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 18:27:42 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server() {
-
 	_serverName = "server1";
 	_hostName = "localhost";
 	_port = "8080";
 	_root =	"./www/html";
 	_isDefault = true;
-	_bodySize = 1048576;
+	_bodySize = 2147483647;
 	socketUp();
 }
 
@@ -69,7 +68,7 @@ Server::~Server() {
 
 //Getters
 std::vector<Location>		Server::getLocations() const { return this->_locations; }
-std::map<int, str>			Server::getErrorPages() const { return this->_errorPages; }
+const str&					Server::getErrorPage(int error) { return _errorPages[error]; }
 str							Server::getServerName() const { return this->_serverName; }
 str							Server::getHostName() const { return this->_hostName; }
 str							Server::getPort() const { return this->_port; }
@@ -79,14 +78,14 @@ size_t						Server::getBodySize() const { return this->_bodySize; }
 int							Server::getServerFd() const { return this->_serverFd; }
 
 //Setters
-void						Server::setLocations(std::vector<Location> locations) {this->_locations = locations;}
-void						Server::setErrorPages(std::map<int, str> errorPages) {this->_errorPages = errorPages;}
-void						Server::setServerName(str serverName) {this->_serverName = serverName;}
-void						Server::setHostName(str hostName) {this->_hostName = hostName;}
-void						Server::setPort(str port) {this->_port = port;}
-void						Server::setRoot(str root) {this->_root = root;}
-void						Server::setIsdefault(bool isDefault) {this->_isDefault = isDefault;}
-void						Server::setBodySize(size_t bodySize) {this->_bodySize = bodySize;}
+void						Server::setLocations(std::vector<Location> locations) { this->_locations = locations;}
+void						Server::setErrorPages(int error, const str &page) { this->_errorPages[error] = page; }
+void						Server::setServerName(str serverName) { this->_serverName = serverName;}
+void						Server::setHostName(str hostName) { this->_hostName = hostName;}
+void						Server::setPort(str port) { this->_port = port;}
+void						Server::setRoot(str root) { this->_root = root;}
+void						Server::setIsdefault(bool isDefault) { this->_isDefault = isDefault;}
+void						Server::setBodySize(size_t bodySize) { this->_bodySize = bodySize;}
 
 void						Server::socketUp()
 {

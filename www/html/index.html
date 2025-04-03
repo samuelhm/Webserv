@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Lumen App</title>
+	<style>
+		:root {
+			--primary: #4f46e5;
+			--secondary: #6366f1;
+			--bg: #f3f4f6;
+			--text: #111827;
+			--light-text: #6b7280;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background-color: var(--bg);
+			color: var(--text);
+			line-height: 1.6;
+		}
+
+		header {
+			background: linear-gradient(to right, var(--primary), var(--secondary));
+			color: white;
+			padding: 2rem 1rem;
+			text-align: center;
+		}
+
+		header h1 {
+			font-size: 3rem;
+			margin-bottom: 0.5rem;
+		}
+
+		header p {
+			font-size: 1.2rem;
+			color: #e0e7ff;
+		}
+
+		main {
+			max-width: 900px;
+			margin: 3rem auto;
+			padding: 0 1rem;
+			text-align: center;
+		}
+
+		section {
+			margin-bottom: 3rem;
+		}
+
+		.features {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-around;
+			gap: 2rem;
+		}
+
+		.card {
+			background: white;
+			border-radius: 8px;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			padding: 1.5rem;
+			flex: 1 1 250px;
+			transition: transform 0.3s ease;
+		}
+
+		.card:hover {
+			transform: translateY(-5px);
+		}
+
+		.card h3 {
+			color: var(--primary);
+			margin-bottom: 0.5rem;
+		}
+
+		footer {
+			background: #e5e7eb;
+			color: var(--light-text);
+			text-align: center;
+			padding: 1rem;
+			font-size: 0.9rem;
+		}
+
+		a.button {
+			display: inline-block;
+			margin-top: 2rem;
+			background: var(--primary);
+			color: white;
+			padding: 0.75rem 1.5rem;
+			border-radius: 4px;
+			text-decoration: none;
+			font-weight: bold;
+			transition: background 0.3s ease;
+		}
+
+		a.button:hover {
+			background: var(--secondary);
+		}
+	</style>
+</head>
+<body>
+
+	<header>
+		<h1>Lumen</h1>
+		<p>La forma más brillante de organizar tu vida</p>
+	</header>
+
+	<main>
+		<section>
+			<h2>¿Por qué Lumen?</h2>
+			<p>Una aplicación ligera, rápida y potente que te ayuda a centrarte en lo que de verdad importa.</p>
+			<a class="button" href="#">Empezar ahora</a>
+		</section>
+
+		<section class="features">
+			<div class="card">
+				<h3>📅 Planificación</h3>
+				<p>Crea tareas, listas y proyectos con facilidad, y mantén todo bajo control.</p>
+			</div>
+			<div class="card">
+				<h3>☁️ Sincronización</h3>
+				<p>Tus datos siempre disponibles, en todos tus dispositivos, sin complicaciones.</p>
+			</div>
+			<div class="card">
+				<h3>🔒 Privacidad</h3>
+				<p>Diseñada para respetar tu privacidad, sin anuncios ni rastreadores.</p>
+			</div>
+		</section>
+	</main>
+
+	<footer>
+		&copy; 2025 Lumen. Todos los derechos reservados.
+	</footer>
+
+</body>
+</html>
+

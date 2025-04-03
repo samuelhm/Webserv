@@ -1,4 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ParseConfig.cpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
+/*   Updated: 2025/04/03 18:30:06 by shurtado         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ParseConfig.hpp"
+#include <stdlib.h>
 
 
 std::vector<Server*>	parseConfigFile(const str &filepath) {
@@ -53,35 +66,35 @@ void	insertOption(const str &value, int type, Server* server)
 	}
 	switch (type)
 	{
-	case SERVERNAME:
-		server->setServerName(value);
-		break;
-	case ISDEFAULT:
-		bool tmp = value == "yes" ? true : false;
-		server->setIsdefault(tmp);
-		break;
-	case ROOT:
-		server->setRoot(value);
-		break;
-	case BODYSIZE:
-		server->setBodySize(std::atoi(value.c_str()));
-		break;
-	case LISTEN:
-		{
-			size_t sep = value.find(":");
-			if (sep == std::string::npos)
-				throw ConfigFileException("LISTEN must be in format hostname:port" + value); // IMPORTANT check if this information is needeed (to continue or stop)
-			str hostname = Utils::trim(value.substr(0, sep));
-			str port = Utils::trim(value.substr(sep + 1));
-			if (hostname.empty() || port.empty())
-				throw ConfigFileException("LISTEN has empty host or port: " + value); // IMPORTANT check if this information is needeed (to continue or stop)
-			server->setHostName(hostname);
-			server->setPort(port);
+		case SERVERNAME:
+			server->setServerName(value);
 			break;
-		}
-	default:
-		throw std::exception();
-		break;
+		case ISDEFAULT:
+			bool tmp = value == "yes" ? true : false;
+			server->setIsdefault(tmp);
+			break;
+		case ROOT:
+			server->setRoot(value);
+			break;
+		case BODYSIZE:
+			server->setBodySize(std::atoi(value.c_str()));
+			break;
+		case LISTEN:
+			{
+				size_t sep = value.find(":");
+				if (sep == std::string::npos)
+					throw ConfigFileException("LISTEN must be in format hostname:port" + value); // IMPORTANT check if this information is needeed (to continue or stop)
+				str hostname = Utils::trim(value.substr(0, sep));
+				str port = Utils::trim(value.substr(sep + 1));
+				if (hostname.empty() || port.empty())
+					throw ConfigFileException("LISTEN has empty host or port: " + value); // IMPORTANT check if this information is needeed (to continue or stop)
+				server->setHostName(hostname);
+				server->setPort(port);
+				break;
+			}
+		default:
+			throw std::exception();
+			break;
 	}
 }
 
@@ -118,7 +131,7 @@ Server*	getServer(const str &serverString)
 						throw EmptyValueException();
 					if (code < 400 || code > 599)
 						throw ConfigFileException("Invalid error code: " + code_str);
-					server->getErrorPages()[code] = path;
+					server->getErrorPage()[code] = path;
 				}
 			} catch (EmptyValueException &e) {
 				std::cout << e.what() << "ignoring option." << std::endl;

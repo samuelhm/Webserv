@@ -6,12 +6,13 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 11:23:54 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 17:31:37 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EventPool.hpp"
 #include <stdio.h>
+#include <stdlib.h>
 
 EventPool::EventPool(std::vector<Server*> &Servers) {
 	_pollFd = epoll_create(1);
@@ -25,12 +26,15 @@ EventPool::EventPool(std::vector<Server*> &Servers) {
 	for (std::vector<Server*>::iterator it = Servers.begin(); it != Servers.end(); ++it)
 	{
 		ev.events = EPOLLIN;
-		ev.data.fd = (*it)->getServerFd();
+		// ev.data.fd = (*it)->getServerFd();
+		struct eventStructtmp* estructura = new eventStructtmp; // IMPORTANT free this
+		estructura->server = *it;
+		estructura->isServer = true;
+		ev.data.ptr = static_cast<void*>(estructura);
 		if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, (*it)->getServerFd(), &ev) == -1) {
 			perror("epoll_ctl");
 			throw std::exception();
 		}
-
 	}
 }
 
@@ -55,7 +59,6 @@ str		EventPool::getRequest(int fdTmp)
 {
 	char buffer[4096]; //comprobar si es suficiente ( caso de post de archivos )
 	ssize_t bytes_read = read(fdTmp, buffer, sizeof(buffer) - 1);
-
 	if (bytes_read <= 0) {
 		if (bytes_read == 0)
 			throw disconnectedException(fdTmp);
@@ -66,24 +69,28 @@ str		EventPool::getRequest(int fdTmp)
 	return (buffer);
 }
 
-void	EventPool::sendResponse(HttpResponse &response, int fdTmp)
+void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m)
 {
 	(void)response; //IMPORTANT delete
-	const char* http_response =
-				"HTTP/1.1 200 OK\r\n"
-				"Content-Type: text/html\r\n"
-				"Content-Length: 45\r\n"
-				"\r\n"
-				"<html><body><h1>Hola mundo</h1></body></html>";
-
-	ssize_t error = write(fdTmp, http_response, strlen(http_response));
+	(void)m;
+	str err;
+	err.append(response._line0);
+	std::map<str, str>::iterator it;
+	for (it = response.get_header().begin(); it != response.get_header().end(); ++it) {
+		err.append(it->first);
+		err.append(": ");
+		err.append(it->second);
+		err.append("\r\n");
+	}
+	err.append(response.get_body());
+	ssize_t error = write(fdTmp, err.c_str(), err.size());
 	if (error == -1)
 		perror("write");
 	epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
 	close(fdTmp);
 }
 
-void	EventPool::acceptConnection(int fdTmp)
+void	EventPool::acceptConnection(int fdTmp, Server* server)
 {
 	struct sockaddr_in client_address;
 	socklen_t client_len = sizeof(client_address);
@@ -98,7 +105,11 @@ void	EventPool::acceptConnection(int fdTmp)
 	}
 	struct epoll_event client_ev;
 	client_ev.events = EPOLLIN;
-	client_ev.data.fd = client_fd;
+	struct eventStructtmp* estructura = new eventStructtmp; // IMPORTANT free this
+	estructura->client_fd = client_fd;
+	estructura->server = server;
+	estructura->isServer = false;
+	client_ev.data.ptr = static_cast<void*>(estructura);
     if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev) == -1) {
         perror("epoll_ctl failed");
         close(client_fd);
@@ -118,8 +129,9 @@ bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp)
 
 void	EventPool::poolLoop(std::vector<Server*> &Servers)
 {
-	while (1)
+	while (42)
 	{
+		int fdTmp;
 		_nfds = epoll_wait(_pollFd, events, 1024, -1); // -1 = bloquea indefinidamente
 		if (_nfds == -1) {
 			perror("epoll_wait");
@@ -127,8 +139,10 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 		}
 		for (int i = 0; i < _nfds; ++i)
 		{
-			int fdTmp = events[i].data.fd;
-
+			if (static_cast<eventStructtmp *>(events[i].data.ptr)->isServer)
+				fdTmp =  static_cast<eventStructtmp *>(events[i].data.ptr)->server->getServerFd();
+			else
+				fdTmp =  static_cast<eventStructtmp *>(events[i].data.ptr)->client_fd;
 			uint32_t flags = events[i].events;
 			if (flags & (EPOLLHUP | EPOLLERR)) {
 				std::cout << "Cerrando conexión con fd: " << fdTmp << std::endl;
@@ -138,11 +152,10 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 				close(fdTmp);
 				continue;
 			}
-
 			if (isServerFd(Servers, fdTmp))
 			{
 				try {
-					acceptConnection(fdTmp);
+					acceptConnection(fdTmp, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
 				} catch(const std::exception& e) {
 					std::cout << e.what() << std::endl;
 					continue;
@@ -151,17 +164,15 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 			else
 			{
 				try {
-					HttpRequest request(getRequest(fdTmp));
-					HttpResponse response(request);
-					sendResponse(response, fdTmp);
+					str reqStr = getRequest(fdTmp);
+					HttpRequest request(reqStr);
+					HttpResponse response(request, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
+					sendResponse(response, fdTmp, response.get_header());
 				} catch(const disconnectedException& e) {
 					std::cout << e.what() << std::endl;
-					continue;
 				} catch(const socketReadException& e) {
 					std::cout << e.what() << std::endl;
-					continue;
-				} catch(...)
-				{
+				} catch(...) {
 					std::cout << "Error no manejado" << std::endl;
 				}
 			}
@@ -170,7 +181,19 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 }
 
 
-
+Server* EventPool::getServerByFd(int fd, std::vector<Server*> Servers)
+{
+	std::vector<Server*>::iterator it;
+	for (it = Servers.begin(); it != Servers.end(); ++it)
+	{
+		std::cout << "fd que estamos buscando: " << fd << std::endl;
+		std::cout << "fd que estamos Iterando: " << (*it)->getServerFd() << std::endl;
+		if ((*it)->getServerFd() == fd)
+			return (*it);
+	}
+	std::cout << "Devolviendo NULL" << std::endl;
+	return NULL;
+}
 
 
 EventPool::disconnectedException::disconnectedException(int fd) {
