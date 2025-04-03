@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/02 16:39:24 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 15:19:40 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class Server {
 
 		//Getters
 		std::vector<Location>		getLocations() const;
-		std::map<int, str>			getErrorPages() const;
+		std::map<int, str>&			getErrorPages();
 		str							getServerName() const;
 		str							getHostName() const;
 		str							getPort() const;

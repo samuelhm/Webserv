@@ -16,12 +16,18 @@
 
 #include "AHttp.hpp"
 #include "HttpRequest.hpp"
+#include "../ConfigFile/Server.hpp"
 
 class HttpResponse : public AHttp {
-	private:
-		int	_status;
 	public:
-		HttpResponse(const HttpRequest &request);
+		str							_line0;
+		int							_status;
+		static std::map<int, str>	_statusStr;
+		void	setErrorCode(int ErrorCode, Server* server);
+		void 	fillStatusStr();
+
+		public:
+		HttpResponse(const HttpRequest &request, Server* server);
 		HttpResponse(const HttpResponse &other);
 		~HttpResponse();
 };

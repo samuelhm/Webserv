@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 11:25:01 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 16:54:46 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,9 +68,8 @@ HttpRequest::HttpRequest(str request) : AHttp(request), _badRequest(false) {
 		checkHeaderMRP(line);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
-		std::cout << e.what() << std::endl;
 		_badRequest = true;
-		return ;
+		std::cout << e.what() << std::endl;
 	} catch(...) {
 		_badRequest = true;
 		std::cout << "error: extra" << std::endl;

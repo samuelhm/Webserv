@@ -15,7 +15,9 @@
 
 AHttp::AHttp() {}
 
-AHttp::AHttp(str request) {}
+AHttp::AHttp(str request) {
+	(void)request;
+}
 
 AHttp::AHttp(const AHttp &other) { *this = other; }
 
@@ -31,4 +33,6 @@ AHttp& AHttp::operator=(const AHttp &other) {
 
 AHttp::~AHttp() {}
 
+std::map<str, str>& AHttp::get_header() { return _header; }
+const str& AHttp::get_body() const { return _body; }
 

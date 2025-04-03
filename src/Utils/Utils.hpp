@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../WebSrv.hpp"
+#include "../ConfigFile/Server.hpp"
 #include <map>
 #include <vector>
 #include <string>
@@ -15,10 +16,14 @@ namespace Utils {
 	std::vector<str> split(const str &input, const str &delimiter);
 	str trim(const str& input);
 	str fileToStr(const str &filePath);
+	str	intToStr(unsigned int num);
+	void getServerByFd(int fd, Server &server);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {
 		typename std::map<K, V>::const_iterator it;
+		if (m.empty())
+			return ;
 		for (it = m.begin(); it != m.end(); ++it) {
 			std::cout << "Key: " << it->first << ", Value: " << it->second << std::endl;
 		}

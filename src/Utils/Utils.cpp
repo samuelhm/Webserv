@@ -1,5 +1,6 @@
 
 #include "Utils.hpp"
+#include "../ConfigFile/Server.hpp"
 
 namespace Utils {
 
@@ -57,5 +58,21 @@ namespace Utils {
 		std::stringstream buffer;
 		buffer << file.rdbuf();
 		return buffer.str();
+	}
+
+	str	intToStr(unsigned int num)
+	{
+		if (num == 0)
+			return "0";
+		long Num = static_cast<long>(num);
+		str response;
+		int i = 0;
+		while (Num != 0)
+		{
+			char a = (Num % 10) + '0';
+			response[i] = a;
+			Num /= 10;
+		}
+		return response;
 	}
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/02 18:03:50 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 16:42:14 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ Server::~Server() {
 
 //Getters
 std::vector<Location>		Server::getLocations() const { return this->_locations; }
-std::map<int, str>			Server::getErrorPages() const { return this->_errorPages; }
+std::map<int, str>&			Server::getErrorPages() { return _errorPages; }
 str							Server::getServerName() const { return this->_serverName; }
 str							Server::getHostName() const { return this->_hostName; }
 str							Server::getPort() const { return this->_port; }

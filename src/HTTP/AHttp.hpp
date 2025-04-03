@@ -31,7 +31,7 @@ class AHttp {
 		virtual ~AHttp() = 0;
 
 		const str& get_path() const;
-		const str& get_header(const str& key) const;
+		std::map<str, str>& get_header();
 		const str& get_body() const;
 };
 

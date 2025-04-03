@@ -1,4 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ParseConfig.cpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
+/*   Updated: 2025/04/03 14:48:47 by shurtado         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ParseConfig.hpp"
+#include <stdlib.h>
 
 
 std::vector<Server*>	parseConfigFile(const str &filepath) {
