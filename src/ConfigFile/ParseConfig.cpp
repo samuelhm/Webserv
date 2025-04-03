@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 19:47:41 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/03 20:05:10 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 	for (std::vector<str>::iterator it = serverStrings.begin(); it != serverStrings.end(); ++it) {
 		try {
       //std::cout << *it << std::endl;
+			(*it) = Utils::trim(*it);
+			if ((*it).empty())
+				continue;
 			result.push_back(getServer(*it));
 		} catch (ConfigFileException &e) {
 			std::cout << "Error parsing server: " << e.what() << std::endl; // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
