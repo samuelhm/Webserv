@@ -10,8 +10,7 @@
 #include "../Utils/Utils.hpp"
 
 std::vector<Server*>	parseConfigFile(const str &filepath);
-Server*					GetServer(const str &serverString);
-str						GetOption(const str &optionString);
+Server*					getServer(const str &serverString);
 Location				getLocation(const str &locationString);
 bool					isValidOption(const str &line, int &type);
 void					insertOption(str &value, int type, Server* server);

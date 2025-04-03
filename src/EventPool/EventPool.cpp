@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/30 16:13:47 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 11:23:54 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ str		EventPool::getRequest(int fdTmp)
 
 void	EventPool::sendResponse(HttpResponse &response, int fdTmp)
 {
+	(void)response; //IMPORTANT delete
 	const char* http_response =
 				"HTTP/1.1 200 OK\r\n"
 				"Content-Type: text/html\r\n"

@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/30 13:44:06 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 11:22:38 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ int main(int ac, char **av)
 	std::vector<Server*> Servers;
 	Servers.push_back(new Server("servidor1", "8080"));
 	Servers.push_back(new Server("servidor2", "8181"));
+	Servers.at(0)->getLocations().push_back(Location(Servers.at(0)->getServerName()));
+	Servers.at(1)->getLocations().push_back(Location(Servers.at(1)->getServerName()));
 
 	EventPool pool(Servers);
 	pool.poolLoop(Servers);
