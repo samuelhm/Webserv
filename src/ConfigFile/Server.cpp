@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 18:27:42 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 19:36:46 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ Server::~Server() {
 }
 
 //Getters
-std::vector<Location>		Server::getLocations() const { return this->_locations; }
+std::vector<Location*>		Server::getLocations() const { return this->_locations; }
 const str&					Server::getErrorPage(int error) { return _errorPages[error]; }
 str							Server::getServerName() const { return this->_serverName; }
 str							Server::getHostName() const { return this->_hostName; }
@@ -78,7 +78,7 @@ size_t						Server::getBodySize() const { return this->_bodySize; }
 int							Server::getServerFd() const { return this->_serverFd; }
 
 //Setters
-void						Server::setLocations(std::vector<Location> locations) { this->_locations = locations;}
+void						Server::setLocations(std::vector<Location*> locations) { this->_locations = locations;}
 void						Server::setErrorPages(int error, const str &page) { this->_errorPages[error] = page; }
 void						Server::setServerName(str serverName) { this->_serverName = serverName;}
 void						Server::setHostName(str hostName) { this->_hostName = hostName;}

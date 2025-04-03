@@ -39,7 +39,6 @@
 		index:index.py
 	]
 }
-
 {
 	server_name:defaultName2
 	listen:localhost:8181

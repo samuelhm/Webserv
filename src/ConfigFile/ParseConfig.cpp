@@ -6,13 +6,12 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 18:30:06 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 19:47:41 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ParseConfig.hpp"
 #include <stdlib.h>
-
 
 std::vector<Server*>	parseConfigFile(const str &filepath) {
 	str content = Utils::fileToStr(filepath); // si falla lanza una excepcion, creo que es mejor recogerla en el main
@@ -22,6 +21,7 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 	std::vector<Server*> result;
 	for (std::vector<str>::iterator it = serverStrings.begin(); it != serverStrings.end(); ++it) {
 		try {
+      //std::cout << *it << std::endl;
 			result.push_back(getServer(*it));
 		} catch (ConfigFileException &e) {
 			std::cout << "Error parsing server: " << e.what() << std::endl; // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
@@ -64,13 +64,14 @@ void	insertOption(const str &value, int type, Server* server)
 	if (value.empty()) {
 		throw EmptyValueException();
 	}
+  bool tmp;
 	switch (type)
 	{
 		case SERVERNAME:
 			server->setServerName(value);
 			break;
 		case ISDEFAULT:
-			bool tmp = value == "yes" ? true : false;
+			tmp = (value == "yes");
 			server->setIsdefault(tmp);
 			break;
 		case ROOT:
@@ -131,7 +132,7 @@ Server*	getServer(const str &serverString)
 						throw EmptyValueException();
 					if (code < 400 || code > 599)
 						throw ConfigFileException("Invalid error code: " + code_str);
-					server->getErrorPage()[code] = path;
+					server->setErrorPages(code, path);
 				}
 			} catch (EmptyValueException &e) {
 				std::cout << e.what() << "ignoring option." << std::endl;
@@ -151,7 +152,7 @@ Server*	getServer(const str &serverString)
 			}
 			if (!foundClosingBracket)
 				throw ConfigFileException("Location block not closed with ']'");
-			Location location = getLocation(locationBlock);
+			Location *location = getLocation(locationBlock);
 			server->getLocations().push_back(location);
 		}
 
@@ -160,3 +161,4 @@ Server*	getServer(const str &serverString)
 }
 
 const char* EmptyValueException::what() const throw() {	return "You cannot Assign empty value"; }
+Location *getLocation(const str &locationString) { return new Location("serverLocation"); }

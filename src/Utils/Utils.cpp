@@ -51,7 +51,8 @@ namespace Utils {
 	}
 
 	//File se cierra automaticamente al salir de su ambito con su destructor, no es necesario usar close();
-	str fileToStr(const str &filePath) {
+  str fileToStr(const str &filePath) {
+    std::cout << filePath << std::endl;
 		std::ifstream file(filePath.c_str());
 		if (!file.is_open())
 			throw std::runtime_error("File not found: " + filePath);
