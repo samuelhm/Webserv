@@ -35,4 +35,5 @@ AHttp::~AHttp() {}
 
 std::map<str, str>& AHttp::get_header() { return _header; }
 const str& AHttp::get_body() const { return _body; }
+const str& AHttp::get_path() const { return _path; }
 

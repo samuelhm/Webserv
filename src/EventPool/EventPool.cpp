@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 16:58:46 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 17:31:37 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<s
 	close(fdTmp);
 }
 
-void	EventPool::acceptConnection(int fdTmp)
+void	EventPool::acceptConnection(int fdTmp, Server* server)
 {
 	struct sockaddr_in client_address;
 	socklen_t client_len = sizeof(client_address);
@@ -107,6 +107,7 @@ void	EventPool::acceptConnection(int fdTmp)
 	client_ev.events = EPOLLIN;
 	struct eventStructtmp* estructura = new eventStructtmp; // IMPORTANT free this
 	estructura->client_fd = client_fd;
+	estructura->server = server;
 	estructura->isServer = false;
 	client_ev.data.ptr = static_cast<void*>(estructura);
     if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev) == -1) {
@@ -154,7 +155,7 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 			if (isServerFd(Servers, fdTmp))
 			{
 				try {
-					acceptConnection(fdTmp);
+					acceptConnection(fdTmp, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
 				} catch(const std::exception& e) {
 					std::cout << e.what() << std::endl;
 					continue;

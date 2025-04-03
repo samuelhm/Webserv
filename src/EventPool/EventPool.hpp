@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 16:23:17 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 17:31:14 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ class EventPool {
 		void	poolLoop(std::vector<Server*> &Servers);
 		str		getRequest(int fdTmp);
 		void	sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m);
-		void	acceptConnection(int fdTmp);
+		void	acceptConnection(int fdTmp, Server *server);
 
 
 		class socketReadException : public std::exception
