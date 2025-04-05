@@ -18,6 +18,7 @@ namespace Utils {
 	str fileToStr(const str &filePath);
 	str	intToStr(unsigned int num);
 	void getServerByFd(int fd, Server &server);
+	int strToRequest(const str &method);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {

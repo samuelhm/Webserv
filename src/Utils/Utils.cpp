@@ -76,4 +76,19 @@ namespace Utils {
 		}
 		return response;
 	}
+
+	int strToRequest(const str &method)
+	{
+		if (method == "POST")
+			return POST;
+		else if (method == "GET")
+			return GET;
+		else if (method == "DELETE")
+			return DELETE;
+		else if (method == "OPTIONS")
+			return OPTIONS;
+		else
+			return -1;
+	}
 }
+
