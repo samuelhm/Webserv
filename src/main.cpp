@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 19:42:20 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/05 11:06:06 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,7 @@ int main(int ac, char **av)
 	std::vector<Server*> Servers;
 
   std::vector<Server*>	test = parseConfigFile("config");
-	Servers.push_back(new Server("servidor1", "8080"));
-	Servers.push_back(new Server("servidor2", "8181"));
+  exit(0);
 
 	EventPool pool(Servers);
 	pool.poolLoop(Servers);

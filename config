@@ -22,9 +22,10 @@
 			location:/upload
 		[
 			allowed_methods:POST
-			redirect:301:/nuevo
+			redirect:/nuevo
+			redirect_code:301
 			upload_enable:on
-			     root:    /var/www/html
+      root:    /var/             www/html
 			autoindex:off
 			index:index.html
 			upload_path:/var/www/uploads
@@ -62,8 +63,9 @@
 
 	location:/upload
 	[
-		allowed_methods:POST
-		redirect:301:/nuevo
+    allowed_methods:POST
+    redirect:/nuevo
+    redirect_code:301
 		upload_enable:on
 		root:/var/www/html
 		autoindex:off

@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/02 18:10:45 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/05 11:18:58 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Location {
 		//Getters
 		std::vector<RequestType>	getMethods() const;
 		str							getRedirect() const;
+		str							getRedirect_code() const;
 		bool						getUploadEnable() const;
 		str							getRoot() const;
 		bool						getAutoindex() const;
@@ -39,6 +40,7 @@ class Location {
 		//Setters
 		void						setMethods(std::vector<RequestType> methods);
 		void						setRedirect(str redirect);
+		void						setRedirect_code(str redirect);
 		void						setUploadEnable(bool uploadEnable);
 		void						setRoot(str root);
 		void						setAutoindex(bool autoIndex);
@@ -51,6 +53,7 @@ class Location {
 	private:
 		std::vector<RequestType>	_methods;
 		str							_redirect;
+		str							_redirect_code;
 		bool						_uploadEnable;
 		str							_root;
 		bool						_autoIndex;

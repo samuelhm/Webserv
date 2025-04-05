@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 20:05:10 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/05 15:22:04 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,13 +155,90 @@ Server*	getServer(const str &serverString)
 			}
 			if (!foundClosingBracket)
 				throw ConfigFileException("Location block not closed with ']'");
+      if (locationBlock.empty())
+        continue;
 			Location *location = getLocation(locationBlock);
 			server->getLocations().push_back(location);
 		}
-
+    //if (server->getLocations().empty())
+    //  std::cout << "Handle error, server without locations" << std::endl; // IMPORTANT
 	}
 	return (server);
 }
 
 const char* EmptyValueException::what() const throw() {	return "You cannot Assign empty value"; }
-Location *getLocation(const str &locationString) { return new Location("serverLocation"); }
+
+
+//bool validMethods(std::string &methods) {
+//  std::vector<str> vMethods = split(methods, ' ');
+//  RequestType req;
+//  for (std::vector<str>::iterator it = vMethods.begin(); it != vMethods.end(), it++) {
+//    req = strToRequest(*it);
+//    if (req == -1)
+//      return false;
+//  }
+//}
+
+bool isValidPath(std::string const &path) {
+  if (path.empty()) return false;
+  if (path[0] != '/' || (path[0] != '*' && path[1] != '.')) return false;
+  for (int i = 0; i < path.size(); i++) {
+    if (!std::isprint(path[i])) return false;
+    if (path[i] == ' ') return false;
+    if (path[i] == '/' && path[i + 1] == '/') return false;
+  }
+  return true;
+}
+
+std::string getLocationPath(std::string const &locationString) {
+  std::string line;
+  int end;
+
+  end = locationString.find("\n");
+  if (end == std::string::npos)
+    throw std::exception();
+  line = locationString.substr(0, end);
+  std::vector<std::string> key_value = Utils::split(line, ':'); 
+  if (key_value.size() != 2) {
+    std::cout << "Error on config file. Location bad argument" << std::endl;
+    throw std::exception();
+  }
+  return Utils::trim(key_value.at(1));
+}
+
+Location *getLocation(const str &locationString) {
+  std::string line;
+  std::string location_path = getLocationPath(locationString);
+  std::cout << location_path << std::endl;
+
+
+  std::vector<std::string> key_value;
+  int i = 0;
+  int end;
+  while (i < locationString.size()) {
+    end = locationString.find("\n", i);
+    if (end == std::string::npos)
+      break;
+    if (end == i) {
+      ++i;
+      continue;
+    }
+    line = locationString.substr(i, end);
+    i = ++end;
+    key_value = Utils::split(line, ':'); 
+    if (key_value.size() == 0 || key_value.size() > 2) {
+      std::cout << "Error on config file. Location bad argument" << std::endl;
+      continue;
+    }
+    std::cout << "Key: " << key_value.at(0) << "\t\tValue: " << key_value.at(1) << std::endl;
+
+
+
+
+
+
+
+  }
+  std::cout << "====== END ======" << std::endl;
+  return new Location("serverLocation");
+}
