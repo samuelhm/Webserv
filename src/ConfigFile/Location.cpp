@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 16:36:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 20:47:33 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,11 @@ void						Location::setMethods(const str &Methods) {
 	std::vector<RequestType> result;
 	for (std::vector<str>::const_iterator it = allMethods.begin(); it != allMethods.end(); ++it)
 	{
+		if ((*it).empty())
+		{
+			Logger::log("Empty method inside vector.", WARNING);
+			continue;
+		}
 		result.push_back(strToRequest(*it));
 	}
 	this->_methods = result;

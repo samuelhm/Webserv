@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:08 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/06 16:36:17 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 20:35:02 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,15 +23,16 @@ std::string getLocationPath(std::string const &locationString);
 Location	*getLocation(const str &locationString, const str &serverName);
 RequestType strToRequest(const str &method);
 
-
 class BadOptionLocationException : public std::exception
 {
 	public:
     virtual const char* what() const throw();
 };
-
-class BadSyntaxLocationBlockException : public std::exception
-{
+class BadSyntaxLocationBlockException : public std::exception {
+	private:
+		std::string _msg;
 	public:
-    virtual const char* what() const throw();
+    virtual ~BadSyntaxLocationBlockException(void) throw() {}
+		BadSyntaxLocationBlockException(const std::string &msg);
+		virtual const char *what() const throw();
 };

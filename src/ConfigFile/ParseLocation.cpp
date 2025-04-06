@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/06 16:36:06 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 20:58:24 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,11 @@ Location *getLocation(const str &locationString, const str &serverName) {
   std::string line;
 
   std::getline(locationBlock, line);
+  Logger::log(str("Parsing Location block line: ") + line, INFO);
   std::string location_path = getLocationPath(line);
 
   std::getline(locationBlock, line);
-  if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException(); }
+  if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException("Not found Open Bracker ["); }
 
   std::string key, value;
   std::map<std::string, std::string> options;
@@ -34,7 +35,7 @@ Location *getLocation(const str &locationString, const str &serverName) {
     if (std::getline(buffer, key, ':') && std::getline(buffer, value)) {
       options[key] = value;
     }
-    else { throw BadSyntaxLocationBlockException(); }
+    else { throw BadSyntaxLocationBlockException(str("Failed to insert in key: ") + key + " With Value: " + value + "."); }
   }
 
   Location* location = new Location(serverName, location_path);
@@ -43,24 +44,8 @@ Location *getLocation(const str &locationString, const str &serverName) {
   } catch (BadOptionLocationException const &e) {
     delete location;
     std::cout << e.what() << std::endl;
-    throw BadSyntaxLocationBlockException();
+    throw BadSyntaxLocationBlockException(str("Failed to insert Location Path.") + location_path);
   }
-  // Delete block
-  std::cout << "\n====== Server: " << serverName << " Location path: "
-            << location->getRoot() << " ======" << std::endl
-            << "redirect: \t" << location->getRedirect() << std::endl
-            << "redirect_code: \t" << location->getRedirectCode() << std::endl
-            << "uploadEnable: \t" << ((location->getUploadEnable()) ? "true" : "false")
-            << std::endl
-            << "autoIndex: \t" << ((location->getAutoindex()) ? "true" : "false")
-            << std::endl
-            << "index: \t\t" << location->getIndex() << std::endl
-			<< "uploadPath: \t" << location->getUploadPath() << std::endl
-			<< "cgiEnable: \t" << ((location->getCgiEnable()) ? "true" : "false")
-            << std::endl
-			<< "cgiExtension: \t" << location->getCgiExtension() << std::endl
-			<< "cgiPath: \t" << location->getCgiPath() << std::endl;
-  // End block
   return location;
 }
 
@@ -70,7 +55,7 @@ void setLocationParams(Location *location, std::map<str, str> const &options) {
       location->setRedirect(it->second);
     else if (it->first == "redirect_code")
       location->setRedirectCode(it->second);
-    else if (it->first == "uploadEnable") {
+    else if (it->first == "upload_enable") {
       if (it->second == "on")
         location->setUploadEnable(true);
     }
@@ -78,15 +63,15 @@ void setLocationParams(Location *location, std::map<str, str> const &options) {
       if (it->second == "on")
         location->setAutoindex(true);
     }
-    else if (it->first == "cgiEnable") {
+    else if (it->first == "cgi_enable") {
       if (it->second == "on")
         location->setUploadEnable(true);
     }
     else if (it->first == "index")
       location->setIndex(it->second);
-    else if (it->first == "uploadPath")
+    else if (it->first == "upload_path")
       location->setUploadPath(it->second);
-    else if (it->first == "cgiExtension")
+    else if (it->first == "cgi_extension")
       location->setCgiExtension(it->second);
     else if (it->first == "cgiPath")
       location->setCgiPath(it->second);
@@ -96,7 +81,7 @@ void setLocationParams(Location *location, std::map<str, str> const &options) {
       location->setRoot(it->second);
     else {
       delete location;
-      throw BadSyntaxLocationBlockException();
+      throw BadSyntaxLocationBlockException(it->first);
     }
   }
 }
@@ -115,13 +100,14 @@ bool isValidPath(std::string const &path) {
 std::string getLocationPath(std::string const &locationString) {
   std::istringstream line(locationString);
   std::string tmp;
-  if (!std::getline(line, tmp, ':')) { throw BadSyntaxLocationBlockException(); }
-  if (!std::getline(line, tmp)) { throw BadSyntaxLocationBlockException(); }
+  if (!std::getline(line, tmp, ':')) { throw BadSyntaxLocationBlockException(tmp); }
+  if (!std::getline(line, tmp)) { throw BadSyntaxLocationBlockException(tmp); }
   return tmp;
 }
 
 RequestType strToRequest(const str &method)
 {
+  Logger::log(str("Trying to insert method: ") + method, INFO);
 	if (method == "POST")
 		return POST;
 	else if (method == "GET")
@@ -130,9 +116,12 @@ RequestType strToRequest(const str &method)
 		return DELETE;
 	else if (method == "OPTIONS")
 		return OPTIONS;
-	else
+  else if (method == "PUT")
+		return PUT;
+  else
 		throw BadOptionLocationException();
 }
 
 const char* BadOptionLocationException::what(void) const throw() { return "webserver: Bad option"; }
-const char* BadSyntaxLocationBlockException::what(void) const throw() { return "webserver: configuration file failed! Bad syntax on location block"; }
+BadSyntaxLocationBlockException::BadSyntaxLocationBlockException(const std::string &msg) : _msg(msg) {}
+const char* BadSyntaxLocationBlockException::what() const throw() { return _msg.c_str();	}

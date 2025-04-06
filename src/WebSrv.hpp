@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include "Utils/Logger.hpp"
 
 typedef std::string str;
 
@@ -11,7 +12,8 @@ enum	RequestType
 	GET,
 	POST,
 	DELETE,
-	OPTIONS
+	OPTIONS,
+	PUT
 };
 
 enum OptionType

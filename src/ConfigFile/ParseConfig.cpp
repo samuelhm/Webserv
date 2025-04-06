@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 18:12:39 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 20:33:42 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,12 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 			(*it) = Utils::trim(*it);
 			if ((*it).empty())
 				continue;
+			Logger::log("Trying to parser a server", INFO);
 			Server* server = getServer(*it); //IMPORTANT no se puede push_back de una.
+			Logger::log("Server parsed, pushing it.", INFO);
 			result.push_back(server);
 		} catch (ConfigFileException &e) {
-			std::cout << "Error parsing server: " << e.what() << std::endl; // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
+			Logger::log(str("Error parsing server: ") + e.what(), ERROR); // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
 		}
 	}
 	return result;
@@ -61,7 +63,7 @@ void	setValidOption(const str &line, OptionType &type)
 	else if (line.find("location:") == 0)
 		type = LOCATION;
 	else
-		throw UnknownOptionException("line");
+		throw UnknownOptionException(line);
 }
 
 void	insertOption(const str &value, int type, Server* server)
@@ -115,12 +117,16 @@ Server*	getServer(const str &serverString)
 	Server* server = new Server();
 	while (std::getline(ss, line)) {
 		line = Utils::trim(line);
+		Logger::log(str("Parsing a server line: ") + line, INFO);
 		OptionType type;
-		if (line.empty())
+		if (line.empty() || line.at(0) == '#')
+		{
+			Logger::log(str("Ignoring line: ") + line, WARNING);
 			continue ;
+		}
 		try { setValidOption(line, type);}
 		catch (UnknownOptionException &e){
-			std::cout << "Invalid or Unknown Option: " << e.what() << std::endl;
+			Logger::log(str("Invalid or Unknown Option: ") + e.what(), WARNING);
 			continue ; //IMPORTANT No estoy cancelando la creacion del server, ignoro la linea.
 		}
 		if (type != LOCATION) //Todos menos location, que habrá que montar una string con varias lineas
@@ -129,6 +135,7 @@ Server*	getServer(const str &serverString)
 				if ( type != ERRORPAGE) {
 					str value = Utils::trim(line.substr(line.find(":") + 1));
 					insertOption(value, type, server);
+					Logger::log(value + "  value saved on server success.", INFO);
 				}
 				else { //Solo ERRORPAGE
 					size_t code_start = 6; // pos 6 es el primer numero.
@@ -142,10 +149,10 @@ Server*	getServer(const str &serverString)
 					server->setErrorPages(code, path);
 				}
 			} catch (EmptyValueException &e) {
-				std::cout << e.what() << "ignoring option: " << line << std::endl; //IMPORTANT ¿Excepto localhost:port permitimos empty values y las ignoramos?
+				Logger::log(str("Ignoring line becouse value is empty: ") + line, WARNING); //IMPORTANT ¿Excepto localhost:port permitimos empty values y las ignoramos?
 				continue ;
 			} catch (ConfigFileException &e) {
-				std::cout << "Cannot start server : " << e.what() << std::endl;
+				Logger::log(str("Server being deleted, fatal error: ") + e.what(), ERROR);
 				delete server;
 				return NULL;
 			}
@@ -166,13 +173,15 @@ Server*	getServer(const str &serverString)
 				delete server;
 				throw ConfigFileException("Location block not closed with ']'");
 			}
-      		if (locationBlock.empty())
+      		if (locationBlock.empty()) {
+				Logger::log("Empty line inside Location block, ignoring...", WARNING);
         		continue;
+			}
       		Location *location = NULL;
       		try {
         	location = getLocation(locationBlock, server->getServerName());
       		} catch (BadSyntaxLocationBlockException const &e) {
-        	std::cout << e.what() << std::endl;
+        	Logger::log(str("Location fatal error: ") + e.what(), ERROR);
 			if (location != NULL)
 				delete location;
         	continue;
@@ -187,3 +196,5 @@ Server*	getServer(const str &serverString)
 }
 
 const char* EmptyValueException::what() const throw() {	return "You cannot Assign empty value"; }
+UnknownOptionException::UnknownOptionException(const std::string &msg) : _msg(msg) {}
+const char* UnknownOptionException::what() const throw() { return _msg.c_str();	}
