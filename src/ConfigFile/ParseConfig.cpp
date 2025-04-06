@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 14:18:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 15:17:15 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,20 +230,20 @@ Location *getLocation(const str &locationString, const str &serverName) {
     throw BadSyntaxLocationBlockException();
   }
   // Delete block
-  std::cout << "====== Server: " << serverName << " Location path: "
-            << location->getRoot() << "======" << std::endl
-            << "redirect: " << location->getRedirect() << std::endl
-            << "redirect_code: " << location->getRedirectCode() << std::endl
-            << "uploadEnable" << ((location->getUploadEnable()) ? "true" : "false")
+  std::cout << "\n====== Server: " << serverName << " Location path: "
+            << location->getRoot() << " ======" << std::endl
+            << "redirect: \t" << location->getRedirect() << std::endl
+            << "redirect_code: \t" << location->getRedirectCode() << std::endl
+            << "uploadEnable: \t" << ((location->getUploadEnable()) ? "true" : "false")
             << std::endl
-            << "autoIndex" << ((location->getAutoindex()) ? "true" : "false")
+            << "autoIndex: \t" << ((location->getAutoindex()) ? "true" : "false")
             << std::endl
-            << "index: " << location->getIndex() << std::endl
-			<< "uploadPath: " << location->getUploadPath() << std::endl
-			<< "cgiEnable" << ((location->getCgiEnable()) ? "true" : "false")
+            << "index: \t\t" << location->getIndex() << std::endl
+			<< "uploadPath: \t" << location->getUploadPath() << std::endl
+			<< "cgiEnable: \t" << ((location->getCgiEnable()) ? "true" : "false")
             << std::endl
-			<< "cgiExtension: " << location->getCgiExtension() << std::endl
-			<< "cgiPath: " << location->getCgiPath() << std::endl;
+			<< "cgiExtension: \t" << location->getCgiExtension() << std::endl
+			<< "cgiPath: \t" << location->getCgiPath() << std::endl;
   // End block
   return location;
 }
