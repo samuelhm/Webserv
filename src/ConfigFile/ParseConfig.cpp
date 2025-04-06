@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/05 15:22:04 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 13:32:46 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,6 +147,7 @@ Server*	getServer(const str &serverString)
 			bool foundClosingBracket = false;
 			while (std::getline(ss, line)) {
 				line = Utils::trim(line);
+        if (line.empty()) { continue; }
 				locationBlock += line + "\n";
 				if (line == "]") {
 					foundClosingBracket = true;
@@ -157,7 +158,13 @@ Server*	getServer(const str &serverString)
 				throw ConfigFileException("Location block not closed with ']'");
       if (locationBlock.empty())
         continue;
-			Location *location = getLocation(locationBlock);
+      Location *location;
+      try {
+        location = getLocation(locationBlock, server->getServerName());
+      } catch (BadSyntaxLocationBlockException const &e) {
+        std::cout << e.what() << std::endl;
+        continue;
+      }
 			server->getLocations().push_back(location);
 		}
     //if (server->getLocations().empty())
@@ -169,6 +176,50 @@ Server*	getServer(const str &serverString)
 const char* EmptyValueException::what() const throw() {	return "You cannot Assign empty value"; }
 
 
+////                    ******                    ////
+////                PARSE LOCATIONS               ////
+////                    ******                    ////
+
+void setLocationParams(Location *location, sdt::map<str, str> const &options)
+{
+  for (std::map<str, str>::iterator it; it != options.end(); it++) {
+    switch (it->first) {
+      case "redirect":
+        location->setRedirect(it->second);
+        break;
+      case "Redirect_code":
+        location->setRedirect_code(it->second);
+        break;
+      case "uploadEnable":
+        if (it->second == "true") { location->setUploadEnable(true); }
+        break;
+      case "autoIndex":
+        if (it->second == "true") { location->setAutoindex(true); }
+        break;
+      case "cgiEnable":
+        if (it->second == "true") { location->setUploadEnable(true); }
+        break;
+      case "index":
+        location->setIndex(it->second);
+        break;
+      case "uploadPath":
+        location->setUploadPath(it->second);
+        break;
+      case "cgiExtension":
+        location->setCgiExtension(it->second);
+        break;
+      case "cgiPath":
+        location->setCgiPath(it->second);
+        break;
+      //case "methods":
+      //  location->setMethods(
+      //  break;
+      default:
+        delete location;
+        throw BadSyntaxLocationBlockException();
+    }
+  }
+}
 //bool validMethods(std::string &methods) {
 //  std::vector<str> vMethods = split(methods, ' ');
 //  RequestType req;
@@ -191,54 +242,69 @@ bool isValidPath(std::string const &path) {
 }
 
 std::string getLocationPath(std::string const &locationString) {
-  std::string line;
-  int end;
-
-  end = locationString.find("\n");
-  if (end == std::string::npos)
-    throw std::exception();
-  line = locationString.substr(0, end);
-  std::vector<std::string> key_value = Utils::split(line, ':'); 
-  if (key_value.size() != 2) {
-    std::cout << "Error on config file. Location bad argument" << std::endl;
-    throw std::exception();
-  }
-  return Utils::trim(key_value.at(1));
+  std::istringstream line(locationString);
+  std::string tmp;
+  if (!std::getline(line, tmp, ':')) { throw BadSyntaxLocationBlockException(); }
+  if (!std::getline(line, tmp)) { throw BadSyntaxLocationBlockException(); }
+  return tmp;
 }
 
-Location *getLocation(const str &locationString) {
+Location *getLocation(const str &locationString, const str &serverName) {
+  std::istringstream locationBlock(locationString);
   std::string line;
-  std::string location_path = getLocationPath(locationString);
-  std::cout << location_path << std::endl;
 
+  std::getline(locationBlock, line);
+  std::string location_path = getLocationPath(line);
+  
+  std::getline(locationBlock, line);
+  if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException(); }
 
-  std::vector<std::string> key_value;
-  int i = 0;
-  int end;
-  while (i < locationString.size()) {
-    end = locationString.find("\n", i);
-    if (end == std::string::npos)
-      break;
-    if (end == i) {
-      ++i;
-      continue;
+  std::string key, value;
+  std::map<std::string, std::string> options;
+  while (std::getline(locationBlock, line)) {
+    if (!line.compare("]")) { break; }
+    if (line.empty() || line.at(0) == '#') {   // Se podria sacar
+      continue;                                // y pasar al parser
+    }                                          // general
+    std::istringstream buffer(line);
+    if (std::getline(buffer, key, ':') && std::getline(buffer, value)) {
+      options[key] = value;
     }
-    line = locationString.substr(i, end);
-    i = ++end;
-    key_value = Utils::split(line, ':'); 
-    if (key_value.size() == 0 || key_value.size() > 2) {
-      std::cout << "Error on config file. Location bad argument" << std::endl;
-      continue;
-    }
-    std::cout << "Key: " << key_value.at(0) << "\t\tValue: " << key_value.at(1) << std::endl;
-
-
-
-
-
-
-
+    else { throw BadSyntaxLocationBlockException(); }
   }
-  std::cout << "====== END ======" << std::endl;
-  return new Location("serverLocation");
+
+  Location* location = new Location(severName, location_path);
+  try {
+    setLocationParams(location, options);
+  } catch (BadOptionLocationException const &e) {
+    delete location;
+    std::cout << e.what() << std::endl;
+    throw BadSyntaxLocationBlockException();
+  }
+  // Delete block
+  std::cout << "====== Server: " << serverName << " Location path: "
+            << location->getRoot() << "======" << std::endl
+            << "redirect: " << location->getRedirect() << std::endl
+            << "redirect_code: " << location->getRedirect_code() << std::endl
+            << "uploadEnable" << (location->getUploadEnable()) ? "true" : "false" 
+            << std::endl
+            << "autoIndex" << (location->getAutoindex()) ? "true" : "false" 
+            << std::endl
+            << "redirect_code: " << location->getRedirect_code() << std::endl
+		str							_index;
+		str							_uploadPath;
+		bool						_cgiEnable;
+		str							_cgiExtension;
+		str							_cgiPath;
+  // End block
+  return location;
 }
+
+const char* BadOptionLocationException::what(void) const throw() {
+  return "webserver: Bad option";
+}
+
+const char* BadSyntaxLocationBlockException::what(void) const throw() {
+  return "webserver: configuration file failed! Bad syntax on location block";
+}
+

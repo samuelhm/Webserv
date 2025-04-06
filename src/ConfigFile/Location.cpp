@@ -6,14 +6,14 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/05 13:20:02 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 12:30:06 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
 
-Location::Location(const str &serverName)
-  : _uploadEnable(false), _autoIndex(false), _cgiEnable(false)
+Location::Location(const str &serverName, const str &path)
+  : _uploadEnable(false), _autoIndex(false), _cgiEnable(false), _root(path)
 {
 	_methods.push_back(GET);
 	_methods.push_back(POST);
@@ -23,7 +23,6 @@ Location::Location(const str &serverName)
 	_uploadPath = "./" + serverName + "/";
 	_cgiExtension = ".py";
 	_cgiPath = "/usr/bin/python3";
-	_root = "";
 }
 
 Location::Location(const Location &other) {

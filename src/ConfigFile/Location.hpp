@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/05 11:18:58 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 12:28:37 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 class Location {
 	public:
-		Location(const str &serverName);
+		Location(const str &serverName const str &path);
 		Location(const Location &other);
 		Location& operator=(const Location &other);
 		~Location();

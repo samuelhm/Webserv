@@ -31,3 +31,9 @@ class EmptyValueException : public std::exception
 	public:
 		virtual const char* what() const throw();
 };
+
+class BadSyntaxLocationBlockException : public std::exception
+{
+	public:
+    const char* what() const throw();
+};
