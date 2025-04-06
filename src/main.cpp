@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/05 11:06:06 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 13:57:50 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ int main(int ac, char **av)
 	(void)av;
 	std::vector<Server*> Servers;
 
-  std::vector<Server*>	test = parseConfigFile("config");
+  std::vector<Server*>	test = parseConfigFile(av[1]);
   exit(0);
 
 	EventPool pool(Servers);

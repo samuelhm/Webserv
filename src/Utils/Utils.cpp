@@ -1,6 +1,7 @@
 
 #include "Utils.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "../ConfigFile/ParseConfig.hpp"
 
 namespace Utils {
 
@@ -79,7 +80,7 @@ namespace Utils {
 		return response;
 	}
 
-	int strToRequest(const str &method)
+	RequestType strToRequest(const str &method)
 	{
 		if (method == "POST")
 			return POST;
@@ -90,7 +91,7 @@ namespace Utils {
 		else if (method == "OPTIONS")
 			return OPTIONS;
 		else
-			return -1;
+			throw BadOptionLocationException();
 	}
 }
 

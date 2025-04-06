@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 19:33:35 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 14:52:23 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 #include <iostream> // cout, endl
 #include <unistd.h> // close
 #include <stdio.h> // perror
+
+class Location;
 
 class Server {
 	public:

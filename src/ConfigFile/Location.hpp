@@ -3,23 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 12:28:37 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 14:51:23 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef LOCATION_HPP
-#define LOCATION_HPP
+#pragma once
 
+#include "../WebSrv.hpp"
 #include <vector>
 #include <string>
-#include "../WebSrv.hpp"
+#include "../Utils/Utils.hpp"
 
 class Location {
 	public:
-		Location(const str &serverName const str &path);
+		Location(const str &serverName, const str &path);
 		Location(const Location &other);
 		Location& operator=(const Location &other);
 		~Location();
@@ -27,7 +27,6 @@ class Location {
 		//Getters
 		std::vector<RequestType>	getMethods() const;
 		str							getRedirect() const;
-		str							getRedirect_code() const;
 		bool						getUploadEnable() const;
 		str							getRoot() const;
 		bool						getAutoindex() const;
@@ -36,11 +35,11 @@ class Location {
 		bool						getCgiEnable() const;
 		str							getCgiExtension() const;
 		str							getCgiPath() const;
+		str							getRedirectCode() const;
 
 		//Setters
-		void						setMethods(std::vector<RequestType> methods);
+		void						setMethods(const str &methods);
 		void						setRedirect(str redirect);
-		void						setRedirect_code(str redirect);
 		void						setUploadEnable(bool uploadEnable);
 		void						setRoot(str root);
 		void						setAutoindex(bool autoIndex);
@@ -49,6 +48,7 @@ class Location {
 		void						setCgiEnable(bool cgiEnable);
 		void						setCgiExtension(str cgiExtension);
 		void						setCgiPath(str cgiPath);
+		void						setRedirectCode(const str &code);
 
 	private:
 		std::vector<RequestType>	_methods;
@@ -64,4 +64,3 @@ class Location {
 		str							_cgiPath;
 };
 
-#endif

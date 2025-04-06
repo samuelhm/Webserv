@@ -6,14 +6,14 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 12:30:06 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 14:51:36 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
 
 Location::Location(const str &serverName, const str &path)
-  : _uploadEnable(false), _autoIndex(false), _cgiEnable(false), _root(path)
+  : _uploadEnable(false), _root(path), _autoIndex(false), _cgiEnable(false)
 {
 	_methods.push_back(GET);
 	_methods.push_back(POST);
@@ -59,9 +59,19 @@ str							Location::getUploadPath() const { return this->_uploadPath; }
 bool						Location::getCgiEnable() const { return this->_cgiEnable; }
 str							Location::getCgiExtension() const { return this->_cgiExtension; }
 str							Location::getCgiPath() const { return this->_cgiPath; }
+str							Location::getRedirectCode() const { return this->_redirect_code; }
 
 //Setters
-void						Location::setMethods(std::vector<RequestType> methods) { this->_methods = methods; }
+void						Location::setMethods(const str &Methods) {
+
+	std::vector<str> allMethods = Utils::split(Methods, ' ');
+	std::vector<RequestType> result;
+	for (std::vector<str>::const_iterator it = allMethods.begin(); it != allMethods.end(); ++it)
+	{
+		result.push_back(Utils::strToRequest(*it));
+	}
+	this->_methods = result;
+}
 void						Location::setRedirect(str redirect) { this->_redirect = redirect; }
 void						Location::setUploadEnable(bool uploadEnable) { this->_uploadEnable = uploadEnable; }
 void						Location::setRoot(str root) { this->_root = root; }
@@ -71,3 +81,4 @@ void						Location::setUploadPath(str uploadPath) { this->_uploadPath = uploadPa
 void						Location::setCgiEnable(bool cgiEnable) {this->_cgiEnable = cgiEnable;}
 void						Location::setCgiExtension(str cgiExtension) {this->_cgiExtension = cgiExtension;}
 void						Location::setCgiPath(str cgiPath) {this->_cgiPath = cgiPath;}
+void						Location::setRedirectCode(const str &code) {this->_redirect_code = code; }

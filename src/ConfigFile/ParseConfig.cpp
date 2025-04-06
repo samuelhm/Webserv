@@ -6,12 +6,16 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 13:32:46 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 14:18:57 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ParseConfig.hpp"
+#include "ParseLocation.hpp"
+#include "Location.hpp"
 #include <stdlib.h>
+#include <map>
+#include <string>
 
 std::vector<Server*>	parseConfigFile(const str &filepath) {
 	str content = Utils::fileToStr(filepath); // si falla lanza una excepcion, creo que es mejor recogerla en el main
@@ -180,46 +184,7 @@ const char* EmptyValueException::what() const throw() {	return "You cannot Assig
 ////                PARSE LOCATIONS               ////
 ////                    ******                    ////
 
-void setLocationParams(Location *location, sdt::map<str, str> const &options)
-{
-  for (std::map<str, str>::iterator it; it != options.end(); it++) {
-    switch (it->first) {
-      case "redirect":
-        location->setRedirect(it->second);
-        break;
-      case "Redirect_code":
-        location->setRedirect_code(it->second);
-        break;
-      case "uploadEnable":
-        if (it->second == "true") { location->setUploadEnable(true); }
-        break;
-      case "autoIndex":
-        if (it->second == "true") { location->setAutoindex(true); }
-        break;
-      case "cgiEnable":
-        if (it->second == "true") { location->setUploadEnable(true); }
-        break;
-      case "index":
-        location->setIndex(it->second);
-        break;
-      case "uploadPath":
-        location->setUploadPath(it->second);
-        break;
-      case "cgiExtension":
-        location->setCgiExtension(it->second);
-        break;
-      case "cgiPath":
-        location->setCgiPath(it->second);
-        break;
-      //case "methods":
-      //  location->setMethods(
-      //  break;
-      default:
-        delete location;
-        throw BadSyntaxLocationBlockException();
-    }
-  }
-}
+
 //bool validMethods(std::string &methods) {
 //  std::vector<str> vMethods = split(methods, ' ');
 //  RequestType req;
@@ -230,24 +195,7 @@ void setLocationParams(Location *location, sdt::map<str, str> const &options)
 //  }
 //}
 
-bool isValidPath(std::string const &path) {
-  if (path.empty()) return false;
-  if (path[0] != '/' || (path[0] != '*' && path[1] != '.')) return false;
-  for (int i = 0; i < path.size(); i++) {
-    if (!std::isprint(path[i])) return false;
-    if (path[i] == ' ') return false;
-    if (path[i] == '/' && path[i + 1] == '/') return false;
-  }
-  return true;
-}
 
-std::string getLocationPath(std::string const &locationString) {
-  std::istringstream line(locationString);
-  std::string tmp;
-  if (!std::getline(line, tmp, ':')) { throw BadSyntaxLocationBlockException(); }
-  if (!std::getline(line, tmp)) { throw BadSyntaxLocationBlockException(); }
-  return tmp;
-}
 
 Location *getLocation(const str &locationString, const str &serverName) {
   std::istringstream locationBlock(locationString);
@@ -255,7 +203,7 @@ Location *getLocation(const str &locationString, const str &serverName) {
 
   std::getline(locationBlock, line);
   std::string location_path = getLocationPath(line);
-  
+
   std::getline(locationBlock, line);
   if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException(); }
 
@@ -273,7 +221,7 @@ Location *getLocation(const str &locationString, const str &serverName) {
     else { throw BadSyntaxLocationBlockException(); }
   }
 
-  Location* location = new Location(severName, location_path);
+  Location* location = new Location(serverName, location_path);
   try {
     setLocationParams(location, options);
   } catch (BadOptionLocationException const &e) {
@@ -285,17 +233,17 @@ Location *getLocation(const str &locationString, const str &serverName) {
   std::cout << "====== Server: " << serverName << " Location path: "
             << location->getRoot() << "======" << std::endl
             << "redirect: " << location->getRedirect() << std::endl
-            << "redirect_code: " << location->getRedirect_code() << std::endl
-            << "uploadEnable" << (location->getUploadEnable()) ? "true" : "false" 
+            << "redirect_code: " << location->getRedirectCode() << std::endl
+            << "uploadEnable" << ((location->getUploadEnable()) ? "true" : "false")
             << std::endl
-            << "autoIndex" << (location->getAutoindex()) ? "true" : "false" 
+            << "autoIndex" << ((location->getAutoindex()) ? "true" : "false")
             << std::endl
-            << "redirect_code: " << location->getRedirect_code() << std::endl
-		str							_index;
-		str							_uploadPath;
-		bool						_cgiEnable;
-		str							_cgiExtension;
-		str							_cgiPath;
+            << "index: " << location->getIndex() << std::endl
+			<< "uploadPath: " << location->getUploadPath() << std::endl
+			<< "cgiEnable" << ((location->getCgiEnable()) ? "true" : "false")
+            << std::endl
+			<< "cgiExtension: " << location->getCgiExtension() << std::endl
+			<< "cgiPath: " << location->getCgiPath() << std::endl;
   // End block
   return location;
 }

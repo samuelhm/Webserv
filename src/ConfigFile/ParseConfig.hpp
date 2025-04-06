@@ -11,7 +11,7 @@
 
 std::vector<Server*>	parseConfigFile(const str &filepath);
 Server*					getServer(const str &serverString);
-Location*				getLocation(const str &locationString);
+Location				*getLocation(const str &locationString, const str &serverName);
 bool	isValidOption(const str &line, OptionType &type);
 void	insertOption(const str &value, int type, Server* server);
 
@@ -35,5 +35,11 @@ class EmptyValueException : public std::exception
 class BadSyntaxLocationBlockException : public std::exception
 {
 	public:
-    const char* what() const throw();
+    virtual const char* what() const throw();
+};
+
+class BadOptionLocationException : public std::exception
+{
+	public:
+    virtual const char* what() const throw();
 };

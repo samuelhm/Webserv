@@ -2,6 +2,7 @@
 
 #include "../WebSrv.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "../ConfigFile/Location.hpp"
 #include <map>
 #include <vector>
 #include <string>
@@ -9,6 +10,9 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+
+class Server;
+class Location;
 
 namespace Utils {
 
@@ -18,7 +22,7 @@ namespace Utils {
 	str fileToStr(const str &filePath);
 	str	intToStr(unsigned int num);
 	void getServerByFd(int fd, Server &server);
-	int strToRequest(const str &method);
+	RequestType strToRequest(const str &method);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {
