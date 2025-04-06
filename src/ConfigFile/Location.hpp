@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 14:51:23 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 16:39:37 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,6 @@
 class Location {
 	public:
 		Location(const str &serverName, const str &path);
-		Location(const Location &other);
-		Location& operator=(const Location &other);
 		~Location();
 
 		//Getters
@@ -62,5 +60,9 @@ class Location {
 		bool						_cgiEnable;
 		str							_cgiExtension;
 		str							_cgiPath;
-};
 
+		//Private methods
+		Location(const Location &other);
+		Location& operator=(const Location &other);
+
+};

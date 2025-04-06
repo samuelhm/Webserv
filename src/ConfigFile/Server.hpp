@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 14:52:23 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 18:19:42 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,6 @@ class Location;
 class Server {
 	public:
 		Server();
-		Server(const str &server, const str &port);
-		Server(const str &server);
-		Server(const Server &other);
-		Server& operator=(const Server &other);
 		~Server();
 
 
@@ -40,7 +36,7 @@ class Server {
 		void	socketUp();
 
 		//Getters
-		std::vector<Location*>		getLocations() const;
+		std::vector<Location*>&		getLocations();
 		const str &					getErrorPage(int error);
 		str							getServerName() const;
 		str							getHostName() const;
@@ -74,10 +70,16 @@ class Server {
 		size_t						_bodySize;
 
 		//SocketUp
-		int					_serverFd;
-		int					_reuseOption;
-		struct addrinfo*	_response;
-		struct addrinfo		_hints;
+		int							_serverFd;
+		int							_reuseOption;
+		struct addrinfo*			_response;
+		struct addrinfo				_hints;
+
+		//PrivateMethods IMPORTANT (Aqui de momento si podemos o debemos copiar objetos de este tipo.)
+		Server& operator=(const Server &other);
+		Server(const str &server, const str &port);
+		Server(const str &server);
+		Server(const Server &other);
 };
 
 #endif

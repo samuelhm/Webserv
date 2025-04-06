@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 15:17:15 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 18:12:39 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,11 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 	std::vector<Server*> result;
 	for (std::vector<str>::iterator it = serverStrings.begin(); it != serverStrings.end(); ++it) {
 		try {
-      //std::cout << *it << std::endl;
 			(*it) = Utils::trim(*it);
 			if ((*it).empty())
 				continue;
-			result.push_back(getServer(*it));
+			Server* server = getServer(*it); //IMPORTANT no se puede push_back de una.
+			result.push_back(server);
 		} catch (ConfigFileException &e) {
 			std::cout << "Error parsing server: " << e.what() << std::endl; // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
 		}
@@ -37,9 +37,8 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 	return result;
 }
 
-bool	isValidOption(const str &line, OptionType &type)
+void	setValidOption(const str &line, OptionType &type)
 {
-	bool result = true;
 	if (line.find("server_name:") == 0)//== 0 para que la cadena justo empiece en el principio y no contenga caracteres invalidos. viene trimeada
 		type = SERVERNAME;
 	else if (line.find("listen:") == 0)
@@ -62,8 +61,7 @@ bool	isValidOption(const str &line, OptionType &type)
 	else if (line.find("location:") == 0)
 		type = LOCATION;
 	else
-		result = false;
-	return result;
+		throw UnknownOptionException("line");
 }
 
 void	insertOption(const str &value, int type, Server* server)
@@ -91,7 +89,7 @@ void	insertOption(const str &value, int type, Server* server)
 			{
 				size_t sep = value.find(":");
 				if (sep == std::string::npos)
-					throw ConfigFileException("LISTEN must be in format hostname:port" + value); // IMPORTANT check if this information is needeed (to continue or stop)
+					throw ConfigFileException("LISTEN must be in format hostname:port " + value); // IMPORTANT check if this information is needeed (to continue or stop)
 				str hostname = Utils::trim(value.substr(0, sep));
 				str port = Utils::trim(value.substr(sep + 1));
 				if (hostname.empty() || port.empty())
@@ -101,7 +99,7 @@ void	insertOption(const str &value, int type, Server* server)
 				break;
 			}
 		default:
-			throw std::exception();
+			throw ConfigFileException("FATAL: " + value);
 			break;
 	}
 }
@@ -120,8 +118,10 @@ Server*	getServer(const str &serverString)
 		OptionType type;
 		if (line.empty())
 			continue ;
-		if (!isValidOption(line, type)) {
-			throw ConfigFileException("Wrong option: " + line); // IMPORTANT check if it should continue or stop and give an error
+		try { setValidOption(line, type);}
+		catch (UnknownOptionException &e){
+			std::cout << "Invalid or Unknown Option: " << e.what() << std::endl;
+			continue ; //IMPORTANT No estoy cancelando la creacion del server, ignoro la linea.
 		}
 		if (type != LOCATION) //Todos menos location, que habrá que montar una string con varias lineas
 		{
@@ -142,117 +142,48 @@ Server*	getServer(const str &serverString)
 					server->setErrorPages(code, path);
 				}
 			} catch (EmptyValueException &e) {
-				std::cout << e.what() << "ignoring option." << std::endl;
+				std::cout << e.what() << "ignoring option: " << line << std::endl; //IMPORTANT ¿Excepto localhost:port permitimos empty values y las ignoramos?
 				continue ;
-			} catch (...) { throw ConfigFileException("Unknown Error (insertOption())"); }
+			} catch (ConfigFileException &e) {
+				std::cout << "Cannot start server : " << e.what() << std::endl;
+				delete server;
+				return NULL;
+			}
 		}
 		else {
 			str locationBlock = line + "\n";
 			bool foundClosingBracket = false;
 			while (std::getline(ss, line)) {
 				line = Utils::trim(line);
-        if (line.empty()) { continue; }
+			if (line.empty()) { continue; }
 				locationBlock += line + "\n";
 				if (line == "]") {
 					foundClosingBracket = true;
 					break;
 				}
 			}
-			if (!foundClosingBracket)
+			if (!foundClosingBracket) {
+				delete server;
 				throw ConfigFileException("Location block not closed with ']'");
-      if (locationBlock.empty())
-        continue;
-      Location *location;
-      try {
-        location = getLocation(locationBlock, server->getServerName());
-      } catch (BadSyntaxLocationBlockException const &e) {
-        std::cout << e.what() << std::endl;
-        continue;
-      }
-			server->getLocations().push_back(location);
+			}
+      		if (locationBlock.empty())
+        		continue;
+      		Location *location = NULL;
+      		try {
+        	location = getLocation(locationBlock, server->getServerName());
+      		} catch (BadSyntaxLocationBlockException const &e) {
+        	std::cout << e.what() << std::endl;
+			if (location != NULL)
+				delete location;
+        	continue;
+			}
+			if (location != NULL)
+				server->getLocations().push_back(location);
 		}
-    //if (server->getLocations().empty())
-    //  std::cout << "Handle error, server without locations" << std::endl; // IMPORTANT
 	}
+	if (server->getLocations().empty())
+		server->getLocations().push_back(new Location(server->getServerName(), "/")); //IMPORTANT ¿ Aceptamos config file sin locations ?
 	return (server);
 }
 
 const char* EmptyValueException::what() const throw() {	return "You cannot Assign empty value"; }
-
-
-////                    ******                    ////
-////                PARSE LOCATIONS               ////
-////                    ******                    ////
-
-
-//bool validMethods(std::string &methods) {
-//  std::vector<str> vMethods = split(methods, ' ');
-//  RequestType req;
-//  for (std::vector<str>::iterator it = vMethods.begin(); it != vMethods.end(), it++) {
-//    req = strToRequest(*it);
-//    if (req == -1)
-//      return false;
-//  }
-//}
-
-
-
-Location *getLocation(const str &locationString, const str &serverName) {
-  std::istringstream locationBlock(locationString);
-  std::string line;
-
-  std::getline(locationBlock, line);
-  std::string location_path = getLocationPath(line);
-
-  std::getline(locationBlock, line);
-  if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException(); }
-
-  std::string key, value;
-  std::map<std::string, std::string> options;
-  while (std::getline(locationBlock, line)) {
-    if (!line.compare("]")) { break; }
-    if (line.empty() || line.at(0) == '#') {   // Se podria sacar
-      continue;                                // y pasar al parser
-    }                                          // general
-    std::istringstream buffer(line);
-    if (std::getline(buffer, key, ':') && std::getline(buffer, value)) {
-      options[key] = value;
-    }
-    else { throw BadSyntaxLocationBlockException(); }
-  }
-
-  Location* location = new Location(serverName, location_path);
-  try {
-    setLocationParams(location, options);
-  } catch (BadOptionLocationException const &e) {
-    delete location;
-    std::cout << e.what() << std::endl;
-    throw BadSyntaxLocationBlockException();
-  }
-  // Delete block
-  std::cout << "\n====== Server: " << serverName << " Location path: "
-            << location->getRoot() << " ======" << std::endl
-            << "redirect: \t" << location->getRedirect() << std::endl
-            << "redirect_code: \t" << location->getRedirectCode() << std::endl
-            << "uploadEnable: \t" << ((location->getUploadEnable()) ? "true" : "false")
-            << std::endl
-            << "autoIndex: \t" << ((location->getAutoindex()) ? "true" : "false")
-            << std::endl
-            << "index: \t\t" << location->getIndex() << std::endl
-			<< "uploadPath: \t" << location->getUploadPath() << std::endl
-			<< "cgiEnable: \t" << ((location->getCgiEnable()) ? "true" : "false")
-            << std::endl
-			<< "cgiExtension: \t" << location->getCgiExtension() << std::endl
-			<< "cgiPath: \t" << location->getCgiPath() << std::endl;
-  // End block
-  return location;
-}
-
-const char* BadOptionLocationException::what(void) const throw() {
-  return "webserver: Bad option";
-}
-
-const char* BadSyntaxLocationBlockException::what(void) const throw() {
-  return "webserver: configuration file failed! Bad syntax on location block";
-}
-

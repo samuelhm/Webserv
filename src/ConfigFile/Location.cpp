@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 14:51:36 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 16:36:57 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
+#include "ParseLocation.hpp"
 
 Location::Location(const str &serverName, const str &path)
   : _uploadEnable(false), _root(path), _autoIndex(false), _cgiEnable(false)
@@ -68,7 +69,7 @@ void						Location::setMethods(const str &Methods) {
 	std::vector<RequestType> result;
 	for (std::vector<str>::const_iterator it = allMethods.begin(); it != allMethods.end(); ++it)
 	{
-		result.push_back(Utils::strToRequest(*it));
+		result.push_back(strToRequest(*it));
 	}
 	this->_methods = result;
 }

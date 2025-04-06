@@ -3,16 +3,66 @@
 /*                                                        :::      ::::::::   */
 /*   ParseLocation.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/06 15:14:00 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/06 16:36:06 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ParseConfig.hpp"
 #include "ParseLocation.hpp"
 
+Location *getLocation(const str &locationString, const str &serverName) {
+  std::istringstream locationBlock(locationString);
+  std::string line;
+
+  std::getline(locationBlock, line);
+  std::string location_path = getLocationPath(line);
+
+  std::getline(locationBlock, line);
+  if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException(); }
+
+  std::string key, value;
+  std::map<std::string, std::string> options;
+  while (std::getline(locationBlock, line)) {
+    if (!line.compare("]")) { break; }
+    if (line.empty() || line.at(0) == '#') {   // Se podria sacar
+      continue;                                // y pasar al parser
+    }                                          // general
+    std::istringstream buffer(line);
+    if (std::getline(buffer, key, ':') && std::getline(buffer, value)) {
+      options[key] = value;
+    }
+    else { throw BadSyntaxLocationBlockException(); }
+  }
+
+  Location* location = new Location(serverName, location_path);
+  try {
+    setLocationParams(location, options);
+  } catch (BadOptionLocationException const &e) {
+    delete location;
+    std::cout << e.what() << std::endl;
+    throw BadSyntaxLocationBlockException();
+  }
+  // Delete block
+  std::cout << "\n====== Server: " << serverName << " Location path: "
+            << location->getRoot() << " ======" << std::endl
+            << "redirect: \t" << location->getRedirect() << std::endl
+            << "redirect_code: \t" << location->getRedirectCode() << std::endl
+            << "uploadEnable: \t" << ((location->getUploadEnable()) ? "true" : "false")
+            << std::endl
+            << "autoIndex: \t" << ((location->getAutoindex()) ? "true" : "false")
+            << std::endl
+            << "index: \t\t" << location->getIndex() << std::endl
+			<< "uploadPath: \t" << location->getUploadPath() << std::endl
+			<< "cgiEnable: \t" << ((location->getCgiEnable()) ? "true" : "false")
+            << std::endl
+			<< "cgiExtension: \t" << location->getCgiExtension() << std::endl
+			<< "cgiPath: \t" << location->getCgiPath() << std::endl;
+  // End block
+  return location;
+}
 
 void setLocationParams(Location *location, std::map<str, str> const &options) {
   for (std::map<str, str>::const_iterator it = options.begin(); it != options.end(); it++) {
@@ -69,3 +119,20 @@ std::string getLocationPath(std::string const &locationString) {
   if (!std::getline(line, tmp)) { throw BadSyntaxLocationBlockException(); }
   return tmp;
 }
+
+RequestType strToRequest(const str &method)
+{
+	if (method == "POST")
+		return POST;
+	else if (method == "GET")
+		return GET;
+	else if (method == "DELETE")
+		return DELETE;
+	else if (method == "OPTIONS")
+		return OPTIONS;
+	else
+		throw BadOptionLocationException();
+}
+
+const char* BadOptionLocationException::what(void) const throw() { return "webserver: Bad option"; }
+const char* BadSyntaxLocationBlockException::what(void) const throw() { return "webserver: configuration file failed! Bad syntax on location block"; }

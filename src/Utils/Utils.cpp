@@ -79,19 +79,4 @@ namespace Utils {
 		}
 		return response;
 	}
-
-	RequestType strToRequest(const str &method)
-	{
-		if (method == "POST")
-			return POST;
-		else if (method == "GET")
-			return GET;
-		else if (method == "DELETE")
-			return DELETE;
-		else if (method == "OPTIONS")
-			return OPTIONS;
-		else
-			throw BadOptionLocationException();
-	}
 }
-

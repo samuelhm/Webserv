@@ -21,8 +21,6 @@ namespace Utils {
 	str trim(const str& input);
 	str fileToStr(const str &filePath);
 	str	intToStr(unsigned int num);
-	void getServerByFd(int fd, Server &server);
-	RequestType strToRequest(const str &method);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {
@@ -40,6 +38,14 @@ namespace Utils {
 			func(*begin);
 			++begin;
 		}
-}
+	}
+
+	template <typename T>
+	void deleteItem(T *Item)
+	{
+		delete Item;
+	}
+
+
 
 }

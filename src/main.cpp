@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 13:57:50 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 18:23:45 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,15 +27,15 @@
 
 int main(int ac, char **av)
 {
-	(void)ac;
-	(void)av;
-	std::vector<Server*> Servers;
-
-  std::vector<Server*>	test = parseConfigFile(av[1]);
-  exit(0);
-
+	if (ac != 2) {
+		std::cout << "Ussage: " << av[0] << " ConfigFile" << std::endl;
+		return 0;
+	}
+	std::vector<Server*> Servers = parseConfigFile(av[1]);
 	EventPool pool(Servers);
 	pool.poolLoop(Servers);
+	Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
+	Servers.clear();
 // creamos el pool (epoll) de eventos
 // esperamos a que se acceda al ej. localhost:8080
 
