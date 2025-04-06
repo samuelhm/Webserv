@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 18:27:42 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 18:20:57 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,12 +62,13 @@ Server& Server::operator=(const Server &other) {
 }
 
 Server::~Server() {
+	Utils::foreach(_locations.begin(), _locations.end(), Utils::deleteItem<Location>);
 	freeaddrinfo(_response);
 	close(_serverFd);
 }
 
 //Getters
-std::vector<Location>		Server::getLocations() const { return this->_locations; }
+std::vector<Location*>&		Server::getLocations() { return this->_locations; } //IMPORTANT es getter pero no puede ser const y debe devolver referencia para poder hacer push_back, hacer otro?
 const str&					Server::getErrorPage(int error) { return _errorPages[error]; }
 str							Server::getServerName() const { return this->_serverName; }
 str							Server::getHostName() const { return this->_hostName; }
@@ -78,7 +79,7 @@ size_t						Server::getBodySize() const { return this->_bodySize; }
 int							Server::getServerFd() const { return this->_serverFd; }
 
 //Setters
-void						Server::setLocations(std::vector<Location> locations) { this->_locations = locations;}
+void						Server::setLocations(std::vector<Location*> locations) { this->_locations = locations;}
 void						Server::setErrorPages(int error, const str &page) { this->_errorPages[error] = page; }
 void						Server::setServerName(str serverName) { this->_serverName = serverName;}
 void						Server::setHostName(str hostName) { this->_hostName = hostName;}

@@ -1,12 +1,15 @@
 
 #include "Utils.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "../ConfigFile/ParseConfig.hpp"
 
 namespace Utils {
 
 	std::vector<str> split(const str &input, char delimiter) {
 		std::vector<str> tokens;
 		str token;
+    if (input.empty())
+      return tokens;
 		for (str::size_type i = 0; i < input.length(); ++i) { //Usamos std::string::size_type porque lenght() y las demas devuelven este tipo, si usamos int el compilador da warnings.
 			if (input[i] == delimiter) {
 				tokens.push_back(token); //Cuandoo encuentra delimiter, pushea y limpia.
@@ -15,7 +18,7 @@ namespace Utils {
 				token += input[i]; //No es delimiter, mete la letra en el str actual.
 			}
 		}
-		tokens.push_back(token); //Aqui no ha encontrado mas delimiters mete el resto.
+    tokens.push_back(token); //Aqui no ha encontrado mas delimiters mete el resto.
 		return tokens;
 	}
 
@@ -51,7 +54,8 @@ namespace Utils {
 	}
 
 	//File se cierra automaticamente al salir de su ambito con su destructor, no es necesario usar close();
-	str fileToStr(const str &filePath) {
+  str fileToStr(const str &filePath) {
+    std::cout << filePath << std::endl;
 		std::ifstream file(filePath.c_str());
 		if (!file.is_open())
 			throw std::runtime_error("File not found: " + filePath);

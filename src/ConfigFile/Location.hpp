@@ -6,22 +6,20 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/02 18:10:45 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/06 16:39:37 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef LOCATION_HPP
-#define LOCATION_HPP
+#pragma once
 
+#include "../WebSrv.hpp"
 #include <vector>
 #include <string>
-#include "../WebSrv.hpp"
+#include "../Utils/Utils.hpp"
 
 class Location {
 	public:
-		Location(const str &serverName);
-		Location(const Location &other);
-		Location& operator=(const Location &other);
+		Location(const str &serverName, const str &path);
 		~Location();
 
 		//Getters
@@ -35,9 +33,10 @@ class Location {
 		bool						getCgiEnable() const;
 		str							getCgiExtension() const;
 		str							getCgiPath() const;
+		str							getRedirectCode() const;
 
 		//Setters
-		void						setMethods(std::vector<RequestType> methods);
+		void						setMethods(const str &methods);
 		void						setRedirect(str redirect);
 		void						setUploadEnable(bool uploadEnable);
 		void						setRoot(str root);
@@ -47,10 +46,12 @@ class Location {
 		void						setCgiEnable(bool cgiEnable);
 		void						setCgiExtension(str cgiExtension);
 		void						setCgiPath(str cgiPath);
+		void						setRedirectCode(const str &code);
 
 	private:
 		std::vector<RequestType>	_methods;
 		str							_redirect;
+		str							_redirect_code;
 		bool						_uploadEnable;
 		str							_root;
 		bool						_autoIndex;
@@ -59,6 +60,9 @@ class Location {
 		bool						_cgiEnable;
 		str							_cgiExtension;
 		str							_cgiPath;
-};
 
-#endif
+		//Private methods
+		Location(const Location &other);
+		Location& operator=(const Location &other);
+
+};

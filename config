@@ -20,12 +20,15 @@
 		allowed_methods:GET POST
 		index:index.html
 		autoindex:off
-		location:/upload
+
+	]
+			location:/upload
 		[
 			allowed_methods:POST
-			redirect:301:/nuevo
+			redirect:/nuevo
+			redirect_code:301
 			upload_enable:on
-			root:/var/www/html
+      root:    /var/             www/html
 			autoindex:off
 			index:index.html
 			upload_path:/var/www/uploads
@@ -33,11 +36,6 @@
 			cgi_extension:.py
 			cgi_path:/usr/bin/python3
 		]
-	]
-	location:./www/
-	[
-
-	]
 	location:/cgi-bin
 	[
 		allowed_methods:GET POST

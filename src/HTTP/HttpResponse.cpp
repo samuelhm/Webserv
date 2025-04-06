@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpResponse.cpp                                    :+:      :+:    :+: */
+/*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/03/27 16:16:06 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/03 19:37:20 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void HttpResponse::setResource(const HttpRequest &request, Server* server)
   if (request.get_path() == "/")
   {
     filepath.append(server->getRoot() + "/");
-    filepath.append(server->getLocations()[0].getIndex());
+    filepath.append(server->getLocations()[0]->getIndex());
     // filepath.append("index.html");
     _body.append(Utils::fileToStr(filepath));
     _body.append("\r\n"); // FIN DE CABECERA
