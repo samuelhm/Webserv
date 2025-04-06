@@ -2,7 +2,7 @@
 	server_name:defaultName
 	listen:localhost:8080
 	is_default:on
-	root:~/www/html
+	root:./www/html
 	client_max_body_size:1048576
 
 	error_400:/var/www/errors/400.html
@@ -11,6 +11,9 @@
 	error_405:/var/www/errors/405.html
 	error_413:/var/www/errors/413.html
 	error_500:/var/www/errors/500.html
+
+	location:/
+
 
 	location:/images
 	[
@@ -63,9 +66,9 @@
 
 	location:/upload
 	[
-    allowed_methods:POST
-    redirect:/nuevo
-    redirect_code:301
+		allowed_methods:POST
+		redirect:/nuevo
+		redirect_code:301
 		upload_enable:on
 		root:/var/www/html
 		autoindex:off
