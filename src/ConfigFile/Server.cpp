@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 18:20:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 13:09:23 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,10 @@ Server& Server::operator=(const Server &other) {
 }
 
 Server::~Server() {
-	Utils::foreach(_locations.begin(), _locations.end(), Utils::deleteItem<Location>);
-	freeaddrinfo(_response);
+	if (!_locations.empty())
+		Utils::foreach(_locations.begin(), _locations.end(), Utils::deleteItem<Location>);
+	if (_response)
+		freeaddrinfo(_response);
 	close(_serverFd);
 }
 

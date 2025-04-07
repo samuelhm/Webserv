@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 10:21:07 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 13:10:39 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,9 +179,9 @@ Server*	getServer(const str &serverString)
 			}
       		Location *location = NULL;
       		try {
-        	location = getLocation(locationBlock, server->getServerName());
+        		location = getLocation(locationBlock, server->getServerName());
       		} catch (BadSyntaxLocationBlockException const &e) {
-        	Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
+        		Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
 			if (location != NULL)
 				delete location;
         	continue;

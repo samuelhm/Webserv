@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 10:25:51 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 13:35:30 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,18 @@
 #include <stdio.h>
 #include <cerrno>
 #include <cstdlib>
+#include <csignal>
 
+void signalQuit(int signum) {
+	(void)signum;
+	exit(0);
+}
 int main(int ac, char **av)
 {
+	if (signal(SIGQUIT, signalQuit) == SIG_ERR) {
+		Logger::log("Error en SigQuit", ERROR);
+		return 1;
+	}
 	Logger::log("Trying to get DebugLever form Env..", INFO);
 	Logger::initFromEnv();
 	if (ac != 2) {

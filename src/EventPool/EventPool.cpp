@@ -6,11 +6,12 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 11:22:13 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 13:09:38 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EventPool.hpp"
+#include "../Utils/Utils.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,14 +24,16 @@ EventPool::EventPool(std::vector<Server*> &Servers) {
 
 	struct epoll_event ev;
 
+
 	for (std::vector<Server*>::iterator it = Servers.begin(); it != Servers.end(); ++it)
 	{
 		ev.events = EPOLLIN;
 		// ev.data.fd = (*it)->getServerFd();
-		struct eventStructtmp* estructura = new eventStructtmp; // IMPORTANT free this
-		estructura->server = *it;
-		estructura->isServer = true;
-		ev.data.ptr = static_cast<void*>(estructura);
+		struct eventStructTmp* serverStruct = new eventStructTmp; // IMPORTANT free this
+		_structs.push_back(serverStruct);
+		serverStruct->server = *it;
+		serverStruct->isServer = true;
+		ev.data.ptr = static_cast<void*>(serverStruct);
 		if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, (*it)->getServerFd(), &ev) == -1) {
 			perror("epoll_ctl");
 			throw std::exception();
@@ -52,7 +55,8 @@ EventPool& EventPool::operator=(const EventPool &other) {
 }
 
 EventPool::~EventPool() {
-	// Destructor
+	if (!_structs.empty())
+		Utils::foreach(_structs.begin(), _structs.end(), Utils::deleteItem<struct eventStructTmp>);
 }
 
 str		EventPool::getRequest(int fdTmp)
@@ -97,7 +101,7 @@ void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<s
 	}
 	epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
 	close(fdTmp);
-	Logger::log("Sending resource.", INFO);
+	Logger::log("Sending resource.", USER);
 }
 
 void	EventPool::acceptConnection(int fdTmp, Server* server)
@@ -115,11 +119,11 @@ void	EventPool::acceptConnection(int fdTmp, Server* server)
 	}
 	struct epoll_event client_ev;
 	client_ev.events = EPOLLIN;
-	struct eventStructtmp* estructura = new eventStructtmp; // IMPORTANT free this
-	estructura->client_fd = client_fd;
-	estructura->server = server;
-	estructura->isServer = false;
-	client_ev.data.ptr = static_cast<void*>(estructura);
+	struct eventStructTmp* clientStruct = new eventStructTmp; // IMPORTANT free this
+	clientStruct->client_fd = client_fd;
+	clientStruct->server = server;
+	clientStruct->isServer = false;
+	client_ev.data.ptr = static_cast<void*>(clientStruct);
     if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev) == -1) {
         perror("epoll_ctl failed");
         close(client_fd);
@@ -139,7 +143,8 @@ bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp)
 
 void	EventPool::poolLoop(std::vector<Server*> &Servers)
 {
-	while (42)
+	int j = 0;
+	while (j++ < 20)
 	{
 		int fdTmp;
 		_nfds = epoll_wait(_pollFd, events, 1024, -1); // -1 = bloquea indefinidamente
@@ -149,10 +154,10 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 		}
 		for (int i = 0; i < _nfds; ++i)
 		{
-			if (static_cast<eventStructtmp *>(events[i].data.ptr)->isServer)
-				fdTmp =  static_cast<eventStructtmp *>(events[i].data.ptr)->server->getServerFd();
+			if (static_cast<eventStructTmp *>(events[i].data.ptr)->isServer)
+				fdTmp =  static_cast<eventStructTmp *>(events[i].data.ptr)->server->getServerFd();
 			else
-				fdTmp =  static_cast<eventStructtmp *>(events[i].data.ptr)->client_fd;
+				fdTmp =  static_cast<eventStructTmp *>(events[i].data.ptr)->client_fd;
 			uint32_t flags = events[i].events;
 			if (flags & (EPOLLHUP | EPOLLERR)) {
 				std::cout << "Cerrando conexión con fd: " << fdTmp << std::endl;
@@ -165,7 +170,7 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 			if (isServerFd(Servers, fdTmp))
 			{
 				try {
-					acceptConnection(fdTmp, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
+					acceptConnection(fdTmp, static_cast<eventStructTmp *>(events[i].data.ptr)->server);
 				} catch(const std::exception& e) {
 					Logger::log(str("acceptConnection Error: ") + e.what(), ERROR);
 					continue;
@@ -176,14 +181,25 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 				try {
 					str reqStr = getRequest(fdTmp);
 					HttpRequest request(reqStr);
-					HttpResponse response(request, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
+					HttpResponse response(request, static_cast<eventStructTmp *>(events[i].data.ptr)->server);
 					sendResponse(response, fdTmp, response.get_header());
+					eventStructTmp* evPtr = static_cast<eventStructTmp *>(events[i].data.ptr);
+					delete evPtr;
 				} catch(const disconnectedException& e) {
 					Logger::log(str("Disconnection: ") + e.what(), WARNING);
+					epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
+					eventStructTmp* evPtr = static_cast<eventStructTmp *>(events[i].data.ptr);
+					delete evPtr;
 				} catch(const socketReadException& e) {
 					Logger::log(str("Socket read Error: ") + e.what(), ERROR);
+					epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
+					eventStructTmp* evPtr = static_cast<eventStructTmp *>(events[i].data.ptr);
+					delete evPtr;
 				} catch(...) {
 					Logger::log("Unknown Erro on epoll: ", ERROR);
+					epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
+					eventStructTmp* evPtr = static_cast<eventStructTmp *>(events[i].data.ptr);
+					delete evPtr;
 				}
 			}
 		}

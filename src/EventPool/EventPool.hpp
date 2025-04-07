@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 17:31:14 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 13:11:24 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,22 +20,31 @@
 #include <cerrno>
 #include <cstring>
 #include <sstream>
+#include <stack>
 #include "../ConfigFile/Server.hpp"
 #include "../HTTP/HttpRequest.hpp"
 #include "../HTTP/HttpResponse.hpp"
+
+struct eventStructTmp
+{
+	Server *server;
+	int		client_fd;
+	bool	isServer;
+};
 
 class EventPool {
 	private:
 		int		_pollFd;
 		int		_nfds;
 		struct epoll_event events[1024];
+		std::vector<struct eventStructTmp *> _structs;
 
 		EventPool(const EventPool &other);
 		EventPool& operator=(const EventPool &other);
 		bool isServerFd(std::vector<Server *> &Servers, int fdTmp);
 		Server*	getServerByFd(int fd, std::vector<Server*> Servers);
 
-	public:
+		public:
 		EventPool(std::vector<Server*> &Servers);
 		~EventPool();
 		void	poolLoop(std::vector<Server*> &Servers);
@@ -61,13 +70,6 @@ class EventPool {
 				disconnectedException(int fd);
 				const char *what() const throw();
 				virtual ~disconnectedException() throw() {}
-		};
-
-		struct eventStructtmp
-		{
-			Server *server;
-			int		client_fd;
-			bool	isServer;
 		};
 };
 

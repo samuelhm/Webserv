@@ -41,8 +41,7 @@ namespace Utils {
 	}
 
 	template <typename T>
-	void deleteItem(T *Item)
-	{
+	void deleteItem(T *Item) {
 		delete Item;
 	}
 
