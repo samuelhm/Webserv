@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 20:47:33 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 10:16:46 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ Location::Location(const str &serverName, const str &path)
 	_methods.push_back(POST);
 	_methods.push_back(DELETE);
 	_methods.push_back(OPTIONS);
+	_methods.push_back(PUT);
 	_index = "index.html";
 	_uploadPath = "./" + serverName + "/";
 	_cgiExtension = ".py";

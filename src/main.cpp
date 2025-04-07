@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 19:50:52 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 10:25:51 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ int main(int ac, char **av)
 	Logger::initFromEnv();
 	if (ac != 2) {
 		Logger::log(str("Usage: ") + av[0] + " Configfile", ERROR);
-		return 0;
+		return 1;
 	}
 	try {
 		std::vector<Server*> Servers = parseConfigFile(av[1]);

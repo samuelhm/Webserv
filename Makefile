@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+         #
+#    By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/04/06 19:28:42 by shurtado         ###   ########.fr        #
+#    Updated: 2025/04/07 11:22:44 by shurtado         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,7 +49,7 @@ v: $(NAME)
 
 r: $(NAME)
 	clear
-	@./$(NAME)
+	@./$(NAME) Config_Empty.conf
 
 
 -include $(DEPS)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 20:33:42 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 10:21:07 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,7 +181,7 @@ Server*	getServer(const str &serverString)
       		try {
         	location = getLocation(locationBlock, server->getServerName());
       		} catch (BadSyntaxLocationBlockException const &e) {
-        	Logger::log(str("Location fatal error: ") + e.what(), ERROR);
+        	Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
 			if (location != NULL)
 				delete location;
         	continue;

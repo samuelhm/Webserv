@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseLocation.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/06 20:58:24 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 09:47:15 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void setLocationParams(Location *location, std::map<str, str> const &options) {
       location->setUploadPath(it->second);
     else if (it->first == "cgi_extension")
       location->setCgiExtension(it->second);
-    else if (it->first == "cgiPath")
+    else if (it->first == "cgi_path")
       location->setCgiPath(it->second);
     else if (it->first == "allowed_methods")
       location->setMethods(it->second);

@@ -8,6 +8,7 @@ DebugType Logger::currentLevel = INFO;
 #define RED     "\033[31m"
 #define YELLOW  "\033[33m"
 #define BLUE    "\033[34m"
+#define B_GRN   "\x1B[42m"
 
 void Logger::setLevel(DebugType level) {
 	currentLevel = level;
@@ -19,13 +20,14 @@ void Logger::initFromEnv() {
 		return;
 
 	std::string lvl = env;
-	if (lvl == "INFO")        setLevel(INFO);
+	if (lvl == "INFO")         setLevel(INFO);
+	else if (lvl == "USER")    setLevel(USER);
 	else if (lvl == "WARNING") setLevel(WARNING);
 	else if (lvl == "ERROR")   setLevel(ERROR);
 }
 
 void Logger::log(const std::string& msg, DebugType type) {
-	if (static_cast<int>(type) < static_cast<int>(currentLevel))
+	if (type < currentLevel)
 		return;
 
 	std::cout << getColor(type) << getIcon(type) << msg << RESET << std::endl;
@@ -34,6 +36,7 @@ void Logger::log(const std::string& msg, DebugType type) {
 const char* Logger::getIcon(DebugType type) {
 	switch (type) {
 		case INFO:    return "🔵";
+		case USER:    return "🟢";
 		case WARNING: return "🟡";
 		case ERROR:   return "🔴";
 		default:                 return "";

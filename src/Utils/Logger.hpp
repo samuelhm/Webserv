@@ -3,6 +3,7 @@
 
 enum DebugType {
 	INFO,
+	USER,
 	WARNING,
 	ERROR
 };
