@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 17:31:37 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 11:22:13 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,14 @@ str		EventPool::getRequest(int fdTmp)
 		throw socketReadException(fdTmp);
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << buffer << std::endl;
+
+	str request(buffer);
+	size_t pos = request.find("\r\n");
+	str first_line;
+	if (pos != std::string::npos)
+		first_line = request.substr(0, pos);
+	Logger::log(str("HTTP Request Received.") + buffer, INFO);
+	Logger::log(str("HTTP Request Received.") + first_line, USER);
 	return (buffer);
 }
 
@@ -84,10 +91,13 @@ void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<s
 	}
 	err.append(response.get_body());
 	ssize_t error = write(fdTmp, err.c_str(), err.size());
-	if (error == -1)
+	if (error == -1) {
 		perror("write");
+		Logger::log("Cannot Write on Socket!.", ERROR);
+	}
 	epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
 	close(fdTmp);
+	Logger::log("Sending resource.", INFO);
 }
 
 void	EventPool::acceptConnection(int fdTmp, Server* server)
@@ -157,7 +167,7 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 				try {
 					acceptConnection(fdTmp, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
 				} catch(const std::exception& e) {
-					std::cout << e.what() << std::endl;
+					Logger::log(str("acceptConnection Error: ") + e.what(), ERROR);
 					continue;
 				}
 			}
@@ -169,11 +179,11 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 					HttpResponse response(request, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
 					sendResponse(response, fdTmp, response.get_header());
 				} catch(const disconnectedException& e) {
-					std::cout << e.what() << std::endl;
+					Logger::log(str("Disconnection: ") + e.what(), WARNING);
 				} catch(const socketReadException& e) {
-					std::cout << e.what() << std::endl;
+					Logger::log(str("Socket read Error: ") + e.what(), ERROR);
 				} catch(...) {
-					std::cout << "Error no manejado" << std::endl;
+					Logger::log("Unknown Erro on epoll: ", ERROR);
 				}
 			}
 		}
@@ -197,7 +207,6 @@ Server* EventPool::getServerByFd(int fd, std::vector<Server*> Servers)
 
 
 EventPool::disconnectedException::disconnectedException(int fd) {
-
 	std::ostringstream oss;
 	oss << fd;
 	this->message = "Client Disconnected: Server = " + oss.str(); //Deve obtener el nombre del servidor

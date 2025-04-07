@@ -58,4 +58,4 @@ create_html_file YoupiBanane/nop/youpi.bad_extension
 create_html_file YoupiBanane/nop/other.pouic
 create_html_file YoupiBanane/Yeah/not_happy.bad_extension
 
-echo "Estructura y archivos generados con contenido bonito 😄"
+echo "Estructura y archivos generados 😄"

@@ -6,7 +6,7 @@
 #    By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/04/06 14:10:31 by shurtado         ###   ########.fr        #
+#    Updated: 2025/04/07 11:22:44 by shurtado         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,7 @@ SRC			=	src/main.cpp \
 				src/ConfigFile/Location.cpp src/ConfigFile/Server.cpp \
 				src/HTTP/HttpRequest.cpp src/HTTP/HttpResponse.cpp \
 				src/HTTP/AHttp.cpp src/ConfigFile/ParseConfig.cpp src/ConfigFile/ParseLocation.cpp \
-				src/Utils/Utils.cpp
+				src/Utils/Utils.cpp src/Utils/AutoIndex.cpp src/Utils/Logger.cpp
 
 OBJS		=	$(SRC:%.cpp=obj/%.o)
 DEPS		=	$(OBJS:.o=.d)
@@ -49,7 +49,7 @@ v: $(NAME)
 
 r: $(NAME)
 	clear
-	@./$(NAME)
+	@./$(NAME) Config_Empty.conf
 
 
 -include $(DEPS)

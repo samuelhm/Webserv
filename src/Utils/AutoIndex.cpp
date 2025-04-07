@@ -11,13 +11,13 @@ str AutoIndex::getAutoIndex(const str &path)
 	str Path = path;
 	while ((entry = readdir(dir)) != NULL)
 	{
-		if (entry->d_name == ".." && path == "/")
+		if ((std::strcmp(entry->d_name, "..") == 0) && path == "/")
 			continue;
-		else if (entry->d_name == "..")
+		else if (std::strcmp(entry->d_name, "..") == 0)
 			Path = getPrevPath(path);
 		body.append("<li><a href=\"");
 		body.append(Path);
-		if (entry->d_name != "." && entry->d_name != "..");
+		if ((std::strcmp(entry->d_name, ".") == 0) && (std::strcmp(entry->d_name, "..") == 0))
 			body.append(entry->d_name);
 		body.append("\">");
 		body.append(entry->d_name);
@@ -26,7 +26,7 @@ str AutoIndex::getAutoIndex(const str &path)
 	closedir(dir);
 	body.append(AUTOINDEXFOOTER);
 	return body;
-};
+}
 
 str AutoIndex::getPrevPath(const str &path)
 {

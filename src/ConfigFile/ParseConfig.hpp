@@ -30,10 +30,8 @@ class UnknownOptionException : public std::exception {
 		std::string _msg;
 	public:
     virtual ~UnknownOptionException(void) throw() {}
-		UnknownOptionException(const std::string &msg) : _msg(msg) {}
-		virtual const char *what() const throw() {
-			return _msg.c_str();
-		}
+		UnknownOptionException(const std::string &msg);
+		virtual const char *what() const throw();
 };
 
 class EmptyValueException : public std::exception

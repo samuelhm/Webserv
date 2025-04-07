@@ -1,9 +1,13 @@
 #pragma	once
+
 #include "../WebSrv.hpp"
 #include <iostream>
 #include <dirent.h>
+#include <cstring>
+
 #define AUTOINDEXHEADER "<!DOCTYPE html>\n<html lang=\"es\">\n<head><title>AutoIndex</title></head>\n<body>\n<ul>\n"
 #define AUTOINDEXFOOTER "</ul></body></html>"
+
 class AutoIndex
 {
 	public:
@@ -19,4 +23,3 @@ class AutoIndex
 	~AutoIndex();
 
 };
-

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 16:36:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 10:16:46 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ Location::Location(const str &serverName, const str &path)
 	_methods.push_back(POST);
 	_methods.push_back(DELETE);
 	_methods.push_back(OPTIONS);
+	_methods.push_back(PUT);
 	_index = "index.html";
 	_uploadPath = "./" + serverName + "/";
 	_cgiExtension = ".py";
@@ -69,6 +70,11 @@ void						Location::setMethods(const str &Methods) {
 	std::vector<RequestType> result;
 	for (std::vector<str>::const_iterator it = allMethods.begin(); it != allMethods.end(); ++it)
 	{
+		if ((*it).empty())
+		{
+			Logger::log("Empty method inside vector.", WARNING);
+			continue;
+		}
 		result.push_back(strToRequest(*it));
 	}
 	this->_methods = result;
