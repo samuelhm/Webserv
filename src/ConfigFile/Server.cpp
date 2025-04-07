@@ -6,11 +6,12 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 13:09:23 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 17:58:55 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include <stdlib.h>
 
 Server::Server() {
 	_serverName = "server1";
@@ -19,6 +20,34 @@ Server::Server() {
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 2147483647;
+	_errorPages[400] = createErrorPage("400", "Bad Request");
+	_errorPages[401] = createErrorPage("401", "Unauthorized");
+	_errorPages[402] = createErrorPage("402", "Payment Required");
+	_errorPages[403] = createErrorPage("403", "Forbidden");
+	_errorPages[404] = createErrorPage("404", "Not Found");
+	_errorPages[405] = createErrorPage("405", "Method Not Allowed");
+	_errorPages[406] = createErrorPage("406", "Not Acceptable");
+	_errorPages[407] = createErrorPage("407", "Proxy Authentication Required");
+	_errorPages[408] = createErrorPage("408", "Request Timeout");
+	_errorPages[409] = createErrorPage("409", "Conflict");
+	_errorPages[410] = createErrorPage("410", "Gone");
+	_errorPages[411] = createErrorPage("411", "Length Required");
+	_errorPages[412] = createErrorPage("412", "Precondition Failed");
+	_errorPages[413] = createErrorPage("413", "Content Too Large");
+	_errorPages[414] = createErrorPage("414", "URI Too Long");
+	_errorPages[415] = createErrorPage("415", "Unsupported Media Type");
+	_errorPages[416] = createErrorPage("416", "Range Not Satisfiable");
+	_errorPages[417] = createErrorPage("417", "Expectation Failed");
+	_errorPages[421] = createErrorPage("421", "Misdirected Request");
+	_errorPages[422] = createErrorPage("422", "Unprocessable Content");
+	_errorPages[426] = createErrorPage("426", "Upgrade Required");
+	_errorPages[500] = createErrorPage("500", "Internal Server Error");
+	_errorPages[501] = createErrorPage("501", "Not Implemented");
+	_errorPages[502] = createErrorPage("502", "Bad Gateway");
+	_errorPages[503] = createErrorPage("503", "Service Unavailable");
+	_errorPages[504] = createErrorPage("504", "Gateway Timeout");
+	_errorPages[505] = createErrorPage("505", "HTTP Version Not Supported");
+
 	socketUp();
 }
 
@@ -81,14 +110,14 @@ size_t						Server::getBodySize() const { return this->_bodySize; }
 int							Server::getServerFd() const { return this->_serverFd; }
 
 //Setters
-void						Server::setLocations(std::vector<Location*> locations) { this->_locations = locations;}
+void						Server::setLocations(std::vector<Location*> locations) { this->_locations = locations; }
 void						Server::setErrorPages(int error, const str &page) { this->_errorPages[error] = page; }
-void						Server::setServerName(str serverName) { this->_serverName = serverName;}
-void						Server::setHostName(str hostName) { this->_hostName = hostName;}
-void						Server::setPort(str port) { this->_port = port;}
-void						Server::setRoot(str root) { this->_root = root;}
-void						Server::setIsdefault(bool isDefault) { this->_isDefault = isDefault;}
-void						Server::setBodySize(size_t bodySize) { this->_bodySize = bodySize;}
+void						Server::setServerName(str serverName) { this->_serverName = serverName; }
+void						Server::setHostName(str hostName) { this->_hostName = hostName; }
+void						Server::setPort(str port) { this->_port = port; }
+void						Server::setRoot(str root) { this->_root = root; }
+void						Server::setIsdefault(bool isDefault) { this->_isDefault = isDefault; }
+void						Server::setBodySize(size_t bodySize) { this->_bodySize = bodySize; }
 
 void						Server::socketUp()
 {
@@ -128,4 +157,28 @@ void						Server::socketUp()
 		close(_serverFd);
 		throw std::exception();
 	}
+}
+
+const str &Server::createErrorPage(const str &error, const str &msg)
+{
+	static std::map<str, str> errorHtmlMap;
+
+	int err = std::atoi(error);
+	if ((err <= 400 && err >= 426) && (err <= 500 && err >= 505)) {
+		Logger::log("createErrorPage ha recibido un error incorrecto", ERROR);
+		return "ERROR";
+	}
+	if (errorHtmlMap[error].empty()) {
+		str errorHtml ="<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>";
+		errorHtml.append(error + " " + msg);
+		errorHtml.append("</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background-color:#1e1e2f;color:#fff;font-family:'Segoe UI',Tahoma,Geneva,\
+						Verdana,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:2rem}.container{max-width:600px}h1\
+						{font-size:10rem;color:#ff6b6b;margin-bottom:1rem}p{font-size:1.5rem;margin-bottom:2rem}a{display:inline-block;padding:0.75rem 1.5rem;background-color:\
+						#ff6b6b;color:#fff;text-decoration:none;border-radius:5px;transition:background-color 0.3s ease}a:hover{background-color:#ff4c4c}</style></head><body>\
+						<div class=\"container\"><h1>");
+		errorHtml.append(error + "</h1><p>");
+		errorHtml.append(msg + "</p><a href=\"/\">Volver al inicio</a></div></body></html>");
+		errorHtmlMap[error] = errorHtml;
+	}
+	return errorHtmlMap[error];
 }

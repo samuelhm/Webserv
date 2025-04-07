@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 13:11:24 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 15:35:09 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class EventPool {
 		EventPool& operator=(const EventPool &other);
 		bool isServerFd(std::vector<Server *> &Servers, int fdTmp);
 		Server*	getServerByFd(int fd, std::vector<Server*> Servers);
+		struct eventStructTmp* createEventStruct(int fd, Server* server, bool serverOrClient);
 
 		public:
 		EventPool(std::vector<Server*> &Servers);
@@ -70,6 +71,15 @@ class EventPool {
 				disconnectedException(int fd);
 				const char *what() const throw();
 				virtual ~disconnectedException() throw() {}
+		};
+		class AcceptConnectionException : public std::exception
+		{
+			private:
+				str message;
+			public:
+			AcceptConnectionException(str const &msg);
+				const char *what() const throw();
+				virtual ~AcceptConnectionException() throw() {}
 		};
 };
 

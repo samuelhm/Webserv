@@ -35,10 +35,11 @@ void Logger::setLevel(DebugType level) {
 
 void Logger::initFromEnv() {
 	const char* env = std::getenv("DEBUG_LEVEL");
+	std::string lvl;
 	if (!env)
-		return;
-
-	std::string lvl = env;
+		lvl = "WARNING";
+	else
+		lvl = env;
 	if (lvl == "INFO")         setLevel(INFO);
 	else if (lvl == "USER")    setLevel(USER);
 	else if (lvl == "WARNING") setLevel(WARNING);

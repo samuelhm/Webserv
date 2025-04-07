@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 19:37:20 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/07 17:03:13 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,23 +30,15 @@ void HttpResponse::setResource(const HttpRequest &request, Server* server)
   _status = 200;
   _line0.append("HTTP/1.1");
   _line0.append(_statusStr[_status]);
-
   str filepath;
-  if (request.get_path() == "/")
-  {
-    filepath.append(server->getRoot() + "/");
-    filepath.append(server->getLocations()[0]->getIndex());
-    // filepath.append("index.html");
-    _body.append(Utils::fileToStr(filepath));
-    _body.append("\r\n"); // FIN DE CABECERA
-	  _header["Content-Type"] = "text/html; chline0.append(_statusStr[ErrorCode]);arset=UTF-8\r\n";
-	  _header["Content-Length"] = Utils::intToStr(_body.length());
-  }
-
-
-
-	_body.append("\r\n"); // FIN DE CABECERA
-
+  filepath.append(server->getRoot()); //NO ESTAMOS COMPROBANDO LOCATION ESTAMOS EN GET ROOT
+  filepath.append(request.get_path());
+  if (filepath[filepath.length() - 1] == '/')
+    filepath.append(server->getLocations().at(0)->getIndex());
+  _body.append(Utils::fileToStr(filepath));
+  _body.append("\r\n");
+  _header["Content-Type"] = "text/html\r\n";
+  _header["Content-Length"] = Utils::intToStr(_body.length());
 }
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) {
@@ -62,7 +54,7 @@ void HttpResponse::setErrorCode(int ErrorCode, Server* server)
   _line0.append(_statusStr[ErrorCode]);
   _body.append(server->getErrorPage(ErrorCode));
 	_body.append("\r\n"); // FIN DE CABECERA
-	_header["Content-Type"] = "text/html; chline0.append(_statusStr[ErrorCode]);arset=UTF-8\r\n";
+	_header["Content-Type"] = "text/html\r\n";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 	// _header["Content-Length"].append("\r\n");
 }

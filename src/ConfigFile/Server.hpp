@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 13:10:23 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 17:41:47 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,34 @@
 class Location;
 
 class Server {
+	private:
+	std::vector<Location*>		_locations;
+	std::map<int, str>			_errorPages;
+	str							_serverName;
+	str							_hostName;
+	str							_port;
+	str							_root;
+	bool						_isDefault;
+	size_t						_bodySize;
+	std::map<int, std::string>	_errorMsg;
+
+	//SocketUp
+	int							_serverFd;
+	int							_reuseOption;
+	struct addrinfo*			_response;
+	struct addrinfo				_hints;
+
+	//PrivateMethods IMPORTANT (Aqui de momento si podemos o debemos copiar objetos de este tipo.)
+	Server& operator=(const Server &other);
+	Server(const str &server, const str &port);
+	Server(const str &server);
+	Server(const Server &other);
+
+	const str &createErrorPage(const str &error, const str &msg);
+
 	public:
 		Server();
 		~Server();
-
 
 		//Methods
 		void	socketUp();
@@ -55,31 +79,6 @@ class Server {
 		void						setRoot(str root);
 		void						setIsdefault(bool isDefault);
 		void						setBodySize(size_t bodySize);
-
-
-
-
-	private:
-		std::vector<Location*>		_locations;
-		std::map<int, str>			_errorPages;
-		str							_serverName;
-		str							_hostName;
-		str							_port;
-		str							_root;
-		bool						_isDefault;
-		size_t						_bodySize;
-
-		//SocketUp
-		int							_serverFd;
-		int							_reuseOption;
-		struct addrinfo*			_response;
-		struct addrinfo				_hints;
-
-		//PrivateMethods IMPORTANT (Aqui de momento si podemos o debemos copiar objetos de este tipo.)
-		Server& operator=(const Server &other);
-		Server(const str &server, const str &port);
-		Server(const str &server);
-		Server(const Server &other);
 };
 
 #endif

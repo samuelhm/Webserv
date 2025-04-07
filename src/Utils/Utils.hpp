@@ -32,6 +32,21 @@ namespace Utils {
 		}
 	}
 
+	template <typename K, typename V>
+	const str returnMap(const std::map<K, V>& m) {
+		typename std::map<K, V>::const_iterator it;
+		if (m.empty())
+		return "";
+		str result;
+		for (it = m.begin(); it != m.end(); ++it) {
+			result.append(it->first);
+			result.append(":");
+			result.append(it->second);
+			result.append("\n");
+		}
+		return result;
+	}
+
 	template <typename Iterator, typename Function>
 	void foreach(Iterator begin, Iterator end, Function func) {
 		while (begin != end) {
@@ -44,7 +59,4 @@ namespace Utils {
 	void deleteItem(T *Item) {
 		delete Item;
 	}
-
-
-
 }

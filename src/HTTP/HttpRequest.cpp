@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 16:54:46 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/07 14:54:21 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,12 +39,12 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	std::size_t end = line.find(" ", 0);
 	if (end == str::npos)
 		throw badHeaderException(DEFAULT_ERROR);
-
 	str	method = line.substr(0, end);
 	if (method == "GET") _type = GET;
 	else if (method == "POST") _type = POST;
 	else if (method == "OPTIONS") _type = OPTIONS;
 	else if (method == "DELETE") _type = DELETE;
+	else if (method == "PUT") _type = PUT;
 	else throw badHeaderException("Method not allowed or wrong");
 
 	if (line.at(++end) != '/') // IMPORTANT probar si hay mas espacios

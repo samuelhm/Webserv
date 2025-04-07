@@ -1,8 +1,8 @@
 
+#include <algorithm>
 #include "Utils.hpp"
 #include "../ConfigFile/Server.hpp"
 #include "../ConfigFile/ParseConfig.hpp"
-
 namespace Utils {
 
 	std::vector<str> split(const str &input, char delimiter) {
@@ -64,19 +64,19 @@ namespace Utils {
 		return buffer.str();
 	}
 
-	str	intToStr(unsigned int num)
+	str intToStr(unsigned int num)
 	{
 		if (num == 0)
 			return "0";
-		long Num = static_cast<long>(num);
+
 		str response;
-		int i = 0;
-		while (Num != 0)
+		while (num != 0)
 		{
-			char a = (Num % 10) + '0';
-			response[i] = a;
-			Num /= 10;
+			char digit = (num % 10) + '0';
+			response.push_back(digit);
+			num /= 10;
 		}
+		std::reverse(response.begin(), response.end());
 		return response;
 	}
 }
