@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 11:45:29 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 13:53:55 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,6 +155,12 @@ const str &Server::createErrorPage(const str &error, const str &msg)
 	return errorHtmlMap[error];
 }
 
-
+bool	Server::locationExist(Location &loc) const
+{
+	for(int i = 0; i < _locations.size(); i++)
+		if (_locations[i]->getRoot() == loc.getRoot())
+			return true;
+	return false;
+}
 
 

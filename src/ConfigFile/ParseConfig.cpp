@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 11:55:31 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 13:57:33 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,11 @@ Server*	getServer(const str &serverString)
 			if (location != NULL)
 				delete location;
         	continue;
+			}
+			if (server->locationExist(location)) {
+				Logger::log(str("Location already exist: ") + location->getRoot(), WARNING)
+				delete location;
+				throw ConfigFileException("You cannot duplicate locations.");
 			}
 			if (location != NULL)
 				server->getLocations().push_back(location);

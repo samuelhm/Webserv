@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 11:49:58 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 14:01:06 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,17 +42,23 @@ int main(int ac, char **av)
 		Logger::log(str("Usage: ") + av[0] + " Configfile", ERROR);
 		return 1;
 	}
+	Utils::fillStatusStr();
 	try {
-		Utils::fillStatusStr();
 		std::vector<Server*> Servers = parseConfigFile(av[1]);
 		EventPool pool(Servers);
 		pool.poolLoop(Servers);
 		Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
 		Servers.clear();
 	}
+	catch (ConfigFileException &e) {
+		Logger::log(e.what(), ERROR);
+		return 1;
+	}
 	catch (std::exception &e)
 	{
 		Logger::log(str("An Unmanaged exception caught on main!: ") + e.what(), ERROR);
+		Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
+		return 1;
 	}
 	return 0;
 }

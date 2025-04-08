@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 11:14:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 13:53:59 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,9 @@ class Server {
 		void						setRoot(str root);
 		void						setIsdefault(bool isDefault);
 		void						setBodySize(size_t bodySize);
+
+		//Functions
+		bool						locationExist(Location &loc) const;
 };
 
 #endif
