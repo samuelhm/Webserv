@@ -126,5 +126,9 @@ void Utils::fillStatusStr() {
 	_statusStr[504] = "Gateway Timeout";
 	_statusStr[505] = "HTTP Version Not Supported";
   }
+  void	Utils::setUpServer(Server *server)
+  {
+    server->socketUp();
+  }
 
   std::map<int, str>	Utils::_statusStr;

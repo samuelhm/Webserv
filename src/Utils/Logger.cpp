@@ -6,7 +6,7 @@ DebugType Logger::currentLevel = INFO;
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
-#define BOLD_RED "\033[31m"
+#define BOLD_RED "\x1B[1m\033[31m"
 #define GREEN   "\033[32m"
 #define YELLOW  "\033[1;33m"
 #define BLUE    "\033[34m"
@@ -67,11 +67,11 @@ const char* Logger::getIcon(DebugType type) {
 const char* Logger::getColor(DebugType type) {
 	switch (type) {
 		case INFO:
-			return BLUE;
+			return CYAN;
 		case WARNING:
 			return BOLDYLW;
 		case ERROR:
-			return B_RED;
+			return BOLD_RED;
 		case USER:
 			return GREEN;
 		default:

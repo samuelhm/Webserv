@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 13:53:55 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:43:31 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ Server::Server() {
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 2147483647;
-	socketUp();
 }
 
 Server::Server(const str &servername) {
@@ -31,7 +30,6 @@ Server::Server(const str &servername) {
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 1048576;
-	socketUp();
 }
 
 
@@ -43,7 +41,6 @@ Server::Server(const str &servername, const str &port) {
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 1048576;
-	socketUp();
 }
 
 Server::Server(const Server &other) { *this = other; }
@@ -62,7 +59,13 @@ Server& Server::operator=(const Server &other) {
 	return *this;
 }
 
+bool	Server::operator==(const Server &other)
+{
+	return (_hostName == other._hostName && _port == other._port);
+}
+
 Server::~Server() {
+	Logger::log(str("Shutting down server: ") + this->_serverName, INFO);
 	if (!_locations.empty())
 		Utils::foreach(_locations.begin(), _locations.end(), Utils::deleteItem<Location>);
 	if (_response)
@@ -98,6 +101,7 @@ void						Server::setBodySize(size_t bodySize) { this->_bodySize = bodySize; }
 
 void						Server::socketUp()
 {
+	Logger::log(str("Setting up server: ") + this->_serverName, USER);
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	_reuseOption = 1;
 // Poder reutilizar el mismo puerto sin tener que esperar en caso de fallo del programa
@@ -157,10 +161,8 @@ const str &Server::createErrorPage(const str &error, const str &msg)
 
 bool	Server::locationExist(Location &loc) const
 {
-	for(int i = 0; i < _locations.size(); i++)
+	for(size_t i = 0; i < _locations.size(); i++)
 		if (_locations[i]->getRoot() == loc.getRoot())
 			return true;
 	return false;
 }
-
-

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 12:44:51 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:40:51 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,11 +151,15 @@ bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp)
 
 void	EventPool::poolLoop(std::vector<Server*> &Servers)
 {
-	while (42)
+	while (epollRun)
 	{
 		int fdTmp;
 		_nfds = epoll_wait(_pollFd, events, 1024, -1); // -1 = bloquea indefinidamente
 		if (_nfds == -1) {
+			if (epollRun == 0) {
+				Logger::log("Cerrando Web_Server a petición del Usuario...", USER);
+				break;
+			}
 			Logger::log("No se pudo crear el FileDescriptor de epoll()", ERROR);
 			throw std::exception();
 		}

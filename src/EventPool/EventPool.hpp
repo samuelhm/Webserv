@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 15:35:09 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:36:08 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #define EVENTPOOL_HPP
 
 #include <vector>
+#include <csignal>
 #include <sys/epoll.h>
 #include <exception>
 #include <cerrno>
@@ -24,6 +25,8 @@
 #include "../ConfigFile/Server.hpp"
 #include "../HTTP/HttpRequest.hpp"
 #include "../HTTP/HttpResponse.hpp"
+
+extern volatile sig_atomic_t epollRun;
 
 struct eventStructTmp
 {
