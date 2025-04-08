@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 00:40:51 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:53:28 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,11 +156,12 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 		int fdTmp;
 		_nfds = epoll_wait(_pollFd, events, 1024, -1); // -1 = bloquea indefinidamente
 		if (_nfds == -1) {
-			if (epollRun == 0) {
-				Logger::log("Cerrando Web_Server a petición del Usuario...", USER);
+			if (errno == EINTR) { //IMPORTANT para explicar: También se podría: if (epollRun == 0) vendría siendo lo mismo
+				Logger::log("Graceful shutdown initiated: exiting epoll event loop due to signal.", USER);
 				break;
 			}
-			Logger::log("No se pudo crear el FileDescriptor de epoll()", ERROR);
+			Logger::log("epoll_wait() falló", ERROR);
+			perror("epoll_wait");
 			throw std::exception();
 		}
 		for (int i = 0; i < _nfds; ++i)
