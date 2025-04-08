@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 00:53:28 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 01:22:06 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ EventPool::~EventPool() {
 
 str		EventPool::getRequest(int fdTmp)
 {
-	char buffer[4096]; //comprobar si es suficiente ( caso de post de archivos )
+	char buffer[4096]; //IMPORTANT Considerar un bucle de lectura por bloques si bytes_read == sizeof(buffer) - 1
 	ssize_t bytes_read = read(fdTmp, buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0) {
 		if (bytes_read == 0)
@@ -122,7 +122,7 @@ void	EventPool::acceptConnection(int fdTmp, Server* server)
 
 	int client_fd = accept(fdTmp, (struct sockaddr *)&client_address, &client_len);
 	if (client_fd == -1)
-		throw AcceptConnectionException(str("Failed on Accept connetion for server: ") + server->getServerName());
+		throw AcceptConnectionException("Failed on Accept connetion for server: " + server->getServerName());
 	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
 		close(client_fd);
 		throw AcceptConnectionException("Failed to set client with flag 0_NONBLOCK");
@@ -222,22 +222,6 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 		}
 	}
 }
-
-
-Server* EventPool::getServerByFd(int fd, std::vector<Server*> Servers)
-{
-	std::vector<Server*>::iterator it;
-	for (it = Servers.begin(); it != Servers.end(); ++it)
-	{
-		std::cout << "fd que estamos buscando: " << fd << std::endl;
-		std::cout << "fd que estamos Iterando: " << (*it)->getServerFd() << std::endl;
-		if ((*it)->getServerFd() == fd)
-			return (*it);
-	}
-	std::cout << "Devolviendo NULL" << std::endl;
-	return NULL;
-}
-
 
 EventPool::disconnectedException::disconnectedException(int fd) {
 	std::ostringstream oss;

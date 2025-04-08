@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseLocation.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/08 13:19:17 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 01:19:43 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ Location *getLocation(const str &locationString, const str &serverName) {
     if (std::getline(buffer, key, ':') && std::getline(buffer, value)) {
       options[key] = value;
     }
-    else { throw BadSyntaxLocationBlockException(str("Failed to insert in key: ") + key + " With Value: " + value + "."); }
+    else { throw BadSyntaxLocationBlockException("Failed to insert in key: " + key + " With Value: " + value + "."); }
   }
 
   Location* location = new Location(serverName, location_path);
@@ -44,7 +44,7 @@ Location *getLocation(const str &locationString, const str &serverName) {
   } catch (BadOptionLocationException const &e) {
     delete location;
     std::cout << e.what() << std::endl;
-    throw BadSyntaxLocationBlockException(str("Failed to insert Location Path.") + location_path);
+    throw BadSyntaxLocationBlockException("Failed to insert Location Path." + location_path);
   }
   return location;
 }

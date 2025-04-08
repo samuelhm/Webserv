@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 00:23:47 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 01:17:51 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,13 +215,11 @@ Server*	getServer(const str &serverString)
 	return (server);
 }
 
-
 ConfigFileException::~ConfigFileException() throw() {}
 ConfigFileException::ConfigFileException(const std::string &msg) : _msg(msg) {}
 ConfigFileException::ConfigFileException(const std::string &msg, std::vector<Server*> &servers) : _msg(msg), _servers(servers) {}
 const char* ConfigFileException::what() const throw() { return _msg.c_str(); }
 const std::vector<Server*> &ConfigFileException::getServer() const throw() {return _servers; }
-
 
 UnknownOptionException::UnknownOptionException(const std::string &msg) : _msg(msg) {}
 UnknownOptionException::~UnknownOptionException(void) throw() {}

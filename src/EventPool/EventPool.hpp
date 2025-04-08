@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 00:36:08 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 01:22:02 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ class EventPool {
 		EventPool(const EventPool &other);
 		EventPool& operator=(const EventPool &other);
 		bool isServerFd(std::vector<Server *> &Servers, int fdTmp);
-		Server*	getServerByFd(int fd, std::vector<Server*> Servers);
 		struct eventStructTmp* createEventStruct(int fd, Server* server, bool serverOrClient);
 
 		public:
