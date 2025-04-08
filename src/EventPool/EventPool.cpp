@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 01:22:06 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 01:26:24 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,30 +18,21 @@
 EventPool::EventPool(std::vector<Server*> &Servers) {
 	_pollFd = epoll_create(1);
 	if (_pollFd == -1) {
-		std::cout << "error: epoll_create1" << std::endl;
+		Logger::log("Error Creating epoll FD", ERROR);
 		throw std::exception();
 	}
-
 	struct epoll_event ev;
-
-
 	for (std::vector<Server*>::iterator it = Servers.begin(); it != Servers.end(); ++it)
 	{
 		ev.events = EPOLLIN;
-		// ev.data.fd = (*it)->getServerFd();
 		struct eventStructTmp* serverStruct = createEventStruct((*it)->getServerFd(), *it, true);
 		_structs.push_back(serverStruct);
 		ev.data.ptr = static_cast<void*>(serverStruct);
 		if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, (*it)->getServerFd(), &ev) == -1) {
-			perror("epoll_ctl");
+			Logger::log("Error Adding Server to epoll", ERROR);
 			throw std::exception();
 		}
 	}
-}
-
-EventPool::EventPool(const EventPool &other) {
-	// Constructor de copia
-	*this = other;
 }
 
 EventPool& EventPool::operator=(const EventPool &other) {
