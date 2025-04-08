@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 15:51:55 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 12:44:51 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,10 @@ str		EventPool::getRequest(int fdTmp)
 	if (pos != std::string::npos)
 		first_line = request.substr(0, pos);
 	Logger::log(str("HTTP Request Received.") + buffer, INFO);
-	Logger::log(str("HTTP Request Received.") + first_line, USER);
+	if (!first_line.empty())
+		Logger::log(str("HTTP Request Received.") + first_line, USER);
+	else
+		Logger::log("no \\r\\n found!!!", USER);
 	return (buffer);
 }
 

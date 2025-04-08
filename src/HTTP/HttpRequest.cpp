@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 14:54:21 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 13:06:19 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 const str HttpRequest::saveHeader(const str &request) {
     str::size_type end = request.find("\r\n");
     if (end == str::npos)
-        return request;
+		throw badHeaderException("No \\r\\n found at header");
     str line = request.substr(0, end);
     str::size_type separator = line.find(": ");
     if (separator != str::npos) {
@@ -36,43 +36,52 @@ const str HttpRequest::saveHeader(const str &request) {
 #define DEFAULT_ERROR "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"
 
 void HttpRequest::checkHeaderMRP(const str &line) {
-	std::size_t end = line.find(" ", 0);
+	str::size_type end = line.find("\r\n");
+    if (end == str::npos)
+		throw badHeaderException("No \\r\\n found at status line");
+	Logger::log(str("Cheacking Heder: ") + line, INFO);
+	if (line.empty())
+		throw badHeaderException("Empty Http request received.");
+
+	end = line.find(" ", 0);
 	if (end == str::npos)
-		throw badHeaderException(DEFAULT_ERROR);
+		throw badHeaderException("No space after method received.");
 	str	method = line.substr(0, end);
 	if (method == "GET") _type = GET;
 	else if (method == "POST") _type = POST;
 	else if (method == "OPTIONS") _type = OPTIONS;
 	else if (method == "DELETE") _type = DELETE;
 	else if (method == "PUT") _type = PUT;
-	else throw badHeaderException("Method not allowed or wrong");
+	else
+		throw badHeaderException("Bad Method.");
 
 	if (line.at(++end) != '/') // IMPORTANT probar si hay mas espacios
-		throw badHeaderException("Invalid Resource Format");
+		_badRequest = true;
 	size_t path_end = line.find(" ", end);
 	if (path_end == str::npos)
 		throw badHeaderException(DEFAULT_ERROR);
 	_path = line.substr(end, path_end - end);
 
 	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") { //aqui no tinene \r\n porque ya lo quitamos en el constructor
-		throw badHeaderException("Protocol version not supported");
+		throw badHeaderException("Bad Protocol version");
 	}
 }
 
 HttpRequest::HttpRequest(str request) : AHttp(request), _badRequest(false) {
 	str::size_type end = request.find("\r\n");
-	if (end == str::npos)
-		throw badHeaderException(DEFAULT_ERROR);
+	if (end == str::npos) {
+		_badRequest = true; return ;
+	}
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
-		std::cout << e.what() << std::endl;
+		Logger::log(e.what(), USER);
 	} catch(...) {
 		_badRequest = true;
-		std::cout << "error: extra" << std::endl;
+		Logger::log("UNKNOWN FATAL ERROR AT HTTPREQUEST HEADER", ERROR);
 	}
 }
 

@@ -22,9 +22,7 @@ class HttpResponse : public AHttp {
 	public:
 		str							_line0;
 		int							_status;
-		static std::map<int, str>	_statusStr;
 		void	setErrorCode(int ErrorCode, Server* server);
-		void 	fillStatusStr();
 		void 	setResource(const HttpRequest &request, Server* server);
 
 		public:

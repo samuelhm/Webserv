@@ -15,12 +15,14 @@ class Server;
 class Location;
 
 namespace Utils {
+	extern std::map<int, str>	_statusStr;
 
 	std::vector<str> split(const str &input, const char delimiter);
 	std::vector<str> split(const str &input, const str &delimiter);
 	str trim(const str& input);
 	str fileToStr(const str &filePath);
 	str	intToStr(unsigned int num);
+	void 	fillStatusStr();
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {

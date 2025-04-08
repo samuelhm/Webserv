@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 17:58:55 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 11:45:29 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,34 +20,6 @@ Server::Server() {
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 2147483647;
-	_errorPages[400] = createErrorPage("400", "Bad Request");
-	_errorPages[401] = createErrorPage("401", "Unauthorized");
-	_errorPages[402] = createErrorPage("402", "Payment Required");
-	_errorPages[403] = createErrorPage("403", "Forbidden");
-	_errorPages[404] = createErrorPage("404", "Not Found");
-	_errorPages[405] = createErrorPage("405", "Method Not Allowed");
-	_errorPages[406] = createErrorPage("406", "Not Acceptable");
-	_errorPages[407] = createErrorPage("407", "Proxy Authentication Required");
-	_errorPages[408] = createErrorPage("408", "Request Timeout");
-	_errorPages[409] = createErrorPage("409", "Conflict");
-	_errorPages[410] = createErrorPage("410", "Gone");
-	_errorPages[411] = createErrorPage("411", "Length Required");
-	_errorPages[412] = createErrorPage("412", "Precondition Failed");
-	_errorPages[413] = createErrorPage("413", "Content Too Large");
-	_errorPages[414] = createErrorPage("414", "URI Too Long");
-	_errorPages[415] = createErrorPage("415", "Unsupported Media Type");
-	_errorPages[416] = createErrorPage("416", "Range Not Satisfiable");
-	_errorPages[417] = createErrorPage("417", "Expectation Failed");
-	_errorPages[421] = createErrorPage("421", "Misdirected Request");
-	_errorPages[422] = createErrorPage("422", "Unprocessable Content");
-	_errorPages[426] = createErrorPage("426", "Upgrade Required");
-	_errorPages[500] = createErrorPage("500", "Internal Server Error");
-	_errorPages[501] = createErrorPage("501", "Not Implemented");
-	_errorPages[502] = createErrorPage("502", "Bad Gateway");
-	_errorPages[503] = createErrorPage("503", "Service Unavailable");
-	_errorPages[504] = createErrorPage("504", "Gateway Timeout");
-	_errorPages[505] = createErrorPage("505", "HTTP Version Not Supported");
-
 	socketUp();
 }
 
@@ -100,7 +72,12 @@ Server::~Server() {
 
 //Getters
 std::vector<Location*>&		Server::getLocations() { return this->_locations; } //IMPORTANT es getter pero no puede ser const y debe devolver referencia para poder hacer push_back, hacer otro?
-const str&					Server::getErrorPage(int error) { return _errorPages[error]; }
+const str&					Server::getErrorPage(int error)
+{
+	if (_errorPages[error].empty())
+		return createErrorPage(Utils::intToStr(error), Utils::_statusStr[error]);
+	return _errorPages[error];
+}
 str							Server::getServerName() const { return this->_serverName; }
 str							Server::getHostName() const { return this->_hostName; }
 str							Server::getPort() const { return this->_port; }
@@ -163,11 +140,6 @@ const str &Server::createErrorPage(const str &error, const str &msg)
 {
 	static std::map<str, str> errorHtmlMap;
 
-	int err = std::atoi(error);
-	if ((err <= 400 && err >= 426) && (err <= 500 && err >= 505)) {
-		Logger::log("createErrorPage ha recibido un error incorrecto", ERROR);
-		return "ERROR";
-	}
 	if (errorHtmlMap[error].empty()) {
 		str errorHtml ="<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>";
 		errorHtml.append(error + " " + msg);
@@ -182,3 +154,7 @@ const str &Server::createErrorPage(const str &error, const str &msg)
 	}
 	return errorHtmlMap[error];
 }
+
+
+
+

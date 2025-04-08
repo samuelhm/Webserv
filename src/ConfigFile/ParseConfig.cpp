@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 13:10:39 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 11:55:31 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,15 @@ Server*	getServer(const str &serverString)
 						throw EmptyValueException();
 					if (code < 400 || code > 599)
 						throw ConfigFileException("Invalid error code: " + code_str);
-					server->setErrorPages(code, path);
+					try{
+						str errorHtml = Utils::fileToStr(path);
+						server->setErrorPages(code, errorHtml);
+					}
+					catch (std::runtime_error &e) {
+						Logger::log(e.what(), WARNING);
+					}
+
+
 				}
 			} catch (EmptyValueException &e) {
 				Logger::log(str("Ignoring line becouse value is empty: ") + line, WARNING); //IMPORTANT ¿Excepto localhost:port permitimos empty values y las ignoramos?

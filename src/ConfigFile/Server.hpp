@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 17:41:47 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 11:14:57 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ class Server {
 	str							_root;
 	bool						_isDefault;
 	size_t						_bodySize;
-	std::map<int, std::string>	_errorMsg;
 
 	//SocketUp
 	int							_serverFd;
