@@ -1,8 +1,8 @@
 
+#include <algorithm>
 #include "Utils.hpp"
 #include "../ConfigFile/Server.hpp"
 #include "../ConfigFile/ParseConfig.hpp"
-
 namespace Utils {
 
 	std::vector<str> split(const str &input, char delimiter) {
@@ -64,19 +64,71 @@ namespace Utils {
 		return buffer.str();
 	}
 
-	str	intToStr(unsigned int num)
+	str intToStr(unsigned int num)
 	{
 		if (num == 0)
 			return "0";
-		long Num = static_cast<long>(num);
 		str response;
-		int i = 0;
-		while (Num != 0)
+		while (num != 0)
 		{
-			char a = (Num % 10) + '0';
-			response[i] = a;
-			Num /= 10;
+			char digit = (num % 10) + '0';
+			response.push_back(digit);
+			num /= 10;
 		}
+		std::reverse(response.begin(), response.end());
 		return response;
 	}
 }
+
+void Utils::fillStatusStr() {
+	_statusStr[100] = "Continue";
+	_statusStr[101] = "Switching Protocols";
+	_statusStr[200] = "OK";
+	_statusStr[201] = "Created";
+	_statusStr[202] = "Accepted";
+	_statusStr[203] = "Non-Authoritative Information";
+	_statusStr[204] = "No Content";
+	_statusStr[205] = "Reset Content";
+	_statusStr[206] = "Partial Content";
+	_statusStr[300] = "Multiple Choices";
+	_statusStr[301] = "Moved Permanently";
+	_statusStr[302] = "Found";
+	_statusStr[303] = "See Other";
+	_statusStr[304] = "Not Modified";
+	_statusStr[305] = "Use Proxy";
+	_statusStr[307] = "Temporary Redirect";
+	_statusStr[308] = "Permanent Redirect";
+	_statusStr[400] = "Bad Request";
+	_statusStr[401] = "Unauthorized";
+	_statusStr[402] = "Payment Required";
+	_statusStr[403] = "Forbidden";
+	_statusStr[404] = "Not Found";
+	_statusStr[405] = "Method Not Allowed";
+	_statusStr[406] = "Not Acceptable";
+	_statusStr[407] = "Proxy Authentication Required";
+	_statusStr[408] = "Request Timeout";
+	_statusStr[409] = "Conflict";
+	_statusStr[410] = "Gone";
+	_statusStr[411] = "Length Required";
+	_statusStr[412] = "Precondition Failed";
+	_statusStr[413] = "Content Too Large";
+	_statusStr[414] = "URI Too Long";
+	_statusStr[415] = "Unsupported Media Type";
+	_statusStr[416] = "Range Not Satisfiable";
+	_statusStr[417] = "Expectation Failed";
+	_statusStr[421] = "Misdirected Request";
+	_statusStr[422] = "Unproce_statusStrable Content";
+	_statusStr[426] = "Upgrade Required";
+	_statusStr[500] = "Internal Server Error";
+	_statusStr[501] = "Not Implemented";
+	_statusStr[502] = "Bad Gateway";
+	_statusStr[503] = "Service Unavailable";
+	_statusStr[504] = "Gateway Timeout";
+	_statusStr[505] = "HTTP Version Not Supported";
+  }
+  void	Utils::setUpServer(Server *server)
+  {
+    server->socketUp();
+  }
+
+  std::map<int, str>	Utils::_statusStr;

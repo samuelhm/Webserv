@@ -15,12 +15,15 @@ class Server;
 class Location;
 
 namespace Utils {
+	extern std::map<int, str>	_statusStr;
 
 	std::vector<str> split(const str &input, const char delimiter);
 	std::vector<str> split(const str &input, const str &delimiter);
 	str trim(const str& input);
 	str fileToStr(const str &filePath);
 	str	intToStr(unsigned int num);
+	void 	fillStatusStr();
+	void	setUpServer(Server *server);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {
@@ -32,6 +35,21 @@ namespace Utils {
 		}
 	}
 
+	template <typename K, typename V>
+	const str returnMap(const std::map<K, V>& m) {
+		typename std::map<K, V>::const_iterator it;
+		if (m.empty())
+		return "";
+		str result;
+		for (it = m.begin(); it != m.end(); ++it) {
+			result.append(it->first);
+			result.append(":");
+			result.append(it->second);
+			result.append("\n");
+		}
+		return result;
+	}
+
 	template <typename Iterator, typename Function>
 	void foreach(Iterator begin, Iterator end, Function func) {
 		while (begin != end) {
@@ -41,11 +59,7 @@ namespace Utils {
 	}
 
 	template <typename T>
-	void deleteItem(T *Item)
-	{
+	void deleteItem(T *Item) {
 		delete Item;
 	}
-
-
-
 }

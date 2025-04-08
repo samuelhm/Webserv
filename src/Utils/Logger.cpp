@@ -6,9 +6,28 @@ DebugType Logger::currentLevel = INFO;
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
-#define YELLOW  "\033[33m"
+#define BOLD_RED "\x1B[1m\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[1;33m"
 #define BLUE    "\033[34m"
-#define B_GRN   "\x1B[42m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m"
+#define WHITE   "\033[37m"
+
+#define BOLD "\x1B[1m"
+#define ITAL "\x1B[3m"
+#define UNDL "\x1B[4m"
+
+#define B_RED "\x1B[41m"
+#define B_GRN "\x1B[42m"
+#define B_YLW "\x1B[43m"
+#define B_BLU "\x1B[44m"
+#define B_MAG "\x1B[45m"
+#define B_CYN "\x1B[46m"
+#define B_WHI "\x1B[47m"
+
+#define BOLDYLW "\x1B[1m\033[1;33m"
+
 
 void Logger::setLevel(DebugType level) {
 	currentLevel = level;
@@ -16,10 +35,11 @@ void Logger::setLevel(DebugType level) {
 
 void Logger::initFromEnv() {
 	const char* env = std::getenv("DEBUG_LEVEL");
+	std::string lvl;
 	if (!env)
-		return;
-
-	std::string lvl = env;
+		lvl = "WARNING";
+	else
+		lvl = env;
 	if (lvl == "INFO")         setLevel(INFO);
 	else if (lvl == "USER")    setLevel(USER);
 	else if (lvl == "WARNING") setLevel(WARNING);
@@ -43,14 +63,17 @@ const char* Logger::getIcon(DebugType type) {
 	}
 }
 
+
 const char* Logger::getColor(DebugType type) {
 	switch (type) {
 		case INFO:
-			return BLUE;
+			return CYAN;
 		case WARNING:
-			return YELLOW;
+			return BOLDYLW;
 		case ERROR:
-			return RED;
+			return BOLD_RED;
+		case USER:
+			return GREEN;
 		default:
 			return RESET;
 	}

@@ -17,19 +17,20 @@ void					insertOption(const str &value, int type, Server* server);
 class ConfigFileException : public std::exception {
 	private:
 		std::string _msg;
+		std::vector<Server*>		_servers;
 	public:
-    virtual ~ConfigFileException(void) throw() {}
-		ConfigFileException(const std::string &msg) : _msg(msg) {}
-		virtual const char *what() const throw() {
-			return _msg.c_str();
-		}
+		virtual ~ConfigFileException() throw();
+		ConfigFileException(const std::string &msg);
+		ConfigFileException(const std::string &msg, std::vector<Server*> &servers);
+		virtual const char*		what() const throw();
+		const std::vector<Server*>	&getServer() const throw();
 };
 
 class UnknownOptionException : public std::exception {
 	private:
 		std::string _msg;
 	public:
-    virtual ~UnknownOptionException(void) throw() {}
+    virtual ~UnknownOptionException(void) throw();
 		UnknownOptionException(const std::string &msg);
 		virtual const char *what() const throw();
 };

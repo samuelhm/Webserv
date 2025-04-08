@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 10:16:46 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 13:44:52 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ bool						Location::getCgiEnable() const { return this->_cgiEnable; }
 str							Location::getCgiExtension() const { return this->_cgiExtension; }
 str							Location::getCgiPath() const { return this->_cgiPath; }
 str							Location::getRedirectCode() const { return this->_redirect_code; }
+int							Location::getBodySize() const {return this->_bodySize; }
 
 //Setters
 void						Location::setMethods(const str &Methods) {
@@ -89,3 +90,8 @@ void						Location::setCgiEnable(bool cgiEnable) {this->_cgiEnable = cgiEnable;}
 void						Location::setCgiExtension(str cgiExtension) {this->_cgiExtension = cgiExtension;}
 void						Location::setCgiPath(str cgiPath) {this->_cgiPath = cgiPath;}
 void						Location::setRedirectCode(const str &code) {this->_redirect_code = code; }
+void						Location::setBodySize(const str &size){
+	this->_bodySize = std::atoi(size.c_str());
+	if (_bodySize == 0)
+		throw BadSyntaxLocationBlockException("Error on Body size");
+}

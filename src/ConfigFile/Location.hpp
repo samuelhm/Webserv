@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 16:39:37 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 13:17:47 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include "../Utils/Utils.hpp"
+#include <cstdlib>
 
 class Location {
 	public:
@@ -34,6 +35,7 @@ class Location {
 		str							getCgiExtension() const;
 		str							getCgiPath() const;
 		str							getRedirectCode() const;
+		int							getBodySize() const;
 
 		//Setters
 		void						setMethods(const str &methods);
@@ -47,6 +49,7 @@ class Location {
 		void						setCgiExtension(str cgiExtension);
 		void						setCgiPath(str cgiPath);
 		void						setRedirectCode(const str &code);
+		void						setBodySize(const str &size);
 
 	private:
 		std::vector<RequestType>	_methods;
@@ -60,6 +63,7 @@ class Location {
 		bool						_cgiEnable;
 		str							_cgiExtension;
 		str							_cgiPath;
+		int							_bodySize;
 
 		//Private methods
 		Location(const Location &other);

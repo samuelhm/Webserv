@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/06 18:19:42 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:24:27 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,40 @@
 class Location;
 
 class Server {
+	private:
+	std::vector<Location*>		_locations;
+	std::map<int, str>			_errorPages;
+	str							_serverName;
+	str							_hostName;
+	str							_port;
+	str							_root;
+	bool						_isDefault;
+	size_t						_bodySize;
+
+	//SocketUp
+	int							_serverFd;
+	int							_reuseOption;
+	struct addrinfo*			_response;
+	struct addrinfo				_hints;
+
+	//PrivateMethods IMPORTANT (Aqui de momento si podemos o debemos copiar objetos de este tipo.)
+	Server& operator=(const Server &other);
+	Server(const str &server, const str &port);
+	Server(const str &server);
+	Server(const Server &other);
+
+	const str &createErrorPage(const str &error, const str &msg);
+
 	public:
 		Server();
 		~Server();
-
+		bool	operator==(const Server &other);
 
 		//Methods
 		void	socketUp();
 
 		//Getters
-		std::vector<Location*>&		getLocations();
+		std::vector<Location *>&	getLocations();
 		const str &					getErrorPage(int error);
 		str							getServerName() const;
 		str							getHostName() const;
@@ -56,30 +80,8 @@ class Server {
 		void						setIsdefault(bool isDefault);
 		void						setBodySize(size_t bodySize);
 
-
-
-
-	private:
-		std::vector<Location*>		_locations;
-		std::map<int, str>			_errorPages;
-		str							_serverName;
-		str							_hostName;
-		str							_port;
-		str							_root;
-		bool						_isDefault;
-		size_t						_bodySize;
-
-		//SocketUp
-		int							_serverFd;
-		int							_reuseOption;
-		struct addrinfo*			_response;
-		struct addrinfo				_hints;
-
-		//PrivateMethods IMPORTANT (Aqui de momento si podemos o debemos copiar objetos de este tipo.)
-		Server& operator=(const Server &other);
-		Server(const str &server, const str &port);
-		Server(const str &server);
-		Server(const Server &other);
+		//Functions
+		bool						locationExist(Location &loc) const;
 };
 
 #endif

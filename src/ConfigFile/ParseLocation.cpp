@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/07 09:47:15 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/08 13:19:17 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,8 @@ void setLocationParams(Location *location, std::map<str, str> const &options) {
       location->setMethods(it->second);
     else if (it->first == "root")
       location->setRoot(it->second);
+    else if (it->first == "client_max_body_size")
+      location->setBodySize(it->second);
     else {
       delete location;
       throw BadSyntaxLocationBlockException(it->first);

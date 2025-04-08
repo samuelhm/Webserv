@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 11:22:13 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:53:28 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EventPool.hpp"
+#include "../Utils/Utils.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,14 +24,14 @@ EventPool::EventPool(std::vector<Server*> &Servers) {
 
 	struct epoll_event ev;
 
+
 	for (std::vector<Server*>::iterator it = Servers.begin(); it != Servers.end(); ++it)
 	{
 		ev.events = EPOLLIN;
 		// ev.data.fd = (*it)->getServerFd();
-		struct eventStructtmp* estructura = new eventStructtmp; // IMPORTANT free this
-		estructura->server = *it;
-		estructura->isServer = true;
-		ev.data.ptr = static_cast<void*>(estructura);
+		struct eventStructTmp* serverStruct = createEventStruct((*it)->getServerFd(), *it, true);
+		_structs.push_back(serverStruct);
+		ev.data.ptr = static_cast<void*>(serverStruct);
 		if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, (*it)->getServerFd(), &ev) == -1) {
 			perror("epoll_ctl");
 			throw std::exception();
@@ -52,7 +53,8 @@ EventPool& EventPool::operator=(const EventPool &other) {
 }
 
 EventPool::~EventPool() {
-	// Destructor
+	if (!_structs.empty())
+		Utils::foreach(_structs.begin(), _structs.end(), Utils::deleteItem<struct eventStructTmp>);
 }
 
 str		EventPool::getRequest(int fdTmp)
@@ -72,13 +74,15 @@ str		EventPool::getRequest(int fdTmp)
 	if (pos != std::string::npos)
 		first_line = request.substr(0, pos);
 	Logger::log(str("HTTP Request Received.") + buffer, INFO);
-	Logger::log(str("HTTP Request Received.") + first_line, USER);
+	if (!first_line.empty())
+		Logger::log(str("HTTP Request Received.") + first_line, USER);
+	else
+		Logger::log("no \\r\\n found!!!", USER);
 	return (buffer);
 }
 
 void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m)
 {
-	(void)response; //IMPORTANT delete
 	(void)m;
 	str err;
 	err.append(response._line0);
@@ -97,7 +101,18 @@ void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<s
 	}
 	epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
 	close(fdTmp);
-	Logger::log("Sending resource.", INFO);
+	Logger::log(str("Sending resource to fd: ") + Utils::intToStr(fdTmp), USER);
+	Logger::log(str("Sending to client the header: \n") + Utils::returnMap(m), INFO);
+	Logger::log(str("Sending to client the body:\n") + response.get_body(), INFO);
+}
+
+struct eventStructTmp* EventPool::createEventStruct(int fd, Server* server, bool serverOrClient)
+{
+	struct eventStructTmp* result = new eventStructTmp;
+	result->client_fd = fd;
+	result->server = server;
+	result->isServer = serverOrClient;
+	return result;
 }
 
 void	EventPool::acceptConnection(int fdTmp, Server* server)
@@ -107,23 +122,20 @@ void	EventPool::acceptConnection(int fdTmp, Server* server)
 
 	int client_fd = accept(fdTmp, (struct sockaddr *)&client_address, &client_len);
 	if (client_fd == -1)
-		throw std::exception();
+		throw AcceptConnectionException(str("Failed on Accept connetion for server: ") + server->getServerName());
 	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
-        perror("fcntl failed");
 		close(client_fd);
-		throw std::exception();
+		throw AcceptConnectionException("Failed to set client with flag 0_NONBLOCK");
 	}
+	Logger::log(str("Accepted connection for server: ") + server->getServerName() + " at port: " + server->getPort(), USER);
 	struct epoll_event client_ev;
 	client_ev.events = EPOLLIN;
-	struct eventStructtmp* estructura = new eventStructtmp; // IMPORTANT free this
-	estructura->client_fd = client_fd;
-	estructura->server = server;
-	estructura->isServer = false;
-	client_ev.data.ptr = static_cast<void*>(estructura);
+	struct eventStructTmp* clientStruct = this->createEventStruct(client_fd, server, false);
+	client_ev.data.ptr = static_cast<void*>(clientStruct);
+	Logger::log(str("Inserting client fd ") + Utils::intToStr(client_fd) + " to pool event.", INFO);
     if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev) == -1) {
-        perror("epoll_ctl failed");
         close(client_fd);
-		throw std::exception();
+		throw AcceptConnectionException("Failed to add event inside epoll()!.");
     }
 }
 
@@ -139,20 +151,25 @@ bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp)
 
 void	EventPool::poolLoop(std::vector<Server*> &Servers)
 {
-	while (42)
+	while (epollRun)
 	{
 		int fdTmp;
 		_nfds = epoll_wait(_pollFd, events, 1024, -1); // -1 = bloquea indefinidamente
 		if (_nfds == -1) {
+			if (errno == EINTR) { //IMPORTANT para explicar: También se podría: if (epollRun == 0) vendría siendo lo mismo
+				Logger::log("Graceful shutdown initiated: exiting epoll event loop due to signal.", USER);
+				break;
+			}
+			Logger::log("epoll_wait() falló", ERROR);
 			perror("epoll_wait");
 			throw std::exception();
 		}
 		for (int i = 0; i < _nfds; ++i)
 		{
-			if (static_cast<eventStructtmp *>(events[i].data.ptr)->isServer)
-				fdTmp =  static_cast<eventStructtmp *>(events[i].data.ptr)->server->getServerFd();
+			if (static_cast<eventStructTmp *>(events[i].data.ptr)->isServer)
+				fdTmp =  static_cast<eventStructTmp *>(events[i].data.ptr)->server->getServerFd();
 			else
-				fdTmp =  static_cast<eventStructtmp *>(events[i].data.ptr)->client_fd;
+				fdTmp =  static_cast<eventStructTmp *>(events[i].data.ptr)->client_fd;
 			uint32_t flags = events[i].events;
 			if (flags & (EPOLLHUP | EPOLLERR)) {
 				std::cout << "Cerrando conexión con fd: " << fdTmp << std::endl;
@@ -165,9 +182,12 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 			if (isServerFd(Servers, fdTmp))
 			{
 				try {
-					acceptConnection(fdTmp, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
-				} catch(const std::exception& e) {
-					Logger::log(str("acceptConnection Error: ") + e.what(), ERROR);
+					acceptConnection(fdTmp, static_cast<eventStructTmp *>(events[i].data.ptr)->server);
+				} catch (AcceptConnectionException &e) {
+					Logger::log(e.what(), WARNING);
+				}
+				catch(const std::exception& e) {
+					Logger::log(str("FATAL UNKNOWN ERROR: ") + e.what(), ERROR);
 					continue;
 				}
 			}
@@ -176,14 +196,27 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 				try {
 					str reqStr = getRequest(fdTmp);
 					HttpRequest request(reqStr);
-					HttpResponse response(request, static_cast<eventStructtmp *>(events[i].data.ptr)->server);
+					HttpResponse response(request, static_cast<eventStructTmp *>(events[i].data.ptr)->server);
 					sendResponse(response, fdTmp, response.get_header());
+					delete static_cast<eventStructTmp *>(events[i].data.ptr);
 				} catch(const disconnectedException& e) {
-					Logger::log(str("Disconnection: ") + e.what(), WARNING);
+					Logger::log(str("Disconnection occur: ") + e.what(), WARNING);  //IMPORTANT Meter todo lo repetitivo en una funcion, y proteger epoll_ctl ante errores (o no).
+					epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
+					if (!static_cast<eventStructTmp *> (events[i].data.ptr)->isServer)
+						close (fdTmp);
+					delete static_cast<eventStructTmp *>(events[i].data.ptr);
 				} catch(const socketReadException& e) {
 					Logger::log(str("Socket read Error: ") + e.what(), ERROR);
+					epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
+					if (!static_cast<eventStructTmp *> (events[i].data.ptr)->isServer)
+					close (fdTmp);
+					delete static_cast<eventStructTmp *>(events[i].data.ptr);
 				} catch(...) {
-					Logger::log("Unknown Erro on epoll: ", ERROR);
+					Logger::log("Unknown Error on epoll: ", ERROR);
+					epoll_ctl(_pollFd, EPOLL_CTL_DEL, fdTmp, NULL);
+					if (!static_cast<eventStructTmp *> (events[i].data.ptr)->isServer)
+					close (fdTmp);
+					delete static_cast<eventStructTmp *>(events[i].data.ptr);
 				}
 			}
 		}
@@ -219,3 +252,6 @@ EventPool::socketReadException::socketReadException(int fd) {
 	this->message = std::strerror(errno) + std::string(" at Server: ") + oss.str();
 }
 const char *EventPool::socketReadException::what() const throw() { return this->message.c_str(); }
+
+EventPool::AcceptConnectionException::AcceptConnectionException(const str &msg) : message(msg) {}
+const char *EventPool::AcceptConnectionException::what() const throw() { return this->message.c_str(); }

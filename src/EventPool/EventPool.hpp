@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/03 17:31:14 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:36:08 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,27 +15,40 @@
 #define EVENTPOOL_HPP
 
 #include <vector>
+#include <csignal>
 #include <sys/epoll.h>
 #include <exception>
 #include <cerrno>
 #include <cstring>
 #include <sstream>
+#include <stack>
 #include "../ConfigFile/Server.hpp"
 #include "../HTTP/HttpRequest.hpp"
 #include "../HTTP/HttpResponse.hpp"
+
+extern volatile sig_atomic_t epollRun;
+
+struct eventStructTmp
+{
+	Server *server;
+	int		client_fd;
+	bool	isServer;
+};
 
 class EventPool {
 	private:
 		int		_pollFd;
 		int		_nfds;
 		struct epoll_event events[1024];
+		std::vector<struct eventStructTmp *> _structs;
 
 		EventPool(const EventPool &other);
 		EventPool& operator=(const EventPool &other);
 		bool isServerFd(std::vector<Server *> &Servers, int fdTmp);
 		Server*	getServerByFd(int fd, std::vector<Server*> Servers);
+		struct eventStructTmp* createEventStruct(int fd, Server* server, bool serverOrClient);
 
-	public:
+		public:
 		EventPool(std::vector<Server*> &Servers);
 		~EventPool();
 		void	poolLoop(std::vector<Server*> &Servers);
@@ -62,12 +75,14 @@ class EventPool {
 				const char *what() const throw();
 				virtual ~disconnectedException() throw() {}
 		};
-
-		struct eventStructtmp
+		class AcceptConnectionException : public std::exception
 		{
-			Server *server;
-			int		client_fd;
-			bool	isServer;
+			private:
+				str message;
+			public:
+			AcceptConnectionException(str const &msg);
+				const char *what() const throw();
+				virtual ~AcceptConnectionException() throw() {}
 		};
 };
 

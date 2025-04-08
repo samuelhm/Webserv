@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/07 10:21:07 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 00:23:47 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,15 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 			Logger::log("Trying to parser a server", INFO);
 			Server* server = getServer(*it); //IMPORTANT no se puede push_back de una.
 			Logger::log("Server parsed, pushing it.", INFO);
+			for (std::vector<Server*>::iterator ite = result.begin(); ite != result.end(); ++ite) {
+				if (**ite == *server) {
+					delete server;
+					throw ConfigFileException("Hostname and port combination must be unique across all server blocks", result);
+				}
+			}
 			result.push_back(server);
 		} catch (ConfigFileException &e) {
-			Logger::log(str("Error parsing server: ") + e.what(), ERROR); // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
+			throw ConfigFileException(e.what(), result); // ¿Return aqui y limpiamos memoria, o aceptamos el resto de servers validos?
 		}
 	}
 	return result;
@@ -146,7 +152,15 @@ Server*	getServer(const str &serverString)
 						throw EmptyValueException();
 					if (code < 400 || code > 599)
 						throw ConfigFileException("Invalid error code: " + code_str);
-					server->setErrorPages(code, path);
+					try{
+						str errorHtml = Utils::fileToStr(path);
+						server->setErrorPages(code, errorHtml);
+					}
+					catch (std::runtime_error &e) {
+						Logger::log(e.what(), WARNING);
+					}
+
+
 				}
 			} catch (EmptyValueException &e) {
 				Logger::log(str("Ignoring line becouse value is empty: ") + line, WARNING); //IMPORTANT ¿Excepto localhost:port permitimos empty values y las ignoramos?
@@ -179,12 +193,18 @@ Server*	getServer(const str &serverString)
 			}
       		Location *location = NULL;
       		try {
-        	location = getLocation(locationBlock, server->getServerName());
+        		location = getLocation(locationBlock, server->getServerName());
       		} catch (BadSyntaxLocationBlockException const &e) {
-        	Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
+        		Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
 			if (location != NULL)
 				delete location;
         	continue;
+			}
+			if (server->locationExist(*location)) {
+				Logger::log(str("Location already exist: ") + location->getRoot(), WARNING);
+				delete location;
+				delete server;
+				throw ConfigFileException("You cannot duplicate locations.");
 			}
 			if (location != NULL)
 				server->getLocations().push_back(location);
@@ -195,6 +215,16 @@ Server*	getServer(const str &serverString)
 	return (server);
 }
 
-const char* EmptyValueException::what() const throw() {	return "You cannot Assign empty value"; }
+
+ConfigFileException::~ConfigFileException() throw() {}
+ConfigFileException::ConfigFileException(const std::string &msg) : _msg(msg) {}
+ConfigFileException::ConfigFileException(const std::string &msg, std::vector<Server*> &servers) : _msg(msg), _servers(servers) {}
+const char* ConfigFileException::what() const throw() { return _msg.c_str(); }
+const std::vector<Server*> &ConfigFileException::getServer() const throw() {return _servers; }
+
+
 UnknownOptionException::UnknownOptionException(const std::string &msg) : _msg(msg) {}
-const char* UnknownOptionException::what() const throw() { return _msg.c_str();	}
+UnknownOptionException::~UnknownOptionException(void) throw() {}
+const char* UnknownOptionException::what() const throw() { return _msg.c_str(); }
+
+const char* EmptyValueException::what() const throw() { return "Empty value in configuration"; }
