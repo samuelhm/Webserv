@@ -12,8 +12,10 @@
 
 #include "EventPool.hpp"
 #include "../Utils/Utils.hpp"
+#include "../Utils/AutoIndex.hpp"
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
 
 EventPool::EventPool(std::vector<Server*> &Servers) {
 	_pollFd = epoll_create(1);
@@ -44,26 +46,32 @@ EventPool::~EventPool() {
 
 str		EventPool::getRequest(int fdTmp)
 {
+	str request;
 	char buffer[4096]; //IMPORTANT Considerar un bucle de lectura por bloques si bytes_read == sizeof(buffer) - 1
+	std::memset(buffer, 0, 4096);
+	ssize_t total_bytes = 0;
 	ssize_t bytes_read = read(fdTmp, buffer, sizeof(buffer) - 1);
-	if (bytes_read <= 0) {
-		if (bytes_read == 0)
+	while (bytes_read > 0)
+	{
+		total_bytes += bytes_read;
+		request.append(buffer);
+		bytes_read = (read(fdTmp, buffer, sizeof(buffer) - 1) > 0);
+	}
+	if (total_bytes <= 0) {
+		if (total_bytes == 0)
 			throw disconnectedException(fdTmp);
 		throw socketReadException(fdTmp);
 	}
-	buffer[bytes_read] = '\0';
-
-	str request(buffer);
 	size_t pos = request.find("\r\n");
 	str first_line;
 	if (pos != std::string::npos)
 		first_line = request.substr(0, pos);
-	Logger::log(str("HTTP Request Received.") + buffer, INFO);
+	Logger::log(str("HTTP Request Received.") + request, INFO);
 	if (!first_line.empty())
 		Logger::log(str("HTTP Request Received.") + first_line, USER);
 	else
 		Logger::log("no \\r\\n found!!!", USER);
-	return (buffer);
+	return (request);
 }
 
 void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m)
@@ -152,42 +160,72 @@ void	EventPool::processEvents(std::vector<Server*> &Servers)
 	for (int i = 0; i < _nfds; ++i)
 	{
 		int fd;
-		eventStructTmp *EventStrct = static_cast<eventStructTmp *>(events[i].data.ptr);
-		if (EventStrct->isServer)
-			fd =  EventStrct->server->getServerFd();
+		eventStructTmp *eventStrct = static_cast<eventStructTmp *>(events[i].data.ptr);
+		if (eventStrct->isServer)
+			fd =  eventStrct->server->getServerFd();
 		else
-			fd =  EventStrct->client_fd;
+			fd =  eventStrct->client_fd;
 		uint32_t flags = events[i].events;
 		if (flags & (EPOLLHUP | EPOLLERR)) {
 			Logger::log(str("Closing fd: ")+ Utils::intToStr(fd) + " Because EPOLLERR or EPOLLHUP", ERROR);
-			safeCloseAndDelete(fd, EventStrct);
+			safeCloseAndDelete(fd, eventStrct);
 			continue;
 		}
 		if (isServerFd(Servers, fd)) {
-			handleClientConnection(fd, EventStrct);
+			handleClientConnection(fd, eventStrct);
 			continue;
 		}
 		else
-			handleClientRequest(fd, EventStrct);
+			handleClientRequest(fd, eventStrct);
 	}
 }
 
-void	EventPool::handleClientConnection(int fd, eventStructTmp *EventStrct)
+void	EventPool::handleClientConnection(int fd, eventStructTmp *eventStrct)
 {
 	try {
-		acceptConnection(fd, EventStrct->server); }
+		acceptConnection(fd, eventStrct->server); }
 	catch (AcceptConnectionException &e) {
 		Logger::log(e.what(), WARNING); }
 	catch(const std::exception& e) {
 		Logger::log(str("FATAL UNKNOWN ERROR: ") + e.what(), ERROR); }
 }
 
-void	EventPool::handleClientRequest(int fd, eventStructTmp *EventStrct)
+bool	EventPool::checkCGI(str path, Server server)
+{
+	// if (!isCgi(path))
+		// return false;
+	str Path = path;
+	str ext = path.substr(path.find_last_of('.'));
+	Path.append("/");
+	Path = AutoIndex::getPrevPath(Path);
+	Path.erase(Path.size() - 1);
+	std::vector<Location*> locations = server.getLocations();
+	for (int i = 0; i < locations.size(); i++)
+	{
+		if (Path == locations[i]->getRoot())
+		{
+			if (!locations[i]->getCgiEnable())
+				return false;
+			std::vector<str> extensions = locations[i]->getCgiExtension();
+			for (int j = 0; j < extensions.size(); j++)
+			{
+				if (ext == extensions[j])
+					return true;
+			}
+			return false;
+		}
+	}
+	return false;
+}
+
+void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
 	try {
 		str reqStr = getRequest(fd);
 		HttpRequest request(reqStr);
-		HttpResponse response(request, EventStrct->server);
+		request.checkMethod(eventStrct->server);
+		request.isCgi(eventStrct->server);
+		HttpResponse response(request, eventStrct->server);
 		sendResponse(response, fd, response.get_header());
 	} catch(const disconnectedException& e) {
 		Logger::log(str("Disconnection occur: ") + e.what(), WARNING);
@@ -196,7 +234,7 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *EventStrct)
 	} catch(...) {
 		Logger::log("UNKNOWN FATAL ERROR ON handleClientRequest", ERROR);
 	}
-	safeCloseAndDelete(fd, EventStrct);
+	safeCloseAndDelete(fd, eventStrct);
 }
 
 void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {

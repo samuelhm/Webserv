@@ -18,6 +18,7 @@
 
 const str HttpRequest::saveHeader(const str &request) {
     str::size_type end = request.find("\r\n");
+
     if (end == str::npos)
 		throw badHeaderException("No \\r\\n found at header");
     str line = request.substr(0, end);
@@ -47,6 +48,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	if (end == str::npos)
 		throw badHeaderException("No space after method received.");
 	str	method = line.substr(0, end);
+	_receivedMethod = method;
 	if (method == "GET") _type = GET;
 	else if (method == "POST") _type = POST;
 	else if (method == "OPTIONS") _type = OPTIONS;
@@ -61,13 +63,15 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	if (path_end == str::npos)
 		throw badHeaderException(DEFAULT_ERROR);
 	_path = line.substr(end, path_end - end);
+	_resource = _path.substr(_path.find_last_of('/'));
 
 	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") { //aqui no tinene \r\n porque ya lo quitamos en el constructor
 		throw badHeaderException("Bad Protocol version");
 	}
 }
 
-HttpRequest::HttpRequest(str request) : AHttp(request), _badRequest(false) {
+HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false) {
+	_location = NULL;
 	str::size_type end = request.find("\r\n");
 	if (end == str::npos) {
 		_badRequest = true; return ;
@@ -75,6 +79,12 @@ HttpRequest::HttpRequest(str request) : AHttp(request), _badRequest(false) {
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
+		_location = getLocaton(server);
+		if(!ceckResource())
+			return ;
+		if(checkAllowMethod(_receivedMethod, server))
+			return;
+		checkIsCgi(line, server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;

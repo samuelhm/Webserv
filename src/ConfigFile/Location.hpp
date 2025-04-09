@@ -32,7 +32,7 @@ class Location {
 		str							getIndex() const;
 		str							getUploadPath() const;
 		bool						getCgiEnable() const;
-		str							getCgiExtension() const;
+		std::vector<str>			getCgiExtension() const;
 		str							getCgiPath() const;
 		str							getRedirectCode() const;
 		int							getBodySize() const;
@@ -61,7 +61,7 @@ class Location {
 		str							_index;
 		str							_uploadPath;
 		bool						_cgiEnable;
-		str							_cgiExtension;
+		std::vector<str>			_cgiExtension;
 		str							_cgiPath;
 		int							_bodySize;
 

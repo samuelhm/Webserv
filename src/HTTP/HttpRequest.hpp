@@ -15,14 +15,26 @@
 #define HTTPREQUEST_HPP
 
 #include "AHttp.hpp"
+#include "../ConfigFile/Server.hpp"
+
+class Server;
 
 class HttpRequest : public AHttp {
 	private:
 		RequestType	_type;
 		bool		_badRequest;
+		str			_receivedMethod;
+		str			_resource;
+
 		void		parse();
 		void		checkHeaderMRP(const str &line);
 		const str	saveHeader(const str &request);
+
+		bool		_resorceExist;
+		bool		_validMethod;
+		bool		_isCgi;
+		Location*	_location;
+
 	public:
 		HttpRequest(str request);
 		~HttpRequest();

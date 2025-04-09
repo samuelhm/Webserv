@@ -48,9 +48,10 @@ class EventPool {
 		void					processEvents(std::vector<Server*> &Servers);
 		void					sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m);
 		str						getRequest(int fdTmp);
-		void					handleClientRequest(int fd, eventStructTmp *EventStrct);
-		void					handleClientConnection(int fd, eventStructTmp *EventStrct);
+		void					handleClientRequest(int fd, eventStructTmp *eventStrct);
+		void					handleClientConnection(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
+		bool					checkCGI(str path, Server server);
 
 	public:
 		EventPool(std::vector<Server*> &Servers);
