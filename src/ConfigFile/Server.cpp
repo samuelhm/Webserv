@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 00:43:31 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 10:15:27 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,43 +20,6 @@ Server::Server() {
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 2147483647;
-}
-
-Server::Server(const str &servername) {
-
-	_serverName = servername;
-	_hostName = "localhost";
-	_port = "8080";
-	_root =	"./www/html";
-	_isDefault = true;
-	_bodySize = 1048576;
-}
-
-
-Server::Server(const str &servername, const str &port) {
-
-	_serverName = servername;
-	_hostName = "localhost";
-	_port = port;
-	_root =	"./www/html";
-	_isDefault = true;
-	_bodySize = 1048576;
-}
-
-Server::Server(const Server &other) { *this = other; }
-
-Server& Server::operator=(const Server &other) {
-	if (this != &other) {
-		this->_locations = other._locations;
-		this->_errorPages = other._errorPages;
-		this->_serverName = other._serverName;
-		this->_hostName = other._hostName;
-		this->_port = other._port;
-		this->_root = other._root;
-		this->_isDefault = other._isDefault;
-		this->_bodySize = other._bodySize;
-	}
-	return *this;
 }
 
 bool	Server::operator==(const Server &other)

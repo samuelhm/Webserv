@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 13:17:47 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 10:15:32 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,5 @@ class Location {
 		str							_cgiExtension;
 		str							_cgiPath;
 		int							_bodySize;
-
-		//Private methods
-		Location(const Location &other);
-		Location& operator=(const Location &other);
 
 };
