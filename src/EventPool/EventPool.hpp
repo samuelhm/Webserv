@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 02:34:48 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 03:38:43 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,18 +42,21 @@ class EventPool {
 
 		struct epoll_event events[1024];
 		std::vector<struct eventStructTmp *> _structs;
-		bool isServerFd(std::vector<Server *> &Servers, int fdTmp);
-		struct eventStructTmp* createEventStruct(int fd, Server* server, bool serverOrClient);
-		eventStructTmp* castEvent(void *ptr);
 
-		public:
+		bool					isServerFd(std::vector<Server *> &Servers, int fdTmp);
+		struct eventStructTmp*	createEventStruct(int fd, Server* server, bool serverOrClient);
+		void					processEvents(std::vector<Server*> &Servers);
+		void					sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m);
+		str						getRequest(int fdTmp);
+		void					handleClientRequest(int fd, eventStructTmp *EventStrct);
+		void					handleClientConnection(int fd, eventStructTmp *EventStrct);
+		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
+
+	public:
 		EventPool(std::vector<Server*> &Servers);
 		~EventPool();
 		void	poolLoop(std::vector<Server*> &Servers);
-		str		getRequest(int fdTmp);
-		void	sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m, eventStructTmp *eventSt);
 		void	acceptConnection(int fdTmp, Server *server);
-		void	safeCloseAndDelete(int fd, eventStructTmp* eventStruct, const str &logMsg);
 
 
 		class socketReadException : public std::exception
