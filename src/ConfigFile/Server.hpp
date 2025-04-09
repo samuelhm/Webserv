@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 00:24:27 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 10:23:18 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #define SERVER_HPP
 
 #include "Location.hpp"
+#include "ParseConfig.hpp"
 #include <map>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -43,12 +44,6 @@ class Server {
 	struct addrinfo*			_response;
 	struct addrinfo				_hints;
 
-	//PrivateMethods IMPORTANT (Aqui de momento si podemos o debemos copiar objetos de este tipo.)
-	Server& operator=(const Server &other);
-	Server(const str &server, const str &port);
-	Server(const str &server);
-	Server(const Server &other);
-
 	const str &createErrorPage(const str &error, const str &msg);
 
 	public:
@@ -58,6 +53,8 @@ class Server {
 
 		//Methods
 		void	socketUp();
+		bool	locationExist(Location &loc) const;
+		void	setListenValue(const str &value);
 
 		//Getters
 		std::vector<Location *>&	getLocations();
@@ -80,8 +77,6 @@ class Server {
 		void						setIsdefault(bool isDefault);
 		void						setBodySize(size_t bodySize);
 
-		//Functions
-		bool						locationExist(Location &loc) const;
 };
 
 #endif

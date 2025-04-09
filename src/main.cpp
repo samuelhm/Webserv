@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 00:33:19 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 11:57:14 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,12 @@ int main(int ac, char **av)
 	Utils::fillStatusStr();
 	try {
 		std::vector<Server*> Servers = parseConfigFile(av[1]);
-		Utils::foreach(Servers.begin(), Servers.end(), Utils::setUpServer);
+		if (!Utils::setUpServers(Servers))
+		{
+			Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
+			Logger::log("Fail setting up servers", ERROR);
+			return 1;
+		}
 		EventPool pool(Servers);
 		pool.poolLoop(Servers);
 		Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);

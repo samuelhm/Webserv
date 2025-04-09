@@ -64,7 +64,7 @@ namespace Utils {
 		return buffer.str();
 	}
 
-	str intToStr(unsigned int num)
+	str intToStr(std::size_t num)
 	{
 		if (num == 0)
 			return "0";
@@ -78,6 +78,13 @@ namespace Utils {
 		std::reverse(response.begin(), response.end());
 		return response;
 	}
+
+	// str intToStr(int num)
+	// {
+	// 	std::ostringstream result;
+	// 	result << num;
+	// 	return result.str();
+	// }
 }
 
 void Utils::fillStatusStr() {
@@ -126,9 +133,16 @@ void Utils::fillStatusStr() {
 	_statusStr[504] = "Gateway Timeout";
 	_statusStr[505] = "HTTP Version Not Supported";
   }
-  void	Utils::setUpServer(Server *server)
+  bool	Utils::setUpServers(std::vector<Server*>& servers)
   {
-    server->socketUp();
+    for (size_t i = 0; i < servers.size(); ++i) {
+		try {
+			servers[i]->socketUp();
+		} catch (const std::exception& e) {
+			return false;
+		}
+	}
+	return true;
   }
 
   std::map<int, str>	Utils::_statusStr;
