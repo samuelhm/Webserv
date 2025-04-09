@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 02:09:40 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 02:38:20 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ void	EventPool::acceptConnection(int fdTmp, Server* server)
 	Logger::log(str("Accepted connection for server: ") + server->getServerName() + " at port: " + server->getPort(), USER);
 	struct epoll_event client_ev;
 	client_ev.events = EPOLLIN;
-	struct eventStructTmp* clientStruct = this->createEventStruct(client_fd, server, false);
+	struct eventStructTmp* clientStruct = createEventStruct(client_fd, server, false);
 	client_ev.data.ptr = static_cast<void*>(clientStruct);
 	Logger::log(str("Inserting client fd ") + Utils::intToStr(client_fd) + " to pool event.", INFO);
     if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, client_fd, &client_ev) == -1) {
@@ -148,19 +148,19 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 		}
 		for (int i = 0; i < _nfds; ++i)
 		{
-			if (static_cast<eventStructTmp *>(events[i].data.ptr)->isServer)
-				fdTmp =  static_cast<eventStructTmp *>(events[i].data.ptr)->server->getServerFd();
+			if (castEvent(events[i].data.ptr)->isServer)
+				fdTmp =  castEvent(events[i].data.ptr)->server->getServerFd();
 			else
-				fdTmp =  static_cast<eventStructTmp *>(events[i].data.ptr)->client_fd;
+				fdTmp =  castEvent(events[i].data.ptr)->client_fd;
 			uint32_t flags = events[i].events;
 			if (flags & (EPOLLHUP | EPOLLERR)) {
 				str ErrorMessage = "Closing fd: " + Utils::intToStr(fdTmp) + " Becouse EPOLLERR or EPOLLHUP";
-				safeCloseAndDelete(fdTmp, static_cast<eventStructTmp *>(events[i].data.ptr), ErrorMessage);
+				safeCloseAndDelete(fdTmp, castEvent(events[i].data.ptr), ErrorMessage);
 			}
 			if (isServerFd(Servers, fdTmp))
 			{
 				try {
-					acceptConnection(fdTmp, static_cast<eventStructTmp *>(events[i].data.ptr)->server);
+					acceptConnection(fdTmp, castEvent(events[i].data.ptr)->server);
 				} catch (AcceptConnectionException &e) {
 					Logger::log(e.what(), WARNING);
 				}
@@ -172,21 +172,26 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 			else
 			{
 				try {
-					eventStructTmp *epollEventStruct = static_cast<eventStructTmp *>(events[i].data.ptr);
+					eventStructTmp *epollEventStruct = castEvent(events[i].data.ptr);
 					str reqStr = getRequest(fdTmp);
 					HttpRequest request(reqStr);
 					HttpResponse response(request, epollEventStruct->server);
 					sendResponse(response, fdTmp, response.get_header(), epollEventStruct);
 				} catch(const disconnectedException& e) {
-					safeCloseAndDelete(fdTmp, static_cast<eventStructTmp *>(events[i].data.ptr), str("Disconnection occur: ") + e.what());
+					safeCloseAndDelete(fdTmp, castEvent(events[i].data.ptr), str("Disconnection occur: ") + e.what());
 				} catch(const socketReadException& e) {
-					safeCloseAndDelete(fdTmp, static_cast<eventStructTmp *>(events[i].data.ptr), str("Socket read Error: ") + e.what());
+					safeCloseAndDelete(fdTmp, castEvent(events[i].data.ptr), str("Socket read Error: ") + e.what());
 				} catch(...) {
-					safeCloseAndDelete(fdTmp, static_cast<eventStructTmp *>(events[i].data.ptr), "");
+					safeCloseAndDelete(fdTmp, castEvent(events[i].data.ptr), "");
 				}
 			}
 		}
 	}
+}
+
+eventStructTmp* EventPool::castEvent(void *ptr)
+{
+	return static_cast<eventStructTmp *>(ptr);
 }
 
 void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct, const str &logMsg) {
