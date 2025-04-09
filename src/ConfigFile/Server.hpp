@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 10:14:27 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 10:23:18 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #define SERVER_HPP
 
 #include "Location.hpp"
+#include "ParseConfig.hpp"
 #include <map>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -53,6 +54,7 @@ class Server {
 		//Methods
 		void	socketUp();
 		bool	locationExist(Location &loc) const;
+		void	setListenValue(const str &value);
 
 		//Getters
 		std::vector<Location *>&	getLocations();

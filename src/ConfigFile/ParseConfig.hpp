@@ -9,10 +9,15 @@
 #include "Location.hpp"
 #include "../Utils/Utils.hpp"
 
+class Server;
+
 std::vector<Server*>	parseConfigFile(const str &filepath);
 Server*					getServer(const str &serverString);
 void					setValidOption(const str &line, OptionType &type);
 void					insertOption(const str &value, int type, Server* server);
+bool 					handleServerLine(str&, std::istringstream&, Server*);
+void 					parseErrorPage(const str &line, Server *server);
+bool					parseLocationBlock(str &line, std::istringstream &ss, Server *server);
 
 class ConfigFileException : public std::exception {
 	private:

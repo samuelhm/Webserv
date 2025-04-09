@@ -23,7 +23,7 @@ namespace Utils {
 	str 				fileToStr(const str &filePath);
 	str 				intToStr(std::size_t num);
 	void 				fillStatusStr();
-	void				setUpServer(Server *server);
+	bool				setUpServers(std::vector<Server*>& servers);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {

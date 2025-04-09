@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 03:48:13 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 11:27:19 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,7 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 			Logger::log(str("Failed closing FD: ") + Utils::intToStr(fd), ERROR);
 	}
 	delete eventStruct; //Jamas deberia ser nulo llegado a este punto.
+	eventStruct = NULL; //Protección para errores en destructor.
 }
 
 EventPool::disconnectedException::disconnectedException(int fd) {

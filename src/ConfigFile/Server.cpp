@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 10:15:27 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 11:50:51 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ Server::Server() {
 	_root =	"./www/html";
 	_isDefault = true;
 	_bodySize = 2147483647;
+	_response = NULL;
+	_serverFd = -1;
 }
 
 bool	Server::operator==(const Server &other)
@@ -33,7 +35,8 @@ Server::~Server() {
 		Utils::foreach(_locations.begin(), _locations.end(), Utils::deleteItem<Location>);
 	if (_response)
 		freeaddrinfo(_response);
-	close(_serverFd);
+	if (_serverFd >= 0)
+		close(_serverFd);
 }
 
 //Getters
@@ -69,12 +72,12 @@ void						Server::socketUp()
 	_reuseOption = 1;
 // Poder reutilizar el mismo puerto sin tener que esperar en caso de fallo del programa
 	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &_reuseOption, sizeof(int)) == -1) {
-		perror("setsockopt failed");
+		Logger::log(str("Fail setting SO_REUSEADDR on server: ") + _serverName, ERROR);
 		close(_serverFd);
 		throw std::exception();
 	}
 	if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) == -1) {
-        perror("fcntl failed");
+        Logger::log(str("Fail setting 0_NONBLOCK on server: ") + _serverName, ERROR);
 		close(_serverFd);
 		throw std::exception();
 	}
@@ -87,17 +90,17 @@ void						Server::socketUp()
 // con las opciones dadas en hints configura res
 	int err = getaddrinfo(getHostName().c_str(), getPort().c_str(), &_hints, &_response);
 	if (err) {
-		std::cout << "error: getaddrinfo" << std::endl << gai_strerror(err) << std::endl;
-		return ;
+		Logger::log(str("error: getaddrinfo: ") + gai_strerror(err), ERROR);
+		throw std::exception();
 	}
 // vincula fd del servidor al host name y port
 	else if (bind(_serverFd, _response->ai_addr, _response->ai_addrlen) == -1) {
-		std::cout << "error: bind" << std::endl;
-		return ;
+		Logger::log(str("Cannot bind server: ") + _serverName + " to port: " + _port, ERROR);
+		throw std::exception();
 	}
 // habilitamos el fd para que se quede escuchando
 	if (listen(_serverFd, SOMAXCONN) == -1) {
-		perror("listen failed");
+		Logger::log(str("Listen on port: ") + _port + " Failed.", ERROR);
 		close(_serverFd);
 		throw std::exception();
 	}
@@ -128,4 +131,17 @@ bool	Server::locationExist(Location &loc) const
 		if (_locations[i]->getRoot() == loc.getRoot())
 			return true;
 	return false;
+}
+
+void	Server::setListenValue(const str &value)
+{
+	size_t sep = value.find(":");
+		if (sep == std::string::npos)
+			throw ConfigFileException("LISTEN must be in format hostname:port " + value); // IMPORTANT check if this information is needeed (to continue or stop)
+		str hostname = Utils::trim(value.substr(0, sep));
+		str port = Utils::trim(value.substr(sep + 1));
+		if (hostname.empty() || port.empty())
+			throw ConfigFileException("LISTEN has empty host or port: " + value); // IMPORTANT check if this information is needeed (to continue or stop)
+		this->setHostName(hostname);
+		this->setPort(port);
 }
