@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 03:40:20 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/09 03:48:13 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,26 +149,26 @@ void	EventPool::poolLoop(std::vector<Server*> &Servers)
 
 void	EventPool::processEvents(std::vector<Server*> &Servers)
 {
-	int fdTmp;
 	for (int i = 0; i < _nfds; ++i)
 	{
+		int fd;
 		eventStructTmp *EventStrct = static_cast<eventStructTmp *>(events[i].data.ptr);
 		if (EventStrct->isServer)
-			fdTmp =  EventStrct->server->getServerFd();
+			fd =  EventStrct->server->getServerFd();
 		else
-			fdTmp =  EventStrct->client_fd;
+			fd =  EventStrct->client_fd;
 		uint32_t flags = events[i].events;
 		if (flags & (EPOLLHUP | EPOLLERR)) {
-			Logger::log(str("Closing fd: ")+ Utils::intToStr(fdTmp) + " Because EPOLLERR or EPOLLHUP", ERROR);
-			safeCloseAndDelete(fdTmp, EventStrct);
+			Logger::log(str("Closing fd: ")+ Utils::intToStr(fd) + " Because EPOLLERR or EPOLLHUP", ERROR);
+			safeCloseAndDelete(fd, EventStrct);
 			continue;
 		}
-		if (isServerFd(Servers, fdTmp)) {
-			handleClientConnection(fdTmp, EventStrct);
+		if (isServerFd(Servers, fd)) {
+			handleClientConnection(fd, EventStrct);
 			continue;
 		}
 		else
-			handleClientRequest(fdTmp, EventStrct);
+			handleClientRequest(fd, EventStrct);
 	}
 }
 
@@ -210,16 +210,12 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 }
 
 EventPool::disconnectedException::disconnectedException(int fd) {
-	std::ostringstream oss;
-	oss << fd;
-	this->message = "Client Disconnected: Server = " + oss.str(); //Deve obtener el nombre del servidor
+	this->message = str("Client Disconnected: Server = ") + Utils::intToStr(fd);
 }
 const char *EventPool::disconnectedException::what() const throw() { return this->message.c_str(); }
 
 EventPool::socketReadException::socketReadException(int fd) {
-	std::ostringstream oss;
-	oss << fd;
-	this->message = std::strerror(errno) + std::string(" at Server: ") + oss.str();
+	this->message = std::strerror(errno) + std::string(" at Server: ") + Utils::intToStr(fd);
 }
 const char *EventPool::socketReadException::what() const throw() { return this->message.c_str(); }
 

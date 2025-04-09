@@ -64,7 +64,7 @@ namespace Utils {
 		return buffer.str();
 	}
 
-	str intToStr(unsigned int num)
+	str intToStr(std::size_t num)
 	{
 		if (num == 0)
 			return "0";
@@ -78,6 +78,13 @@ namespace Utils {
 		std::reverse(response.begin(), response.end());
 		return response;
 	}
+
+	// str intToStr(int num)
+	// {
+	// 	std::ostringstream result;
+	// 	result << num;
+	// 	return result.str();
+	// }
 }
 
 void Utils::fillStatusStr() {
