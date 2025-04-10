@@ -18,7 +18,7 @@ CPPFLAGS	+=	#-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
 SRC			=	src/main.cpp \
 				src/EventPool/EventPool.cpp \
 				src/ConfigFile/Location.cpp src/ConfigFile/Server.cpp \
-				src/HTTP/HttpRequest.cpp src/HTTP/HttpResponse.cpp \
+				src/HTTP/HttpRequest.cpp src/HTTP/CGI.cpp src/HTTP/HttpResponse.cpp \
 				src/HTTP/AHttp.cpp src/ConfigFile/ParseConfig.cpp src/ConfigFile/ParseLocation.cpp \
 				src/Utils/Utils.cpp src/Utils/AutoIndex.cpp src/Utils/Logger.cpp
 

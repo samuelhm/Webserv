@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "HttpRequest.hpp"
 #include <string>
 #include <exception>
@@ -110,84 +109,19 @@ bool	HttpRequest::checkAllowMethod()
 	return _validMethod;
 }
 
-void	HttpRequest::checkIsValidCgi() {
-	if (!_location->getCgiEnable())
-		return ;
-	std::ifstream isValidCgi((_location->getCgiPath()).c_str());
-	_isValidCgi = isValidCgi.good();
-}
-
-// void	HttpRequest::checkIsCgi(Server *server)
-// {
-// 	str ext;
-// 	if (_resource.find('.') != str::npos)
-// 		ext = _resource.substr(_resource.find('.') - 1);
-// 	else
-// 		return ;
-// 	for (size_t i = 0; i < _location->getCgiExtension().size(); i++) {
-// 		if (_location->getCgiExtension()[i] == ext) {
-// 			_isCgi = true;
-// 			break ;
-// 		}
-// 	}
-// 	if (_isCgi == true)
-// 		checkIsValidCgi();
-// }
-
-bool	HttpRequest::checkValidCgi() {
-	return false;
-};
-
-bool	HttpRequest::checkIsCgi(std::vector<str>::iterator it, std::vector<str>::iterator end, Server* server) {
-	Location *loc = findLocation(server);
-	if (!loc)
-		return false;
-	std::vector<str> validExtensions = loc->getCgiExtension();
-	if (validExtensions.empty())
-		return false;
-
-	size_t infoPos = (*it).find('?');
-	if (infoPos != str::npos) {
-		if ((it + 1) != end) //hola aaaa bbbbbbbb adios.py?algo=algomas (/) algoMas
-			return false;
-		_queryString = (*it).substr(infoPos + 1);
-		*it = (*it).substr(0, infoPos - 1);
+void	HttpRequest::addPathInfo(strVecIt it, strVecIt end) {
+	for (; it != end; it++) {
+		if ((*it).find('?') != str::npos) {
+			saveScriptNameAndQueryString(it, end);
+			break ;
+		}
+		_pathInfo.append("/" + (*it));
 	}
-	if (!checkValidCgi())
-	// check valid extension (do it in a function (checkValidCgi()))
-	// if valid externsion: add the other parameters to PATH_INFO
-	// else: continue
-	// for each it
-	// add to _pathLocation until "."" found
-	// if "." is found: checkValidCgi()
-	// if checkValidCgi() == true: add rest to PATH_INFO
-	// else: continue
-	//
-	// separate all this in functions because they are going to be called again
-	if (!loc->getCgiEnable())
-		return false;
-	str extension = (*it).substr((*it).find_last_of('.'));
-	bool valid = false;
-	for (int i = 0; i < validExtensions.size(); i++)
-		if (extension == validExtensions[i])
-			valid = true;
-	str total_path = server->getRoot();
-	if (valid) {
-		if (!loc->getRoot().empty())
-			total_path.append(loc->getRoot());
-	}
-	return true;
 }
-
-// /hola aaaa bbbbbbbb adios.py hola adios a?hola=a
-// /hola aaaa bbbbbbbb adios.py hola adios a.py?hola=a
-// /hola aaaa bbbbbbbb adios.py hola adios a
-// /hola aaaa bbbbbbbb adios.py hola adios a.py
-// /hola aaaa bbbbbbbb adios.py?algo=algomas/
 
 void	HttpRequest::envPath(Server* server) {
 	std::vector<str> locationPaths = Utils::split(_path, '/');
-	std::vector<str>::iterator it;
+	strVecIt it;
 	bool isCgi;
 	for (it = locationPaths.begin() ; it != locationPaths.end(); ++it) {
 		isCgi = false;

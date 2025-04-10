@@ -23,7 +23,7 @@ std::vector<Server*>	parseConfigFile(const str &filepath) {
 	if (serverStrings.empty())
 		throw ConfigFileException("No Server found inside config file");
 	std::vector<Server*> result;
-	for (std::vector<str>::iterator it = serverStrings.begin(); it != serverStrings.end(); ++it) {
+	for (strVecIt it = serverStrings.begin(); it != serverStrings.end(); ++it) {
 		try {
 			(*it) = Utils::trim(*it);
 			if ((*it).empty())

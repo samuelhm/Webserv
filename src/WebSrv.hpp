@@ -9,6 +9,7 @@
 
 typedef std::string str;
 typedef std::vector<str> strVec;
+typedef strVec::iterator strVecIt;
 typedef std::map<str, str> strMap;
 
 enum	RequestType

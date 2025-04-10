@@ -39,6 +39,7 @@ class HttpRequest : public AHttp {
 		str			_varCgi;
 		str			_locationPath;
 		str			_queryString;
+		str			_pathInfo;
 		bool		_resourceExist;
 
 	public:
@@ -50,8 +51,12 @@ class HttpRequest : public AHttp {
 		// void		checkIsCgi(Server *server);
 		void		checkIsValidCgi();
 		void		envPath(Server* server);
-		bool		checkIsCgi(std::vector<str>::iterator it, std::vector<str>::iterator end, Server* server);
-		bool		checkValidCgi();
+		
+		bool		checkIsCgi(strVecIt it, strVecIt end, Server* server);
+		bool		checkValidCgi(strVecIt it);
+		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
+		void		addPathInfo(strVecIt it, strVecIt end);
+
 
 		//Getters
 		RequestType	getType() const;
