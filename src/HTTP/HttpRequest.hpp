@@ -43,12 +43,29 @@ class HttpRequest : public AHttp {
 		~HttpRequest();
 		Location	*getLocation(Server* Server);
 
-		RequestType getType() const;
-		bool		getBadRequest() const;
 		bool		checkAllowMethod();
 		void		checkIsCgi(Server *server);
 		void		checkIsValidCgi();
 
+		//Getters
+		RequestType	getType() const;
+		bool		getBadRequest() const;
+		bool		getResorceExist() const;
+		bool		getValidMethod() const;
+		bool		getIsCgi() const;
+		bool		getIsValidCgi() const;
+		Location*	getLocation() const;
+		str			getVarCgi() const;
+
+		//Setters
+		void		setType(RequestType type);
+		void		setBadRequest(bool badRequest);
+		void		setResorceExist(bool resorceExist);
+		void		setValidMethod(bool validMethod);
+		void		setIsCgi(bool isCgi);
+		void		setIsValidCgi(bool isValidCgi);
+		void		setLocation(Location *location);
+		void		setVarCgi(str varCgi);
 		class badHeaderException : public std::exception
 		{
 			private:

@@ -173,6 +173,22 @@ HttpRequest::~HttpRequest() {}
 //Getters
 RequestType	HttpRequest::getType() const { return _type; }
 bool		HttpRequest::getBadRequest() const { return _badRequest; }
+bool		HttpRequest::getResorceExist() const { return _resorceExist; }
+bool		HttpRequest::getValidMethod() const { return _validMethod; }
+bool		HttpRequest::getIsCgi() const { return _isCgi; }
+bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
+Location*	HttpRequest::getLocation() const { return _location; }
+str			HttpRequest::getVarCgi() const { return _varCgi; }
+
+//Setters
+void		HttpRequest::setType(RequestType type) { _type = type; }
+void		HttpRequest::setBadRequest(bool badRequest) { _badRequest = badRequest; }
+void		HttpRequest::setResorceExist(bool resorceExist) { _resorceExist = resorceExist; }
+void		HttpRequest::setValidMethod(bool validMethod) { _validMethod = validMethod; }
+void		HttpRequest::setIsCgi(bool isCgi) { _isCgi = isCgi; }
+void		HttpRequest::setIsValidCgi(bool isValidCgi) { _isValidCgi = isValidCgi; }
+void 		HttpRequest::setLocation(Location *location) { _location = location; }
+void		HttpRequest::setVarCgi(str varCgi) { _varCgi = varCgi; }
 
 HttpRequest::badHeaderException::badHeaderException(const std::string &msg) : _msg(msg) {}
 const char *HttpRequest::badHeaderException::what() const throw() { return _msg.c_str(); }
