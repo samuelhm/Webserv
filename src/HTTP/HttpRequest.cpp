@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 13:06:19 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/10 11:43:09 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,18 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	}
 }
 
+bool ceckResource(Server const &server) {
+  _resorceExist = false;
+  if (!_location)
+    return false;
+  str root = _locations->getRoot();
+  if (root.empty())
+    root = server.getRoot();
+  ifstream resource((root + _resource).c_str());
+  _resorceExist = resource.good();
+  return resource;
+}
+
 HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false) {
 	_location = NULL;
 	str::size_type end = request.find("\r\n");
@@ -80,7 +92,7 @@ HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequ
 	try {
 		checkHeaderMRP(line);
 		_location = getLocaton(server);
-		if(!ceckResource())
+		if(!ceckResource(*server))
 			return ;
 		if(checkAllowMethod(_receivedMethod, server))
 			return;
