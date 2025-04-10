@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/10 12:03:00 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/10 12:17:04 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,22 @@ Location*	HttpRequest::getLocation(Server* Server) {
 	}
 	Logger::log(str("No se encontro location para este recurso: ") + _path + _resource, USER);
 	return NULL;
+}
+
+bool	HttpRequest::checkAllowMethod()
+{
+	_validMethod = false;
+	int method = (_receivedMethod == "GET")    ? 0 :
+				(_receivedMethod == "POST")   ? 1 :
+				(_receivedMethod == "DELETE") ? 2 :
+				(_receivedMethod == "PUT")    ? 3 :
+				-1;
+	for (size_t i = 0; i < _location->getMethods().size(); i++)
+	{
+		if (_location->getMethods()[i] == method)
+			_validMethod = true;
+	}
+	return _validMethod;
 }
 
 HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false) {
