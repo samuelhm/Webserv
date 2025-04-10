@@ -17,7 +17,6 @@
 #include <iostream>
 #include <fstream>
 
-
 const str HttpRequest::saveHeader(const str &request) {
     str::size_type end = request.find("\r\n");
 
@@ -135,6 +134,10 @@ void	HttpRequest::checkIsValidCgi() {
 // 		checkIsValidCgi();
 // }
 
+bool	HttpRequest::checkValidCgi() {
+	return false;
+};
+
 bool	HttpRequest::checkIsCgi(std::vector<str>::iterator it, std::vector<str>::iterator end, Server* server) {
 	Location *loc = findLocation(server);
 	if (!loc)
@@ -150,6 +153,7 @@ bool	HttpRequest::checkIsCgi(std::vector<str>::iterator it, std::vector<str>::it
 		_queryString = (*it).substr(infoPos + 1);
 		*it = (*it).substr(0, infoPos - 1);
 	}
+	if (!checkValidCgi())
 	// check valid extension (do it in a function (checkValidCgi()))
 	// if valid externsion: add the other parameters to PATH_INFO
 	// else: continue

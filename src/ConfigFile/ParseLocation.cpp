@@ -49,8 +49,8 @@ Location *getLocation(const str &locationString, const str &serverName) {
   return location;
 }
 
-void setLocationParams(Location *location, std::map<str, str> const &options) {
-  for (std::map<str, str>::const_iterator it = options.begin(); it != options.end(); it++) {
+void setLocationParams(Location *location, strMap const &options) {
+  for (strMap::const_iterator it = options.begin(); it != options.end(); it++) {
     if (it->first == "redirect")
       location->setRedirect(it->second);
     else if (it->first == "redirect_code")

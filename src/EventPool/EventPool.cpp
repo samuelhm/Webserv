@@ -74,11 +74,11 @@ str		EventPool::getRequest(int fdTmp)
 	return (request);
 }
 
-void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m)
+void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const strMap& m)
 {
 	str err;
 	err.append(response._line0);
-	std::map<str, str>::iterator it;
+	strMap::iterator it;
 	for (it = response.get_header().begin(); it != response.get_header().end(); ++it) {
 		err.append(it->first);
 		err.append(": ");

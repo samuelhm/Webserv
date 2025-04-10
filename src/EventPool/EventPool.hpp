@@ -46,7 +46,7 @@ class EventPool {
 		bool					isServerFd(std::vector<Server *> &Servers, int fdTmp);
 		struct eventStructTmp*	createEventStruct(int fd, Server* server, bool serverOrClient);
 		void					processEvents(std::vector<Server*> &Servers);
-		void					sendResponse(HttpResponse &response, int fdTmp, const std::map<str, str>& m);
+		void					sendResponse(HttpResponse &response, int fdTmp, const strMap& m);
 		str						getRequest(int fdTmp);
 		void					handleClientRequest(int fd, eventStructTmp *eventStrct);
 		void					handleClientConnection(int fd, eventStructTmp *eventStrct);

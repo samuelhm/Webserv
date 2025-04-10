@@ -3,9 +3,13 @@
 
 
 #include <string>
+#include <map>
+#include <vector>
 #include "Utils/Logger.hpp"
 
 typedef std::string str;
+typedef std::vector<str> strVec;
+typedef std::map<str, str> strMap;
 
 enum	RequestType
 {

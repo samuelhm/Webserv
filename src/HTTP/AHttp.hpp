@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #ifndef AHTTP_HPP
 #define AHTTP_HPP
 
@@ -21,7 +20,7 @@
 class AHttp {
 	protected:
 		str							_path;
-		std::map<str, str>			_header;
+		strMap			_header;
 		str							_body;
 	public:
 		AHttp();
@@ -31,10 +30,8 @@ class AHttp {
 		virtual ~AHttp() = 0;
 
 		const str& get_path() const;
-		std::map<str, str>& get_header();
+		strMap& get_header();
 		const str& get_body() const;
 };
 
 #endif
-
-

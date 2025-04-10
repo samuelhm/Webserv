@@ -51,6 +51,7 @@ class HttpRequest : public AHttp {
 		void		checkIsValidCgi();
 		void		envPath(Server* server);
 		bool		checkIsCgi(std::vector<str>::iterator it, std::vector<str>::iterator end, Server* server);
+		bool		checkValidCgi();
 
 		//Getters
 		RequestType	getType() const;

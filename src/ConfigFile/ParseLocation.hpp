@@ -17,7 +17,7 @@
 #include "Location.hpp"
 #include "../HTTP/HttpResponse.hpp"
 
-void		setLocationParams(Location *location, std::map<str, str> const &options);
+void		setLocationParams(Location *location, strMap const &options);
 bool 		isValidPath(std::string const &path);
 std::string getLocationPath(std::string const &locationString);
 Location	*getLocation(const str &locationString, const str &serverName);
