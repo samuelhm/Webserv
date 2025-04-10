@@ -24,6 +24,8 @@ Location::Location(const str &serverName, const str &path)
 	_index = "index.html";
 	_uploadPath = "./" + serverName + "/";
 	_cgiPath = "/usr/bin/python3";
+	_root = "";
+	_urlPath = path;
 }
 
 Location::~Location() {}
@@ -41,6 +43,7 @@ std::vector<str>			Location::getCgiExtension() const { return this->_cgiExtensio
 str							Location::getCgiPath() const { return this->_cgiPath; }
 str							Location::getRedirectCode() const { return this->_redirect_code; }
 int							Location::getBodySize() const {return this->_bodySize; }
+str							Location::getUrlPath() const {return this->_urlPath; }
 
 //Setters
 void						Location::setMethods(const str &Methods) {

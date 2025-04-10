@@ -70,6 +70,20 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	}
 }
 
+Location*	HttpRequest::getLocation(Server* Server) {
+	Logger::log(str("Looking for Location: ") + _path, INFO);
+	std::vector<Location*> locations = Server->getLocations();
+	for (int i = 0 ; i < locations.size(); i++) {
+		Logger::log(str("Comparando Location: ") + _path + "con: " + locations[i]->getUrlPath());
+		if (_path == locations[i]->getUrlPath) {
+			Logger::log("Location Encontrada", USER);
+			return locations[i];
+		}
+	}
+	Logger::log(str("No se encontro location para este recurso: ") + _path + _resource, USER);
+	return NULL;
+}
+
 HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false) {
 	_location = NULL;
 	str::size_type end = request.find("\r\n");
@@ -82,7 +96,7 @@ HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequ
 		_location = getLocaton(server);
 		if(!ceckResource())
 			return ;
-		if(checkAllowMethod(_receivedMethod, server))
+		if(checkAllowMethod(line))
 			return;
 		checkIsCgi(line, server);
 		_body = saveHeader(request.substr(end));

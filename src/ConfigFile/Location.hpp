@@ -36,6 +36,7 @@ class Location {
 		str							getCgiPath() const;
 		str							getRedirectCode() const;
 		int							getBodySize() const;
+		void						getUrlPath() const;
 
 		//Setters
 		void						setMethods(const str &methods);
@@ -52,6 +53,7 @@ class Location {
 		void						setBodySize(const str &size);
 
 	private:
+		str							_urlPath;
 		std::vector<RequestType>	_methods;
 		str							_redirect;
 		str							_redirect_code;
