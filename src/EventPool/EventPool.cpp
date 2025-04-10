@@ -222,9 +222,7 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
 	try {
 		str reqStr = getRequest(fd);
-		HttpRequest request(reqStr);
-		request.checkMethod(eventStrct->server);
-		request.isCgi(eventStrct->server);
+		HttpRequest request(reqStr, eventStrct->server);
 		HttpResponse response(request, eventStrct->server);
 		sendResponse(response, fd, response.get_header());
 	} catch(const disconnectedException& e) {

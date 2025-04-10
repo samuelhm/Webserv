@@ -36,7 +36,7 @@ class Location {
 		str							getCgiPath() const;
 		str							getRedirectCode() const;
 		int							getBodySize() const;
-		void						getUrlPath() const;
+		str							getUrlPath() const;
 
 		//Setters
 		void						setMethods(const str &methods);

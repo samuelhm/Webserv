@@ -15,6 +15,8 @@
 #include <string>
 #include <exception>
 #include <iostream>
+#include <fstream>
+
 
 const str HttpRequest::saveHeader(const str &request) {
     str::size_type end = request.find("\r\n");
@@ -70,23 +72,24 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	}
 }
 
-bool ceckResource(Server const &server) {
+bool HttpRequest::checkResource(Server const &server) {
   _resorceExist = false;
   if (!_location)
     return false;
-  str root = _locations->getRoot();
+  str root = _location->getRoot();
   if (root.empty())
     root = server.getRoot();
-  ifstream resource((root + _resource).c_str());
+  std::ifstream resource((root + _resource).c_str());
   _resorceExist = resource.good();
   return resource;
+}
 
 Location*	HttpRequest::getLocation(Server* Server) {
 	Logger::log(str("Looking for Location: ") + _path, INFO);
 	std::vector<Location*> locations = Server->getLocations();
 	for (int i = 0 ; i < locations.size(); i++) {
 		Logger::log(str("Comparando Location: ") + _path + "con: " + locations[i]->getUrlPath());
-		if (_path == locations[i]->getUrlPath) {
+		if (_path == locations[i]->getUrlPath()) {
 			Logger::log("Location Encontrada", USER);
 			return locations[i];
 		}
@@ -104,12 +107,12 @@ HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequ
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		_location = getLocaton(server);
-		if(!ceckResource(*server))
+		_location = getLocation(server);
+		if(!checkResource(*server))
 			return ;
-		if(checkAllowMethod(line))
-			return;
-		checkIsCgi(line, server);
+		//if(checkAllowMethod(line))
+		//	return;
+		//checkIsCgi(line, server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;

@@ -29,6 +29,7 @@ class HttpRequest : public AHttp {
 		void		parse();
 		void		checkHeaderMRP(const str &line);
 		const str	saveHeader(const str &request);
+		bool 		checkResource(Server const &server);
 
 		bool		_resorceExist;
 		bool		_validMethod;
@@ -36,9 +37,9 @@ class HttpRequest : public AHttp {
 		Location*	_location;
 
 	public:
-		HttpRequest(str request);
+		HttpRequest(str request, Server * server);
 		~HttpRequest();
-		Location	*getLocation(Server* Server)
+		Location	*getLocation(Server* Server);
 
 		RequestType getType() const;
 		bool		getBadRequest() const;
