@@ -13,7 +13,7 @@
 NAME		=	Web_Server
 CC			=	c++
 CPPFLAGS	=	-std=c++98 -g -MMD -MP -Wshadow
-CPPFLAGS	+=	-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
+CPPFLAGS	+=	#-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
 
 SRC			=	src/main.cpp \
 				src/EventPool/EventPool.cpp \

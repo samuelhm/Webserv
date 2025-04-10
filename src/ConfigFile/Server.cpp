@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 Server::Server() {
-	_serverName = "server1";
+	_serverName = "server";
 	_hostName = "localhost";
 	_port = "8080";
 	_root =	"./www/html";

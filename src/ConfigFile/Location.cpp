@@ -23,8 +23,9 @@ Location::Location(const str &serverName, const str &path)
 	_methods.push_back(PUT);
 	_index = "index.html";
 	_uploadPath = "./" + serverName + "/";
-	_cgiExtension = ".py";
 	_cgiPath = "/usr/bin/python3";
+	_root = "";
+	_urlPath = path;
 }
 
 Location::~Location() {}
@@ -38,10 +39,11 @@ bool						Location::getAutoindex() const { return this->_autoIndex; }
 str							Location::getIndex() const { return this->_index; }
 str							Location::getUploadPath() const { return this->_uploadPath; }
 bool						Location::getCgiEnable() const { return this->_cgiEnable; }
-str							Location::getCgiExtension() const { return this->_cgiExtension; }
+std::vector<str>			Location::getCgiExtension() const { return this->_cgiExtension; }
 str							Location::getCgiPath() const { return this->_cgiPath; }
 str							Location::getRedirectCode() const { return this->_redirect_code; }
 int							Location::getBodySize() const {return this->_bodySize; }
+str							Location::getUrlPath() const {return this->_urlPath; }
 
 //Setters
 void						Location::setMethods(const str &Methods) {
@@ -66,7 +68,23 @@ void	Location::setAutoindex(bool autoIndex) { this->_autoIndex = autoIndex; }
 void	Location::setIndex(str index) { this->_index = index; }
 void	Location::setUploadPath(str uploadPath) { this->_uploadPath = uploadPath; }
 void	Location::setCgiEnable(bool cgiEnable) {this->_cgiEnable = cgiEnable;}
-void	Location::setCgiExtension(str cgiExtension) {this->_cgiExtension = cgiExtension;}
+void	Location::setCgiExtension(str cgiExtension) {
+	std::vector<str> allExtensions = Utils::split(cgiExtension, ' ');
+	std::vector<str> result;
+	for (std::vector<str>::iterator it = allExtensions.begin(); it != allExtensions.end(); ++it)
+	{
+		if ((*it).empty())
+			continue;
+		if ((*it)[0] != '.')
+		{
+			Logger::log(str("Invalid cgi extension:") + *it, WARNING);
+			continue;
+		}
+
+		result.push_back(*it);
+	}
+	this->_cgiExtension = result;
+}
 void	Location::setCgiPath(str cgiPath) {this->_cgiPath = cgiPath;}
 void	Location::setRedirectCode(const str &code) {this->_redirect_code = code; }
 void	Location::setBodySize(const str &size){

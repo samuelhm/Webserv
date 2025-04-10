@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 13:06:19 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/10 12:17:04 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,12 @@
 #include <string>
 #include <exception>
 #include <iostream>
+#include <fstream>
+
 
 const str HttpRequest::saveHeader(const str &request) {
     str::size_type end = request.find("\r\n");
+
     if (end == str::npos)
 		throw badHeaderException("No \\r\\n found at header");
     str line = request.substr(0, end);
@@ -47,6 +50,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	if (end == str::npos)
 		throw badHeaderException("No space after method received.");
 	str	method = line.substr(0, end);
+	_receivedMethod = method;
 	if (method == "GET") _type = GET;
 	else if (method == "POST") _type = POST;
 	else if (method == "OPTIONS") _type = OPTIONS;
@@ -61,13 +65,86 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	if (path_end == str::npos)
 		throw badHeaderException(DEFAULT_ERROR);
 	_path = line.substr(end, path_end - end);
-
-	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") { //aqui no tinene \r\n porque ya lo quitamos en el constructor
-		throw badHeaderException("Bad Protocol version");
+	size_t slash = _path.find_last_of('/');
+	size_t pos_var = _path.find('?');
+	if (pos_var != str::npos) {
+		_resource = _path.substr(slash , pos_var - slash);
+		_varCgi = _path.substr(pos_var + 1);
 	}
+	else
+		_resource = _path.substr(slash);
+
+	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") //aqui no tinene \r\n porque ya lo quitamos en el constructor
+		throw badHeaderException("Bad Protocol version");
 }
 
-HttpRequest::HttpRequest(str request) : AHttp(request), _badRequest(false) {
+bool HttpRequest::checkResource(Server const &server) {
+  _resorceExist = false;
+  if (!_location)
+    return false;
+  str root = _location->getRoot();
+  if (root.empty())
+    root = server.getRoot();
+  std::ifstream resource((root + _resource).c_str());
+  _resorceExist = resource.good();
+  return resource;
+}
+
+Location*	HttpRequest::getLocation(Server* Server) {
+	Logger::log(str("Looking for Location: ") + _path, INFO);
+	std::vector<Location*> locations = Server->getLocations();
+	for (int i = 0 ; i < locations.size(); i++) {
+		Logger::log(str("Comparando Location: ") + _path + "con: " + locations[i]->getUrlPath());
+		if (_path == locations[i]->getUrlPath()) {
+			Logger::log("Location Encontrada", USER);
+			return locations[i];
+		}
+	}
+	Logger::log(str("No se encontro location para este recurso: ") + _path + _resource, USER);
+	return NULL;
+}
+
+bool	HttpRequest::checkAllowMethod()
+{
+	int method = (_receivedMethod == "GET")		? 0 :
+				(_receivedMethod == "POST")		? 1 :
+				(_receivedMethod == "DELETE")	? 2 :
+				(_receivedMethod == "OPTIONS")	? 3 :
+				(_receivedMethod == "PUT")		? 4 :
+				-1;
+	for (size_t i = 0; i < _location->getMethods().size(); i++) {
+		if (_location->getMethods()[i] == method)
+			_validMethod = true;
+	}
+	return _validMethod;
+}
+
+void	HttpRequest::checkIsValidCgi() {
+	if (!_location->getCgiEnable())
+		return ;
+	std::ifstream isValidCgi((_location->getCgiPath()).c_str());
+	_isValidCgi = isValidCgi.good();
+}
+
+void	HttpRequest::checkIsCgi(Server *server)
+{
+	str ext;
+	if (_resource.find('.') != str::npos)
+		ext = _resource.substr(_resource.find('.') - 1);
+	else
+		return ;
+	for (size_t i = 0; i < _location->getCgiExtension().size(); i++) {
+		if (_location->getCgiExtension()[i] == ext) {
+			_isCgi = true;
+			break ;
+		}
+	}
+	if (_isCgi == true)
+		checkIsValidCgi();
+}
+
+HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false), _validMethod(false), _isValidCgi(false) {
+	_location = NULL;
 	str::size_type end = request.find("\r\n");
 	if (end == str::npos) {
 		_badRequest = true; return ;
@@ -75,6 +152,12 @@ HttpRequest::HttpRequest(str request) : AHttp(request), _badRequest(false) {
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
+		_location = getLocation(server);
+		if(!checkResource(*server))
+			return ;
+		if(!checkAllowMethod())
+			return ;
+		checkIsCgi(server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
