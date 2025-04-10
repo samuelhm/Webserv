@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 13:06:19 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/10 12:17:04 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,22 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	}
 }
 
+bool	HttpRequest::checkAllowMethod()
+{
+	_validMethod = false;
+	int method = (_receivedMethod == "GET")    ? 0 :
+				(_receivedMethod == "POST")   ? 1 :
+				(_receivedMethod == "DELETE") ? 2 :
+				(_receivedMethod == "PUT")    ? 3 :
+				-1;
+	for (size_t i = 0; i < _location->getMethods().size(); i++)
+	{
+		if (_location->getMethods()[i] == method)
+			_validMethod = true;
+	}
+	return _validMethod;
+}
+
 HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false) {
 	_location = NULL;
 	str::size_type end = request.find("\r\n");
@@ -79,12 +95,12 @@ HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequ
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		_location = getLocaton(server);
-		if(!ceckResource())
-			return ;
-		if(checkAllowMethod(_receivedMethod, server))
+		// _location = getLocaton(server);
+		// if(!ceckResource())
+		// 	return ;
+		if(checkAllowMethod())
 			return;
-		checkIsCgi(line, server);
+		// checkIsCgi(line, server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
