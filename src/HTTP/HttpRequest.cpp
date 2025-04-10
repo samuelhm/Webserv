@@ -45,7 +45,6 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	Logger::log(str("Cheacking Heder: ") + line, INFO);
 	if (line.empty())
 		throw badHeaderException("Empty Http request received.");
-
 	end = line.find(" ", 0);
 	if (end == str::npos)
 		throw badHeaderException("No space after method received.");
@@ -58,24 +57,17 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	else if (method == "PUT") _type = PUT;
 	else
 		throw badHeaderException("Bad Method.");
-
 	if (line.at(++end) != '/') // IMPORTANT probar si hay mas espacios
 		_badRequest = true;
 	size_t path_end = line.find(" ", end);
 	if (path_end == str::npos)
 		throw badHeaderException(DEFAULT_ERROR);
 	_path = line.substr(end, path_end - end);
-	size_t slash = _path.find_last_of('/');
-	size_t pos_var = _path.find('?');
-	if (pos_var != str::npos) {
-		_resource = _path.substr(slash , pos_var - slash);
-		_varCgi = _path.substr(pos_var + 1);
-	}
-	else
-		_resource = _path.substr(slash);
-
 	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") //aqui no tinene \r\n porque ya lo quitamos en el constructor
 		throw badHeaderException("Bad Protocol version");
+	//_resource
+	//_varCgi
+	//_queryString
 }
 
 bool HttpRequest::checkResource(Server const &server) {
@@ -90,17 +82,17 @@ bool HttpRequest::checkResource(Server const &server) {
   return resource;
 }
 
-Location*	HttpRequest::getLocation(Server* Server) {
-	Logger::log(str("Looking for Location: ") + _path, INFO);
+Location*	HttpRequest::findLocation(Server* Server) {
+	Logger::log(str("Looking for Location: ") + _locationPath, INFO);
 	std::vector<Location*> locations = Server->getLocations();
 	for (int i = 0 ; i < locations.size(); i++) {
-		Logger::log(str("Comparando Location: ") + _path + "con: " + locations[i]->getUrlPath());
-		if (_path == locations[i]->getUrlPath()) {
+		Logger::log(str("Comparando Location: ") + _locationPath + "con: " + locations[i]->getUrlPath());
+		if (_locationPath == locations[i]->getUrlPath()) {
 			Logger::log("Location Encontrada", USER);
 			return locations[i];
 		}
 	}
-	Logger::log(str("No se encontro location para este recurso: ") + _path + _resource, USER);
+	Logger::log(str("No se encontro location para este recurso: ") + _locationPath + _resource, USER);
 	return NULL;
 }
 
@@ -126,21 +118,84 @@ void	HttpRequest::checkIsValidCgi() {
 	_isValidCgi = isValidCgi.good();
 }
 
-void	HttpRequest::checkIsCgi(Server *server)
-{
-	str ext;
-	if (_resource.find('.') != str::npos)
-		ext = _resource.substr(_resource.find('.') - 1);
-	else
-		return ;
-	for (size_t i = 0; i < _location->getCgiExtension().size(); i++) {
-		if (_location->getCgiExtension()[i] == ext) {
-			_isCgi = true;
-			break ;
-		}
+// void	HttpRequest::checkIsCgi(Server *server)
+// {
+// 	str ext;
+// 	if (_resource.find('.') != str::npos)
+// 		ext = _resource.substr(_resource.find('.') - 1);
+// 	else
+// 		return ;
+// 	for (size_t i = 0; i < _location->getCgiExtension().size(); i++) {
+// 		if (_location->getCgiExtension()[i] == ext) {
+// 			_isCgi = true;
+// 			break ;
+// 		}
+// 	}
+// 	if (_isCgi == true)
+// 		checkIsValidCgi();
+// }
+
+bool	HttpRequest::checkIsCgi(std::vector<str>::iterator it, std::vector<str>::iterator end, Server* server) {
+	Location *loc = findLocation(server);
+	if (!loc)
+		return false;
+	std::vector<str> validExtensions = loc->getCgiExtension();
+	if (validExtensions.empty())
+		return false;
+
+	size_t infoPos = (*it).find('?');
+	if (infoPos != str::npos) {
+		if ((it + 1) != end) //hola aaaa bbbbbbbb adios.py?algo=algomas (/) algoMas
+			return false;
+		_queryString = (*it).substr(infoPos + 1);
+		*it = (*it).substr(0, infoPos - 1);
 	}
-	if (_isCgi == true)
-		checkIsValidCgi();
+	// check valid extension (do it in a function (checkValidCgi()))
+	// if valid externsion: add the other parameters to PATH_INFO
+	// else: continue
+	// for each it
+	// add to _pathLocation until "."" found
+	// if "." is found: checkValidCgi()
+	// if checkValidCgi() == true: add rest to PATH_INFO
+	// else: continue
+	//
+	// separate all this in functions because they are going to be called again
+	if (!loc->getCgiEnable())
+		return false;
+	str extension = (*it).substr((*it).find_last_of('.'));
+	bool valid = false;
+	for (int i = 0; i < validExtensions.size(); i++)
+		if (extension == validExtensions[i])
+			valid = true;
+	str total_path = server->getRoot();
+	if (valid) {
+		if (!loc->getRoot().empty())
+			total_path.append(loc->getRoot());
+	}
+	return true;
+}
+
+// /hola aaaa bbbbbbbb adios.py hola adios a?hola=a
+// /hola aaaa bbbbbbbb adios.py hola adios a.py?hola=a
+// /hola aaaa bbbbbbbb adios.py hola adios a
+// /hola aaaa bbbbbbbb adios.py hola adios a.py
+// /hola aaaa bbbbbbbb adios.py?algo=algomas/
+
+void	HttpRequest::envPath(Server* server) {
+	std::vector<str> locationPaths = Utils::split(_path, '/');
+	std::vector<str>::iterator it;
+	bool isCgi;
+	for (it = locationPaths.begin() ; it != locationPaths.end(); ++it) {
+		isCgi = false;
+		if ((*it).find('.') != str::npos)
+			isCgi = checkIsCgi(it, locationPaths.end(), server);
+		if (!(*it).empty() && !isCgi && (it +1) != locationPaths.end() && *(it +1) != "")
+			_locationPath.append("/" + (*it));
+		else if (*(it + 1) == "")
+			_resourceExist = false;
+		else
+			_resource.append((*it));
+	}
 }
 
 HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false), _validMethod(false), _isValidCgi(false) {
@@ -152,12 +207,13 @@ HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequ
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		_location = getLocation(server);
+		envPath(server);
+		// _location = getLocation(server);
 		if(!checkResource(*server))
 			return ;
 		if(!checkAllowMethod())
 			return ;
-		checkIsCgi(server);
+		// checkIsCgi(server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;

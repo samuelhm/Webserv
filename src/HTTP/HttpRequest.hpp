@@ -37,15 +37,20 @@ class HttpRequest : public AHttp {
 		bool		_isValidCgi;
 		Location*	_location;
 		str			_varCgi;
+		str			_locationPath;
+		str			_queryString;
+		bool		_resourceExist;
 
 	public:
 		HttpRequest(str request, Server * server);
 		~HttpRequest();
-		Location	*getLocation(Server* Server);
+		Location	*findLocation(Server* Server);
 
 		bool		checkAllowMethod();
-		void		checkIsCgi(Server *server);
+		// void		checkIsCgi(Server *server);
 		void		checkIsValidCgi();
+		void		envPath(Server* server);
+		bool		checkIsCgi(std::vector<str>::iterator it, std::vector<str>::iterator end, Server* server);
 
 		//Getters
 		RequestType	getType() const;
