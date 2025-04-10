@@ -37,18 +37,46 @@ class HttpRequest : public AHttp {
 		bool		_isValidCgi;
 		Location*	_location;
 		str			_varCgi;
+		str			_locationPath;
+		str			_queryString;
+		str			_pathInfo;
+		bool		_resourceExist;
 
 	public:
 		HttpRequest(str request, Server * server);
 		~HttpRequest();
-		Location	*getLocation(Server* Server);
+		Location	*findLocation(Server* Server);
 
-		RequestType getType() const;
-		bool		getBadRequest() const;
 		bool		checkAllowMethod();
-		void		checkIsCgi(Server *server);
+		// void		checkIsCgi(Server *server);
 		void		checkIsValidCgi();
+		void		envPath(Server* server);
+		
+		bool		checkIsCgi(strVecIt it, strVecIt end, Server* server);
+		bool		checkValidCgi(strVecIt it);
+		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
+		void		addPathInfo(strVecIt it, strVecIt end);
 
+
+		//Getters
+		RequestType	getType() const;
+		bool		getBadRequest() const;
+		bool		getResorceExist() const;
+		bool		getValidMethod() const;
+		bool		getIsCgi() const;
+		bool		getIsValidCgi() const;
+		Location*	getLocation() const;
+		str			getVarCgi() const;
+
+		//Setters
+		void		setType(RequestType type);
+		void		setBadRequest(bool badRequest);
+		void		setResorceExist(bool resorceExist);
+		void		setValidMethod(bool validMethod);
+		void		setIsCgi(bool isCgi);
+		void		setIsValidCgi(bool isValidCgi);
+		void		setLocation(Location *location);
+		void		setVarCgi(str varCgi);
 		class badHeaderException : public std::exception
 		{
 			private:

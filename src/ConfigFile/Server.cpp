@@ -108,7 +108,7 @@ void						Server::socketUp()
 
 const str &Server::createErrorPage(const str &error, const str &msg)
 {
-	static std::map<str, str> errorHtmlMap;
+	static strMap errorHtmlMap;
 
 	if (errorHtmlMap[error].empty()) {
 		str errorHtml ="<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>";

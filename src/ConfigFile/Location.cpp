@@ -71,7 +71,7 @@ void	Location::setCgiEnable(bool cgiEnable) {this->_cgiEnable = cgiEnable;}
 void	Location::setCgiExtension(str cgiExtension) {
 	std::vector<str> allExtensions = Utils::split(cgiExtension, ' ');
 	std::vector<str> result;
-	for (std::vector<str>::iterator it = allExtensions.begin(); it != allExtensions.end(); ++it)
+	for (strVecIt it = allExtensions.begin(); it != allExtensions.end(); ++it)
 	{
 		if ((*it).empty())
 			continue;

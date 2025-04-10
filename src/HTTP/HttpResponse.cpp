@@ -19,8 +19,21 @@ HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp()
 		setErrorCode(400, server);
     return ;
   }
-  if (request.getType() == GET)
-    setResource(request, server);
+  if (!request.getValidMethod()) {
+    setErrorCode(405, server);
+    return;
+  }
+  if (!request.getResorceExist()) {
+    setErrorCode(404, server);
+    return;
+  }
+  if (request.getIsCgi() && !request.getIsValidCgi()) {
+    setErrorCode(500, server);
+    return;
+  }
+  //isCgi -> validCgi
+  if (!request.getIsCgi())
+   setResource(request, server);
 }
 
 void HttpResponse::setResource(const HttpRequest &request, Server* server)
