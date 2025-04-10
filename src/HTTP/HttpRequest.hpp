@@ -34,7 +34,9 @@ class HttpRequest : public AHttp {
 		bool		_resorceExist;
 		bool		_validMethod;
 		bool		_isCgi;
+		bool		_isValidCgi;
 		Location*	_location;
+		str			_varCgi;
 
 	public:
 		HttpRequest(str request, Server * server);
@@ -44,6 +46,9 @@ class HttpRequest : public AHttp {
 		RequestType getType() const;
 		bool		getBadRequest() const;
 		bool		checkAllowMethod();
+		void		checkIsCgi(Server *server);
+		void		checkIsValidCgi();
+
 		class badHeaderException : public std::exception
 		{
 			private:
