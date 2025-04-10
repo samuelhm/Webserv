@@ -38,6 +38,7 @@ class HttpRequest : public AHttp {
 	public:
 		HttpRequest(str request);
 		~HttpRequest();
+		Location	*getLocation(Server* Server)
 
 		RequestType getType() const;
 		bool		getBadRequest() const;

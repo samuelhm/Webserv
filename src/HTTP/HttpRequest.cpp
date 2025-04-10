@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/10 11:43:09 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/10 12:03:00 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,19 @@ bool ceckResource(Server const &server) {
   ifstream resource((root + _resource).c_str());
   _resorceExist = resource.good();
   return resource;
+
+Location*	HttpRequest::getLocation(Server* Server) {
+	Logger::log(str("Looking for Location: ") + _path, INFO);
+	std::vector<Location*> locations = Server->getLocations();
+	for (int i = 0 ; i < locations.size(); i++) {
+		Logger::log(str("Comparando Location: ") + _path + "con: " + locations[i]->getUrlPath());
+		if (_path == locations[i]->getUrlPath) {
+			Logger::log("Location Encontrada", USER);
+			return locations[i];
+		}
+	}
+	Logger::log(str("No se encontro location para este recurso: ") + _path + _resource, USER);
+	return NULL;
 }
 
 HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false) {
@@ -94,7 +107,7 @@ HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequ
 		_location = getLocaton(server);
 		if(!ceckResource(*server))
 			return ;
-		if(checkAllowMethod(_receivedMethod, server))
+		if(checkAllowMethod(line))
 			return;
 		checkIsCgi(line, server);
 		_body = saveHeader(request.substr(end));
