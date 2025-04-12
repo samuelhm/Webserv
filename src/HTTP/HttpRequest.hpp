@@ -24,23 +24,21 @@ class HttpRequest : public AHttp {
 		RequestType	_type;
 		bool		_badRequest;
 		str			_receivedMethod;
-		str			_resource;
+		str			_resource; // falta parte Erik
+		bool		_resorceExist; // -> existe el archivo y si es carpeta index, o autoindex
+		bool		_validMethod;
+		bool		_isCgi; // falta parte Erik
+		bool		_isValidCgi;
+		Location*	_location;
+		str			_locationPath;
+		str			_queryString;
+		str			_pathInfo;
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);
 		const str	saveHeader(const str &request);
 		bool 		checkResource(Server const &server);
 
-		bool		_resorceExist;
-		bool		_validMethod;
-		bool		_isCgi;
-		bool		_isValidCgi;
-		Location*	_location;
-		str			_varCgi;
-		str			_locationPath;
-		str			_queryString;
-		str			_pathInfo;
-		bool		_resourceExist;
 
 	public:
 		HttpRequest(str request, Server * server);
@@ -51,7 +49,7 @@ class HttpRequest : public AHttp {
 		// void		checkIsCgi(Server *server);
 		void		checkIsValidCgi();
 		void		envPath(Server* server);
-		
+
 		bool		checkIsCgi(strVecIt it, strVecIt end, Server* server);
 		bool		checkValidCgi(strVecIt it);
 		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);

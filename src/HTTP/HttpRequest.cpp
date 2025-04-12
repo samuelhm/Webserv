@@ -81,16 +81,16 @@ bool HttpRequest::checkResource(Server const &server) {
 }
 
 Location*	HttpRequest::findLocation(Server* Server) {
-	Logger::log(str("Looking for Location: ") + _locationPath, INFO);
+	Logger::log(str("Looking for Location: ") + _path, INFO);
 	std::vector<Location*> locations = Server->getLocations();
 	for (int i = 0 ; i < locations.size(); i++) {
-		Logger::log(str("Comparando Location: ") + _locationPath + "con: " + locations[i]->getUrlPath());
-		if (_locationPath == locations[i]->getUrlPath()) {
+		Logger::log(str("Comparando Location: ") + _path + "con: " + locations[i]->getUrlPath());
+		if (_path == locations[i]->getUrlPath()) {
 			Logger::log("Location Encontrada", USER);
 			return locations[i];
 		}
 	}
-	Logger::log(str("No se encontro location para este recurso: ") + _locationPath + _resource, USER);
+	Logger::log(str("No se encontro location para este recurso: ") + _path + _resource, USER);
 	return NULL;
 }
 
@@ -130,7 +130,7 @@ void	HttpRequest::envPath(Server* server) {
 		if (!(*it).empty() && !isCgi && (it +1) != locationPaths.end() && *(it +1) != "")
 			_locationPath.append("/" + (*it));
 		else if (*(it + 1) == "")
-			_resourceExist = false;
+			_resorceExist = false;
 		else
 			_resource.append((*it));
 	}
@@ -146,12 +146,11 @@ HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequ
 	try {
 		checkHeaderMRP(line);
 		envPath(server);
-		// _location = getLocation(server);
 		if(!checkResource(*server))
 			return ;
 		if(!checkAllowMethod())
 			return ;
-		// checkIsCgi(server);
+		_location = findLocation(server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
@@ -172,7 +171,6 @@ bool		HttpRequest::getValidMethod() const { return _validMethod; }
 bool		HttpRequest::getIsCgi() const { return _isCgi; }
 bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
 Location*	HttpRequest::getLocation() const { return _location; }
-str			HttpRequest::getVarCgi() const { return _varCgi; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }
@@ -182,7 +180,6 @@ void		HttpRequest::setValidMethod(bool validMethod) { _validMethod = validMethod
 void		HttpRequest::setIsCgi(bool isCgi) { _isCgi = isCgi; }
 void		HttpRequest::setIsValidCgi(bool isValidCgi) { _isValidCgi = isValidCgi; }
 void 		HttpRequest::setLocation(Location *location) { _location = location; }
-void		HttpRequest::setVarCgi(str varCgi) { _varCgi = varCgi; }
 
 HttpRequest::badHeaderException::badHeaderException(const std::string &msg) : _msg(msg) {}
 const char *HttpRequest::badHeaderException::what() const throw() { return _msg.c_str(); }
