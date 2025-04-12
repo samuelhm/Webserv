@@ -3,15 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 11:50:51 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include <stdlib.h>
+
+#include <sys/socket.h>
+#include <string.h> // memset
+#include <iostream> // cout, endl
+#include <unistd.h> // close
 
 Server::Server() {
 	_serverName = "server";
@@ -136,7 +141,7 @@ bool	Server::locationExist(Location &loc) const
 void	Server::setListenValue(const str &value)
 {
 	size_t sep = value.find(":");
-		if (sep == std::string::npos)
+		if (sep == str::npos)
 			throw ConfigFileException("LISTEN must be in format hostname:port " + value); // IMPORTANT check if this information is needeed (to continue or stop)
 		str hostname = Utils::trim(value.substr(0, sep));
 		str port = Utils::trim(value.substr(sep + 1));

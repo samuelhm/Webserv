@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 11:15:53 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 std::vector<Server*>	parseConfigFile(const str &filepath) {
 	str content = Utils::fileToStr(filepath); // si falla lanza una excepcion, creo que es mejor recogerla en el main
-	std::vector<str> serverStrings = Utils::split(content, '}');
+	strVec serverStrings = Utils::split(content, '}');
 	if (serverStrings.empty())
 		throw ConfigFileException("No Server found inside config file");
 	std::vector<Server*> result;
@@ -226,12 +226,12 @@ Server*	getServer(const str &serverString)
 }
 
 ConfigFileException::~ConfigFileException() throw() {}
-ConfigFileException::ConfigFileException(const std::string &msg) : _msg(msg) {}
-ConfigFileException::ConfigFileException(const std::string &msg, std::vector<Server*> &servers) : _msg(msg), _servers(servers) {}
+ConfigFileException::ConfigFileException(const str &msg) : _msg(msg) {}
+ConfigFileException::ConfigFileException(const str &msg, std::vector<Server*> &servers) : _msg(msg), _servers(servers) {}
 const char* ConfigFileException::what() const throw() { return _msg.c_str(); }
 const std::vector<Server*> &ConfigFileException::getServer() const throw() {return _servers; }
 
-UnknownOptionException::UnknownOptionException(const std::string &msg) : _msg(msg) {}
+UnknownOptionException::UnknownOptionException(const str &msg) : _msg(msg) {}
 UnknownOptionException::~UnknownOptionException(void) throw() {}
 const char* UnknownOptionException::what() const throw() { return _msg.c_str(); }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseLocation.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/09 01:19:43 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,17 @@
 
 Location *getLocation(const str &locationString, const str &serverName) {
   std::istringstream locationBlock(locationString);
-  std::string line;
+  str line;
 
   std::getline(locationBlock, line);
   Logger::log(str("Parsing Location block line: ") + line, INFO);
-  std::string location_path = getLocationPath(line);
+  str location_path = getLocationPath(line);
 
   std::getline(locationBlock, line);
   if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException("Not found Open Bracker ["); }
 
-  std::string key, value;
-  std::map<std::string, std::string> options;
+  str key, value;
+  std::map<str, str> options;
   while (std::getline(locationBlock, line)) {
     if (!line.compare("]")) { break; }
     if (line.empty() || line.at(0) == '#') {   // Se podria sacar
@@ -88,7 +88,7 @@ void setLocationParams(Location *location, strMap const &options) {
   }
 }
 
-bool isValidPath(std::string const &path) {
+bool isValidPath(str const &path) {
   if (path.empty()) return false;
   if (path[0] != '/' || (path[0] != '*' && path[1] != '.')) return false;
   for (size_t i = 0; i < path.size(); i++) {
@@ -99,9 +99,9 @@ bool isValidPath(std::string const &path) {
   return true;
 }
 
-std::string getLocationPath(std::string const &locationString) {
+str getLocationPath(str const &locationString) {
   std::istringstream line(locationString);
-  std::string tmp;
+  str tmp;
   if (!std::getline(line, tmp, ':')) { throw BadSyntaxLocationBlockException(tmp); }
   if (!std::getline(line, tmp)) { throw BadSyntaxLocationBlockException(tmp); }
   return tmp;
@@ -125,5 +125,5 @@ RequestType strToRequest(const str &method)
 }
 
 const char* BadOptionLocationException::what(void) const throw() { return "webserver: Bad option"; }
-BadSyntaxLocationBlockException::BadSyntaxLocationBlockException(const std::string &msg) : _msg(msg) {}
+BadSyntaxLocationBlockException::BadSyntaxLocationBlockException(const str &msg) : _msg(msg) {}
 const char* BadSyntaxLocationBlockException::what() const throw() { return _msg.c_str();	}

@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 10:16:20 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:46:04 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
 #include "ParseLocation.hpp"
+#include <cstdlib>
 
 Location::Location(const str &serverName, const str &path)
   : _uploadEnable(false), _root(path), _autoIndex(false), _cgiEnable(false)
@@ -39,7 +40,7 @@ bool						Location::getAutoindex() const { return this->_autoIndex; }
 str							Location::getIndex() const { return this->_index; }
 str							Location::getUploadPath() const { return this->_uploadPath; }
 bool						Location::getCgiEnable() const { return this->_cgiEnable; }
-std::vector<str>			Location::getCgiExtension() const { return this->_cgiExtension; }
+strVec						Location::getCgiExtension() const { return this->_cgiExtension; }
 str							Location::getCgiPath() const { return this->_cgiPath; }
 str							Location::getRedirectCode() const { return this->_redirect_code; }
 int							Location::getBodySize() const {return this->_bodySize; }
@@ -48,9 +49,9 @@ str							Location::getUrlPath() const {return this->_urlPath; }
 //Setters
 void						Location::setMethods(const str &Methods) {
 
-	std::vector<str> allMethods = Utils::split(Methods, ' ');
+	strVec allMethods = Utils::split(Methods, ' ');
 	std::vector<RequestType> result;
-	for (std::vector<str>::const_iterator it = allMethods.begin(); it != allMethods.end(); ++it)
+	for (strVec::const_iterator it = allMethods.begin(); it != allMethods.end(); ++it)
 	{
 		if ((*it).empty())
 		{
@@ -69,8 +70,8 @@ void	Location::setIndex(str index) { this->_index = index; }
 void	Location::setUploadPath(str uploadPath) { this->_uploadPath = uploadPath; }
 void	Location::setCgiEnable(bool cgiEnable) {this->_cgiEnable = cgiEnable;}
 void	Location::setCgiExtension(str cgiExtension) {
-	std::vector<str> allExtensions = Utils::split(cgiExtension, ' ');
-	std::vector<str> result;
+	strVec allExtensions = Utils::split(cgiExtension, ' ');
+	strVec result;
 	for (strVecIt it = allExtensions.begin(); it != allExtensions.end(); ++it)
 	{
 		if ((*it).empty())

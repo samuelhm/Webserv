@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/10 12:17:04 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/12 15:12:38 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,14 +69,14 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 }
 
 bool HttpRequest::checkResource(Server const &server) {
-  _resorceExist = false;
+  _resourceExist = false;
   if (!_location)
     return false;
   str root = _location->getRoot();
   if (root.empty())
     root = server.getRoot();
   std::ifstream resource((root + _resource).c_str());
-  _resorceExist = resource.good();
+  _resourceExist = resource.good();
   return resource;
 }
 
@@ -84,8 +84,8 @@ Location*	HttpRequest::findLocation(Server* Server) {
 	Logger::log(str("Looking for Location: ") + _path, INFO);
 	std::vector<Location*> locations = Server->getLocations();
 	for (int i = 0 ; i < locations.size(); i++) {
-		Logger::log(str("Comparando Location: ") + _path + "con: " + locations[i]->getUrlPath());
-		if (_path == locations[i]->getUrlPath()) {
+		Logger::log(str("Comparando Location: ") + _locationPath + "con: " + locations[i]->getUrlPath());
+		if (_locationPath == locations[i]->getUrlPath()) {
 			Logger::log("Location Encontrada", USER);
 			return locations[i];
 		}
@@ -119,18 +119,32 @@ void	HttpRequest::addPathInfo(strVecIt it, strVecIt end) {
 	}
 }
 
+void	HttpRequest::autoIndex(Location *loc) {
+	if (!loc->getIndex().empty()) {
+		_resource = loc->getIndex();
+		_resourceExist = true;
+	}
+	else if (loc->getAutoindex())
+		_resourceExist = true;
+	else
+		_resourceExist = false;
+}
+
 void	HttpRequest::envPath(Server* server) {
-	std::vector<str> locationPaths = Utils::split(_path, '/');
-	strVecIt it;
+	strVec		locationPaths = Utils::split(_path, '/');
+	strVecIt	it;
 	bool isCgi;
 	for (it = locationPaths.begin() ; it != locationPaths.end(); ++it) {
 		isCgi = false;
-		if ((*it).find('.') != str::npos)
+		if ((*it).find('.') != str::npos) {
 			isCgi = checkIsCgi(it, locationPaths.end(), server);
+			if (!isCgi)
+				autoIndex(findLocation(server));
+		}
 		if (!(*it).empty() && !isCgi && (it +1) != locationPaths.end() && *(it +1) != "")
 			_locationPath.append("/" + (*it));
 		else if (*(it + 1) == "")
-			_resorceExist = false;
+			_resourceExist = false;
 		else
 			_resource.append((*it));
 	}
@@ -166,7 +180,7 @@ HttpRequest::~HttpRequest() {}
 //Getters
 RequestType	HttpRequest::getType() const { return _type; }
 bool		HttpRequest::getBadRequest() const { return _badRequest; }
-bool		HttpRequest::getResorceExist() const { return _resorceExist; }
+bool		HttpRequest::getResorceExist() const { return _resourceExist; }
 bool		HttpRequest::getValidMethod() const { return _validMethod; }
 bool		HttpRequest::getIsCgi() const { return _isCgi; }
 bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
@@ -175,11 +189,11 @@ Location*	HttpRequest::getLocation() const { return _location; }
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }
 void		HttpRequest::setBadRequest(bool badRequest) { _badRequest = badRequest; }
-void		HttpRequest::setResorceExist(bool resorceExist) { _resorceExist = resorceExist; }
+void		HttpRequest::setResorceExist(bool resorceExist) { _resourceExist = resorceExist; }
 void		HttpRequest::setValidMethod(bool validMethod) { _validMethod = validMethod; }
 void		HttpRequest::setIsCgi(bool isCgi) { _isCgi = isCgi; }
 void		HttpRequest::setIsValidCgi(bool isValidCgi) { _isValidCgi = isValidCgi; }
 void 		HttpRequest::setLocation(Location *location) { _location = location; }
 
-HttpRequest::badHeaderException::badHeaderException(const std::string &msg) : _msg(msg) {}
-const char *HttpRequest::badHeaderException::what() const throw() { return _msg.c_str(); }
+HttpRequest::badHeaderException::badHeaderException(const str &msg) : _msg(msg) {}
+const char	*HttpRequest::badHeaderException::what() const throw() { return _msg.c_str(); }

@@ -1,15 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/12 13:18:35 by erigonza          #+#    #+#             */
+/*   Updated: 2025/04/12 13:38:07 by erigonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include "../WebSrv.hpp"
 #include "../ConfigFile/Server.hpp"
 #include "../ConfigFile/Location.hpp"
-#include <map>
-#include <vector>
 #include <string>
-#include <cctype>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 
 class Server;
 class Location;
@@ -17,8 +25,8 @@ class Location;
 namespace Utils {
 	extern std::map<int, str>	_statusStr;
 
-	std::vector<str>	split(const str &input, const char delimiter);
-	std::vector<str>	split(const str &input, const str &delimiter);
+	strVec	split(const str &input, const char delimiter);
+	strVec	split(const str &input, const str &delimiter);
 	str 				trim(const str& input);
 	str 				fileToStr(const str &filePath);
 	str 				intToStr(std::size_t num);

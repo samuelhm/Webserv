@@ -1,11 +1,21 @@
-#ifndef WEBSRV_HPP
-#define WEBSRV_HPP
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   WebSrv.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/12 13:23:53 by erigonza          #+#    #+#             */
+/*   Updated: 2025/04/12 13:39:17 by erigonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
+#pragma once
 
+#include "Utils/Logger.hpp"
 #include <string>
 #include <map>
 #include <vector>
-#include "Utils/Logger.hpp"
 
 typedef std::string str;
 typedef std::vector<str> strVec;
@@ -32,4 +42,3 @@ enum OptionType
 	LOCATION
 };
 
-#endif

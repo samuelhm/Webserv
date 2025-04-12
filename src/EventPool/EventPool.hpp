@@ -3,16 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 03:38:43 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:19:59 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#ifndef EVENTPOOL_HPP
-#define EVENTPOOL_HPP
+#pragma once
 
 #include <vector>
 #include <csignal>
@@ -89,4 +87,3 @@ class EventPool {
 		};
 };
 
-#endif

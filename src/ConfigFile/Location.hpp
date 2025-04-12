@@ -3,20 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 10:15:32 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:38:14 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "../WebSrv.hpp"
-#include <vector>
-#include <string>
 #include "../Utils/Utils.hpp"
-#include <cstdlib>
+#include "../WebSrv.hpp"
 
 class Location {
 	public:
@@ -32,7 +29,7 @@ class Location {
 		str							getIndex() const;
 		str							getUploadPath() const;
 		bool						getCgiEnable() const;
-		std::vector<str>			getCgiExtension() const;
+		strVec						getCgiExtension() const;
 		str							getCgiPath() const;
 		str							getRedirectCode() const;
 		int							getBodySize() const;
@@ -63,7 +60,7 @@ class Location {
 		str							_index;
 		str							_uploadPath;
 		bool						_cgiEnable;
-		std::vector<str>			_cgiExtension;
+		strVec						_cgiExtension;
 		str							_cgiPath;
 		int							_bodySize;
 

@@ -3,48 +3,40 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:39 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 10:23:18 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 15:04:59 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#pragma once
 
 #include "Location.hpp"
 #include "ParseConfig.hpp"
-#include <map>
 #include <netdb.h>
-#include <sys/socket.h>
 #include <fcntl.h> // fcntl, F_SETFL, O_NONBLOCK
-#include <string.h> // memset
-#include <iostream> // cout, endl
-#include <unistd.h> // close
-#include <stdio.h> // perror
 
 class Location;
 
 class Server {
 	private:
-	std::vector<Location*>		_locations;
-	std::map<int, str>			_errorPages;
-	str							_serverName;
-	str							_hostName;
-	str							_port;
-	str							_root;
-	bool						_isDefault;
-	size_t						_bodySize;
+		std::vector<Location*>		_locations;
+		std::map<int, str>			_errorPages;
+		str							_serverName;
+		str							_hostName;
+		str							_port;
+		str							_root;
+		bool						_isDefault;
+		size_t						_bodySize;
 
-	//SocketUp
-	int							_serverFd;
-	int							_reuseOption;
-	struct addrinfo*			_response;
-	struct addrinfo				_hints;
+		//SocketUp
+		int							_serverFd;
+		int							_reuseOption;
+		struct addrinfo*			_response;
+		struct addrinfo				_hints;
 
-	const str &createErrorPage(const str &error, const str &msg);
+		const str &createErrorPage(const str &error, const str &msg);
 
 	public:
 		Server();
@@ -79,4 +71,3 @@ class Server {
 
 };
 
-#endif
