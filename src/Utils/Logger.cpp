@@ -1,6 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Logger.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/12 13:21:18 by erigonza          #+#    #+#             */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Logger.hpp"
 #include <iostream>
 #include <cstdlib> // std::getenv
+#include <string>
 
 DebugType Logger::currentLevel = INFO;
 
@@ -35,7 +48,7 @@ void Logger::setLevel(DebugType level) {
 
 void Logger::initFromEnv() {
 	const char* env = std::getenv("DEBUG_LEVEL");
-	std::string lvl;
+	str lvl;
 	if (!env)
 		lvl = "WARNING";
 	else
@@ -46,7 +59,7 @@ void Logger::initFromEnv() {
 	else if (lvl == "ERROR")   setLevel(ERROR);
 }
 
-void Logger::log(const std::string& msg, DebugType type) {
+void Logger::log(const str& msg, DebugType type) {
 	if (type < currentLevel)
 		return;
 

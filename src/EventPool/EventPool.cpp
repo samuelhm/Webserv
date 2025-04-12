@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 11:27:19 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ str		EventPool::getRequest(int fdTmp)
 	}
 	size_t pos = request.find("\r\n");
 	str first_line;
-	if (pos != std::string::npos)
+	if (pos != str::npos)
 		first_line = request.substr(0, pos);
 	Logger::log(str("HTTP Request Received.") + request, INFO);
 	if (!first_line.empty())
@@ -206,7 +206,7 @@ bool	EventPool::checkCGI(str path, Server server)
 		{
 			if (!locations[i]->getCgiEnable())
 				return false;
-			std::vector<str> extensions = locations[i]->getCgiExtension();
+			strVec extensions = locations[i]->getCgiExtension();
 			for (int j = 0; j < extensions.size(); j++)
 			{
 				if (ext == extensions[j])
@@ -252,7 +252,7 @@ EventPool::disconnectedException::disconnectedException(int fd) {
 const char *EventPool::disconnectedException::what() const throw() { return this->message.c_str(); }
 
 EventPool::socketReadException::socketReadException(int fd) {
-	this->message = std::strerror(errno) + std::string(" at Server: ") + Utils::intToStr(fd);
+	this->message = std::strerror(errno) + str(" at Server: ") + Utils::intToStr(fd);
 }
 const char *EventPool::socketReadException::what() const throw() { return this->message.c_str(); }
 

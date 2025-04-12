@@ -1,12 +1,20 @@
 
-#include <algorithm>
 #include "Utils.hpp"
 #include "../ConfigFile/Server.hpp"
 #include "../ConfigFile/ParseConfig.hpp"
+#include <algorithm>
+#include <map>
+#include <vector>
+#include <string>
+#include <cctype>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
 namespace Utils {
 
-	std::vector<str> split(const str &input, char delimiter) {
-		std::vector<str> tokens;
+	strVec split(const str &input, char delimiter) {
+		strVec tokens;
 		str token;
     if (input.empty())
       return tokens;
@@ -22,8 +30,8 @@ namespace Utils {
 		return tokens;
 	}
 
-	std::vector<str> split(const str &input, const str &delimiter) {
-		std::vector<str> tokens;
+	strVec split(const str &input, const str &delimiter) {
+		strVec tokens;
 		str::size_type start = 0;
 		str::size_type pos;
 

@@ -1,5 +1,19 @@
-#include "AutoIndex.hpp"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   AutoIndex.cpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/12 13:21:03 by erigonza          #+#    #+#             */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
+#include "AutoIndex.hpp"
+#include <iostream>
+#include <dirent.h>
+#include <cstring>
 str AutoIndex::getAutoIndex(const str &path)
 {
 	DIR* dir = opendir(path.c_str());
@@ -32,11 +46,11 @@ str AutoIndex::getPrevPath(const str &path)
 {
 	if (path.empty())
 		return path;
-	std::string ruta = path;
+	str ruta = path;
 	if (ruta[ruta.size() - 1] == '/')
 		ruta.erase(ruta.size() - 1);
 	std::size_t pos = ruta.find_last_of('/');
-	if (pos == std::string::npos)
+	if (pos == str::npos)
 		return "/";
 	return ruta.substr(0, pos + 1);
 }

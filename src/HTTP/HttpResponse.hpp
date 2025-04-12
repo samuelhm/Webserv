@@ -10,13 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 
-#ifndef HTTPRESPONSE_HPP
-#define HTTPRESPONSE_HPP
-
-#include "AHttp.hpp"
-#include "HttpRequest.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "HttpRequest.hpp"
+#include "AHttp.hpp"
 
 class HttpResponse : public AHttp {
 	public:
@@ -30,7 +28,5 @@ class HttpResponse : public AHttp {
 		HttpResponse(const HttpResponse &other);
 		~HttpResponse();
 };
-
-#endif
 
 

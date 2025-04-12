@@ -6,16 +6,14 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/10 12:15:35 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/12 15:09:39 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 
-#ifndef HTTPREQUEST_HPP
-#define HTTPREQUEST_HPP
-
-#include "AHttp.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "AHttp.hpp"
 
 class Server;
 
@@ -25,10 +23,11 @@ class HttpRequest : public AHttp {
 		bool		_badRequest;
 		str			_receivedMethod;
 		str			_resource; // falta parte Erik
-		bool		_resorceExist; // -> existe el archivo y si es carpeta index, o autoindex
+		bool		_resourceExist; // -> existe el archivo y si es carpeta index, o autoindex
 		bool		_validMethod;
 		bool		_isCgi; // falta parte Erik
 		bool		_isValidCgi;
+		str			_localPathResource;
 		Location*	_location;
 		str			_locationPath;
 		str			_queryString;
@@ -51,9 +50,10 @@ class HttpRequest : public AHttp {
 		void		envPath(Server* server);
 
 		bool		checkIsCgi(strVecIt it, strVecIt end, Server* server);
-		bool		checkValidCgi(strVecIt it);
+		bool		checkValidCgi(strVecIt it, Location *loc);
 		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
 		void		addPathInfo(strVecIt it, strVecIt end);
+		void		autoIndex(Location *loc);
 
 
 		//Getters
@@ -78,12 +78,11 @@ class HttpRequest : public AHttp {
 		class badHeaderException : public std::exception
 		{
 			private:
-				std::string _msg;
+				str _msg;
 			public:
-				badHeaderException(const std::string &msg);
+				badHeaderException(const str &msg);
 				virtual const char *what() const throw();
 				virtual ~badHeaderException() throw() {};
 		};
 };
 
-#endif

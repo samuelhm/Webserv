@@ -10,12 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef AHTTP_HPP
-#define AHTTP_HPP
+#pragma once
 
-#include <map>
-#include <string>
 #include "../WebSrv.hpp"
+#include <string>
+#include <map>
 
 class AHttp {
 	protected:
@@ -34,4 +33,3 @@ class AHttp {
 		const str& get_body() const;
 };
 
-#endif

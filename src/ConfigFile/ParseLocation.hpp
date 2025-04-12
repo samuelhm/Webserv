@@ -3,23 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   ParseLocation.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:08 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/06 20:35:02 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include "../HTTP/HttpResponse.hpp"
 #include "../WebSrv.hpp"
 #include "ParseConfig.hpp"
 #include "Location.hpp"
-#include "../HTTP/HttpResponse.hpp"
 
 void		setLocationParams(Location *location, strMap const &options);
-bool 		isValidPath(std::string const &path);
-std::string getLocationPath(std::string const &locationString);
+bool 		isValidPath(str const &path);
+str getLocationPath(str const &locationString);
 Location	*getLocation(const str &locationString, const str &serverName);
 RequestType strToRequest(const str &method);
 
@@ -30,9 +30,9 @@ class BadOptionLocationException : public std::exception
 };
 class BadSyntaxLocationBlockException : public std::exception {
 	private:
-		std::string _msg;
+		str _msg;
 	public:
     virtual ~BadSyntaxLocationBlockException(void) throw() {}
-		BadSyntaxLocationBlockException(const std::string &msg);
+		BadSyntaxLocationBlockException(const str &msg);
 		virtual const char *what() const throw();
 };

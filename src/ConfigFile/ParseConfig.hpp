@@ -1,13 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ParseConfig.hpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/12 13:18:20 by erigonza          #+#    #+#             */
+/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
-#include <fstream>
-#include <exception>
-#include <vector>
-#include <sstream>
+#include "../Utils/Utils.hpp"
 #include "../WebSrv.hpp"
 #include "Server.hpp"
 #include "Location.hpp"
-#include "../Utils/Utils.hpp"
 
 class Server;
 
@@ -21,22 +29,22 @@ bool					parseLocationBlock(str &line, std::istringstream &ss, Server *server);
 
 class ConfigFileException : public std::exception {
 	private:
-		std::string _msg;
+		str _msg;
 		std::vector<Server*>		_servers;
 	public:
 		virtual ~ConfigFileException() throw();
-		ConfigFileException(const std::string &msg);
-		ConfigFileException(const std::string &msg, std::vector<Server*> &servers);
+		ConfigFileException(const str &msg);
+		ConfigFileException(const str &msg, std::vector<Server*> &servers);
 		virtual const char*		what() const throw();
 		const std::vector<Server*>	&getServer() const throw();
 };
 
 class UnknownOptionException : public std::exception {
 	private:
-		std::string _msg;
+		str _msg;
 	public:
     virtual ~UnknownOptionException(void) throw();
-		UnknownOptionException(const std::string &msg);
+		UnknownOptionException(const str &msg);
 		virtual const char *what() const throw();
 };
 
