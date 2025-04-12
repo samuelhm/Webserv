@@ -17,26 +17,29 @@
 #include <fstream>
 
 bool	HttpRequest::checkValidCgi(strVecIt it) {
+	// IMPORTANT poner si es folder
 	std::ifstream isValidCgi((*it).c_str());
-	if (isValidCgi.good())
+	if (isValidCgi.good()) {
+		_isValidCgi = true;
 		return true;
+	}
 	return false;
 }
 
 void	HttpRequest::saveScriptNameAndQueryString(strVecIt it, strVecIt end) {
 	size_t infoPos = (*it).find('?');
 	if (infoPos != str::npos) {
-		if ((it + 1) != end) 
+		if ((it + 1) != end)
 			return ; // IMPORTANT add an error here where --> adios.py?algo=algomas (/) algoMas
 		_queryString = (*it).substr(infoPos + 1);
 		if ((*it).find('.') == str::npos)
 			_pathInfo.append("/" + (*it).substr(0, infoPos));
 		else
-			_varCgi = (*it).substr(0, infoPos);
+			_resource = (*it).substr(0, infoPos);
 		return ;
 	}
 	if ((*it).find('.') != str::npos)
-		_varCgi = (*it).substr(0);
+		_resource = (*it).substr(0);
 }
 
 bool	HttpRequest::checkIsCgi(strVecIt it, strVecIt end, Server* server) {
@@ -46,29 +49,30 @@ bool	HttpRequest::checkIsCgi(strVecIt it, strVecIt end, Server* server) {
 	std::vector<str> validExtensions = loc->getCgiExtension();
 	if (validExtensions.empty())
 		return false;
-
 	for (; it != end; it++) {
 		if ((*it).find('.') != str::npos && checkValidCgi(it)) {
 			saveScriptNameAndQueryString(it, end);
 			if ((*it).find('?') == str::npos)
 				addPathInfo(it + 1, end);
+			_isCgi = true;
 			break ;
 		}
 		_locationPath.append("/" + (*it));
 	}
-	
+
 	if (!loc->getCgiEnable())
-		return false;
+	return false;
 	str extension = (*it).substr((*it).find_last_of('.'));
 	bool valid = false;
 	for (int i = 0; i < validExtensions.size(); i++)
-		if (extension == validExtensions[i])
-			valid = true;
+	if (extension == validExtensions[i])
+	valid = true;
 	str total_path = server->getRoot();
 	if (valid) {
 		if (!loc->getRoot().empty())
-			total_path.append(loc->getRoot());
+		total_path.append(loc->getRoot());
 	}
+	_location = findLocation(server);
 	return true;
 }
 
