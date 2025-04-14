@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/14 11:40:23 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,30 +47,28 @@ EventPool::~EventPool() {
 str		EventPool::getRequest(int fdTmp)
 {
 	str request;
-	char buffer[4096]; //IMPORTANT Considerar un bucle de lectura por bloques si bytes_read == sizeof(buffer) - 1
+	char buffer[4096];
 	std::memset(buffer, 0, 4096);
 	ssize_t total_bytes = 0;
-	ssize_t bytes_read = read(fdTmp, buffer, sizeof(buffer) - 1);
-	while (bytes_read > 0)
+	ssize_t bytes_read = 0;
+
+	while ((bytes_read = read(fdTmp, buffer, sizeof(buffer) - 1)) > 0)
 	{
 		total_bytes += bytes_read;
 		request.append(buffer);
-		bytes_read = (read(fdTmp, buffer, sizeof(buffer) - 1) > 0);
+		std::memset(buffer, 0, bytes_read);
 	}
-	if (total_bytes <= 0) {
-		if (total_bytes == 0)
-			throw disconnectedException(fdTmp);
+	if (bytes_read == -1)
 		throw socketReadException(fdTmp);
-	}
-	size_t pos = request.find("\r\n");
-	str first_line;
-	if (pos != str::npos)
-		first_line = request.substr(0, pos);
+	if (total_bytes == 0)
+		throw disconnectedException(fdTmp);
 	Logger::log(str("HTTP Request Received.") + request, INFO);
-	if (!first_line.empty())
-		Logger::log(str("HTTP Request Received.") + first_line, USER);
-	else
+
+	size_t pos = request.find("\r\n");
+	if (pos == str::npos)
 		Logger::log("no \\r\\n found!!!", USER);
+	else
+		Logger::log(str("HTTP Request Received.") + request.substr(0, pos), USER);
 	return (request);
 }
 

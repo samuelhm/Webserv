@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:23:53 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/12 13:39:17 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/14 12:06:14 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#define LIMIT_HEADER_SIZE 1024
 
 typedef std::string str;
 typedef std::vector<str> strVec;

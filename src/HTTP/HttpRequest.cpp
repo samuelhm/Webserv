@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 15:12:38 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/14 12:38:31 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,15 +150,27 @@ void	HttpRequest::envPath(Server* server) {
 	}
 }
 
-HttpRequest::HttpRequest(str request, Server *server) : AHttp(request), _badRequest(false), _validMethod(false), _isValidCgi(false) {
+HttpRequest::HttpRequest(str request, Server *server)
+	: AHttp(request), _badRequest(false), _validMethod(false), _isValidCgi(false), _headerTooLarge(false)
+{
 	_location = NULL;
-	str::size_type end = request.find("\r\n");
+
+	// Check header size
+	str::size_type end = request.find("\r\n\r\n");
+	if (end == str::npos) {
+		_badRequest = true; return ;
+	}
+	else if (end > LIMIT_HEADER_SIZE) {
+		_headerTooLarge = true; return;
+	}
+
+	end = request.find("\r\n"); // IMPORTANT Estamos chequeando dos veces. Aqui
 	if (end == str::npos) {
 		_badRequest = true; return ;
 	}
 	const str line = request.substr(0, end + 2);
 	try {
-		checkHeaderMRP(line);
+		checkHeaderMRP(line); // IMPORTANT y aqui dentro.
 		envPath(server);
 		if(!checkResource(*server))
 			return ;
@@ -184,6 +196,7 @@ bool		HttpRequest::getResorceExist() const { return _resourceExist; }
 bool		HttpRequest::getValidMethod() const { return _validMethod; }
 bool		HttpRequest::getIsCgi() const { return _isCgi; }
 bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
+bool		HttpRequest::getHeaderTooLarge() const { return _headerTooLarge; }
 Location*	HttpRequest::getLocation() const { return _location; }
 
 //Setters
