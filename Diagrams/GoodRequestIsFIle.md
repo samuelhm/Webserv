@@ -16,19 +16,4 @@ flowchart TD
     S -- No --> T{Metodo GET}
     T -- Si --> E200[200 OK - con contenido]
     T -- No --> E405[405 Method Not Allowed]
-
-    N -- No --> U[Enviar al servidor upstream]
-    U --> V{Respuesta recibida del upstream}
-    V -- No --> V1{Error de conexion}
-    V1 -- Si --> E502[502 Bad Gateway]
-    V1 -- No --> V2{Timeout del upstream}
-    V2 -- Si --> E504[504 Gateway Timeout]
-    V2 -- No --> E503[503 Service Unavailable]
-
-    V -- Si --> W{Codigo de respuesta}
-    W -->|101| E101[101 Switching Protocols]
-    W -->|2xx| E2xx[2xx Success]
-    W -->|3xx| E3xx[3xx Redirection]
-    W -->|4xx| E4xx[4xx Client Error]
-    W -->|5xx| E5xx[5xx Server Error]
 ```
