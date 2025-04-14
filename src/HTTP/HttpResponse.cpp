@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/08 12:08:01 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/14 12:36:46 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,10 @@ HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp()
   }
   else if (!request.getResorceExist()) {
     setErrorCode(404, server);
+    return;
+  }
+  else if (request.getHeaderTooLarge()) {
+    setErrorCode(431, server);
     return;
   }
   // else if (request.getLocation()->getAutoindex());

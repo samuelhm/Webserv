@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 15:09:39 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/14 12:40:13 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class HttpRequest : public AHttp {
 		str			_locationPath;
 		str			_queryString;
 		str			_pathInfo;
+		bool		_headerTooLarge; // Para cabeceras mayores a LIMIT_HEADER_SIZE // Se podria mover a AHttp?
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);
@@ -65,6 +66,7 @@ class HttpRequest : public AHttp {
 		bool		getIsValidCgi() const;
 		Location*	getLocation() const;
 		str			getVarCgi() const;
+		bool		getHeaderTooLarge() const;
 
 		//Setters
 		void		setType(RequestType type);
