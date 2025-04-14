@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:35 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/12 13:38:07 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/14 10:47:27 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 class Server;
 class Location;
@@ -69,5 +70,10 @@ namespace Utils {
 	template <typename T>
 	void deleteItem(T *Item) {
 		delete Item;
+	}
+
+	template<typename T>
+	bool contains(const std::vector<T>& vec, const T& valor) {
+	return std::find(vec.begin(), vec.end(), valor) != vec.end();
 	}
 }
