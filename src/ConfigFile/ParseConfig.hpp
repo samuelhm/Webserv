@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseConfig.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:20 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/14 11:06:22 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,10 @@ std::vector<Server*>	parseConfigFile(const str &filepath);
 Server*					getServer(const str &serverString);
 void					setValidOption(const str &line, OptionType &type);
 void					insertOption(const str &value, int type, Server* server);
-bool 					handleServerLine(str&, std::istringstream&, Server*);
+bool 					handleServerLine(str&, std::istringstream&, Server*, std::vector<OptionType>&);
 void 					parseErrorPage(const str &line, Server *server);
 bool					parseLocationBlock(str &line, std::istringstream &ss, Server *server);
+void 					checkRepeat(std::vector<OptionType>& options, OptionType type);
 
 class ConfigFileException : public std::exception {
 	private:
@@ -49,6 +50,12 @@ class UnknownOptionException : public std::exception {
 };
 
 class EmptyValueException : public std::exception
+{
+	public:
+		virtual const char* what() const throw();
+};
+
+class RepeatedOptionException : public std::exception
 {
 	public:
 		virtual const char* what() const throw();

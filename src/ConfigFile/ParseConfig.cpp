@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/14 11:07:43 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,13 +168,29 @@ bool parseLocationBlock(str &line, std::istringstream &ss, Server *server)
 	return false;
 }
 
-bool handleServerLine(str &line, std::istringstream &ss, Server *server)
+void checkRepeat(std::vector<OptionType>& options, OptionType type)
+{
+	if (type == LOCATION || type == ERRORPAGE)
+		return ;
+	else if (!Utils::contains(options, type))
+		options.push_back(type);
+	else
+		throw RepeatedOptionException();
+}
+
+bool handleServerLine(str &line, std::istringstream &ss, Server *server, std::vector<OptionType>& options)
 {
 	OptionType type;
-	try { setValidOption(line, type);}
+	try {
+		setValidOption(line, type);
+		checkRepeat(options, type);
+	}
 	catch (UnknownOptionException &e) {
 		Logger::log(str("Invalid or Unknown Option: ") + e.what(), WARNING);
 		return true;
+	}
+	catch (RepeatedOptionException &e) {
+		throw ConfigFileException(e.what());
 	}
 	if (type != LOCATION)
 	{
@@ -205,6 +221,7 @@ Server*	getServer(const str &serverString)
 	std::istringstream ss(serverString);
 	str line;
 	std::getline(ss, line);
+	std::vector<OptionType> Options;
 	line = Utils::trim(line);
 	if ( line != "{")
 		throw ConfigFileException("Server must be between brackets {}");
@@ -217,7 +234,7 @@ Server*	getServer(const str &serverString)
 			Logger::log(str("Ignoring line: ") + line, WARNING);
 			continue ;
 		}
-		if(handleServerLine(line, ss, server))
+		if(handleServerLine(line, ss, server, Options))
 			continue;
 	}
 	if (server->getLocations().empty())
@@ -235,4 +252,5 @@ UnknownOptionException::UnknownOptionException(const str &msg) : _msg(msg) {}
 UnknownOptionException::~UnknownOptionException(void) throw() {}
 const char* UnknownOptionException::what() const throw() { return _msg.c_str(); }
 
-const char* EmptyValueException::what() const throw() { return "Empty value in configuration"; }
+const char* EmptyValueException::what() const throw() { return "Empty value in configuration."; }
+const char* RepeatedOptionException::what() const throw() { return "Repeated option inside server block."; }
