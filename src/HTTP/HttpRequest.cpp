@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/14 12:38:31 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/15 15:41:46 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,14 @@ bool		HttpRequest::getIsCgi() const { return _isCgi; }
 bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
 bool		HttpRequest::getHeaderTooLarge() const { return _headerTooLarge; }
 Location*	HttpRequest::getLocation() const { return _location; }
+str			HttpRequest::getReceivedMethod() const { return _receivedMethod; }
+str			HttpRequest::getResource() const { return _resource; }
+bool		HttpRequest::getResourceExist() const { return _resourceExist; }
+str			HttpRequest::getLocalPathResource() const { return _localPathResource; }
+str			HttpRequest::getLocationUri() const { return _locationUri; }
+str			HttpRequest::getQueryString() const { return _queryString; }
+str			HttpRequest::getPathInfo() const { return _pathInfo; }
+bool		HttpRequest::getRedirect() const { return _redirect; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }

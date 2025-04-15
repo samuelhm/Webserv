@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/14 11:40:23 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/15 16:13:32 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,8 @@ str		EventPool::getRequest(int fdTmp)
 		total_bytes += bytes_read;
 		request.append(buffer);
 		std::memset(buffer, 0, bytes_read);
+		if (bytes_read < 4095)
+			break;
 	}
 	if (bytes_read == -1)
 		throw socketReadException(fdTmp);
@@ -221,6 +223,7 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 	try {
 		str reqStr = getRequest(fd);
 		HttpRequest request(reqStr, eventStrct->server);
+		Utils::printRequest(request);
 		HttpResponse response(request, eventStrct->server);
 		sendResponse(response, fd, response.getHeader());
 	} catch(const disconnectedException& e) {
