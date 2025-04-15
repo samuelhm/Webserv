@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:35 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/14 10:47:27 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/15 16:09:57 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,20 +19,25 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include "../HTTP/HttpRequest.hpp"
+#include "Logger.hpp"
 
 class Server;
 class Location;
+class HttpRequest;
 
 namespace Utils {
 	extern std::map<int, str>	_statusStr;
 
-	strVec	split(const str &input, const char delimiter);
-	strVec	split(const str &input, const str &delimiter);
+	strVec				split(const str &input, const char delimiter);
+	strVec				split(const str &input, const str &delimiter);
 	str 				trim(const str& input);
 	str 				fileToStr(const str &filePath);
 	str 				intToStr(std::size_t num);
 	void 				fillStatusStr();
 	bool				setUpServers(std::vector<Server*>& servers);
+	str					requestTypeToStr(RequestType type);
+	void				printRequest(HttpRequest &Request);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {
@@ -76,4 +81,5 @@ namespace Utils {
 	bool contains(const std::vector<T>& vec, const T& valor) {
 	return std::find(vec.begin(), vec.end(), valor) != vec.end();
 	}
+
 }

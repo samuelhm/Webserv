@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/14 12:40:13 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/15 15:41:36 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "AHttp.hpp"
 
 class Server;
+class Location;
 
 class HttpRequest : public AHttp {
 	private:
@@ -69,6 +70,14 @@ class HttpRequest : public AHttp {
 		Location*	getLocation() const;
 		str			getVarCgi() const;
 		bool		getHeaderTooLarge() const;
+		str			getReceivedMethod() const;
+		str			getResource() const;
+		bool		getResourceExist() const;
+		str			getLocalPathResource() const;
+		str			getLocationUri() const;
+		str			getQueryString() const;
+		str			getPathInfo() const;
+		bool		getRedirect() const;
 
 		//Setters
 		void		setType(RequestType type);
@@ -89,4 +98,3 @@ class HttpRequest : public AHttp {
 				virtual ~badHeaderException() throw() {};
 		};
 };
-

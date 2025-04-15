@@ -154,3 +154,46 @@ void Utils::fillStatusStr() {
   }
 
   std::map<int, str>	Utils::_statusStr;
+
+void Utils::printRequest(HttpRequest &request)
+{
+	Logger::log("----- HttpRequest Info -----", WARNING);
+	if (request.getBadRequest()) {
+		Logger::log("Bad Request: true", WARNING);
+		return;
+	}
+	Logger::log("Bad Request: false", WARNING);
+	Logger::log(str("Request Type: ") + requestTypeToStr(request.getType()), WARNING);
+	Logger::log(str("Received Method: ") + request.getReceivedMethod(), WARNING);
+	Logger::log(str("Resource: ") + request.getResource(), WARNING);
+	Logger::log(str("Resource Exists: ") + (request.getResourceExist() ? "true" : "false"), WARNING);
+	Logger::log(str("Valid Method: ") + (request.getValidMethod() ? "true" : "false"), WARNING);
+	Logger::log(str("Is CGI: ") + (request.getIsCgi() ? "true" : "false"), WARNING);
+	Logger::log(str("Is Valid CGI: ") + (request.getIsValidCgi() ? "true" : "false"), WARNING);
+	Logger::log(str("Local Path Resource: ") + request.getLocalPathResource(), WARNING);
+	Location* loc = request.getLocation();
+	if (loc)
+		Logger::log("Location pointer: (valida)", WARNING);
+	else
+		Logger::log("Location pointer: null", WARNING);
+	Logger::log(str("Location URI: ") + request.getLocationUri(), WARNING);
+	if (request.getIsCgi()) {
+		Logger::log(str("Query String: ") + request.getQueryString(), WARNING);
+		Logger::log(str("Path Info: ") + request.getPathInfo(), WARNING);
+	}
+	Logger::log(str("Header Too Large: ") + (request.getHeaderTooLarge() ? "true" : "false"), WARNING);
+	Logger::log(str("Redirect: ") + (request.getRedirect() ? "true" : "false"), WARNING);
+	Logger::log("----------------------------", WARNING);
+}
+
+str Utils::requestTypeToStr(RequestType type) {
+	switch (type) {
+		case GET: return "GET"; break;
+		case POST: return "POST"; break;
+		case DELETE: return "DELETE"; break;
+		case OPTIONS: return "OPTIONS"; break;
+		case PUT: return "PUT"; break;
+		// Añade más si tienes
+		default: return "UNKNOWN";
+	}
+}
