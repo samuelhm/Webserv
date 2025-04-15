@@ -16,6 +16,44 @@
 #include <iostream>
 #include <fstream>
 
+HttpRequest::HttpRequest(str request, Server *server)
+	: AHttp(request), _badRequest(false), _validMethod(false),
+		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
+{
+	_location = NULL;
+
+	// Check header size
+	str::size_type end = request.find("\r\n\r\n");
+	if (end == str::npos) {
+		_badRequest = true; return ;
+	}
+	else if (end > LIMIT_HEADER_SIZE) {
+		_headerTooLarge = true; return;
+	}
+
+	end = request.find("\r\n"); // IMPORTANT Estamos chequeando dos veces. Aqui
+	if (end == str::npos) {
+		_badRequest = true; return ;
+	}
+	const str line = request.substr(0, end + 2);
+	try {
+		checkHeaderMRP(line); // IMPORTANT y aqui dentro.
+		envPath(server);
+		if(!checkResource(*server))
+			return ;
+		if(!checkAllowMethod())
+			return ;
+		_location = findLocation(server);
+		_body = saveHeader(request.substr(end));
+	} catch(const badHeaderException &e) {
+		_badRequest = true;
+		Logger::log(e.what(), USER);
+	} catch(...) {
+		_badRequest = true;
+		Logger::log("UNKNOWN FATAL ERROR AT HTTPREQUEST HEADER", ERROR);
+	}
+}
+
 const str HttpRequest::saveHeader(const str &request) {
     str::size_type end = request.find("\r\n");
 
@@ -93,6 +131,20 @@ Location*	HttpRequest::findLocation(Server* Server) {
 	return NULL;
 }
 
+Location*	HttpRequest::findLocation(Server* Server, const str &uri) {
+	Logger::log(str("Looking for Location: ") + uri, INFO);
+	std::vector<Location*> locations = Server->getLocations();
+	for (std::size_t i = 0 ; i < locations.size(); i++) {
+		Logger::log(str("Comparando Location: ") + uri + "con: " + locations[i]->getUrlPath());
+		if (uri == locations[i]->getUrlPath()) {
+			Logger::log("Location Encontrada", USER);
+			return locations[i];
+		}
+	}
+	Logger::log(str("No se encontro location para este recurso: ") + _uri + _resource, USER);
+	return NULL;
+}
+
 bool	HttpRequest::checkAllowMethod()
 {
 	int method = (_receivedMethod == "GET")		? 0 :
@@ -132,61 +184,16 @@ void	HttpRequest::autoIndex(Location *loc) {
 void	HttpRequest::envPath(Server* server) {
 	strVec		locationUris = Utils::split(_uri, '/');
 	strVecIt	it;
-	bool isCgi;
 	for (it = locationUris.begin() ; it != locationUris.end(); ++it) {
-		isCgi = false;
 		if ((*it).find('.') != str::npos)
-			isCgi = checkIsCgi(it, locationUris.end(), server);
-		if (!(*it).empty() && !isCgi && (it +1) != locationUris.end() && *(it +1) != "")
+			saveUri(it, locationUris.end(), server);
+		if (_resourceExist)
+			break ;
+		if (!(*it).empty() && (it + 1) != locationUris.end()) //IMPORTANT check && *(it +1) != ""
 			_locationUri.append("/" + (*it));
-		else if (*(it + 1) == "")
-			_resourceExist = false;
-		else
-			_resource.append((*it));
-		if (_resource.empty() && _uri[_uri.size() - 1] != '/') {
-			_redirect = true; // IMPRTANT REDIRECTIONS check
-			_locationUri.append("/");
-		}
-		else if(!isCgi)
-			autoIndex(findLocation(server));
-	}
-}
-
-HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _validMethod(false),
-		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
-{
-	_location = NULL;
-
-	// Check header size
-	str::size_type end = request.find("\r\n\r\n");
-	if (end == str::npos) {
-		_badRequest = true; return ;
-	}
-	else if (end > LIMIT_HEADER_SIZE) {
-		_headerTooLarge = true; return;
-	}
-
-	end = request.find("\r\n"); // IMPORTANT Estamos chequeando dos veces. Aqui
-	if (end == str::npos) {
-		_badRequest = true; return ;
-	}
-	const str line = request.substr(0, end + 2);
-	try {
-		checkHeaderMRP(line); // IMPORTANT y aqui dentro.
-		envPath(server);
-		if(!checkResource(*server))
-			return ;
-		if(!checkAllowMethod())
-			return ;
-		_location = findLocation(server);
-		_body = saveHeader(request.substr(end));
-	} catch(const badHeaderException &e) {
-		_badRequest = true;
-		Logger::log(e.what(), USER);
-	} catch(...) {
-		_badRequest = true;
-		Logger::log("UNKNOWN FATAL ERROR AT HTTPREQUEST HEADER", ERROR);
+		// else if ((it + 1) != locationUris.end() && !_redirect)
+		// 	_resource = it.cs
+		autoIndex(findLocation(server)); // IMPOERTANT improve this function and change where it is
 	}
 }
 
