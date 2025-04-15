@@ -45,13 +45,14 @@ class HttpRequest : public AHttp {
 		HttpRequest(str request, Server * server);
 		~HttpRequest();
 		Location	*findLocation(Server* Server);
+		Location*	findLocation(Server* Server, const str &uri);
 
 		bool		checkAllowMethod();
-		// void		checkIsCgi(Server *server);
+		// void		saveUri(Server *server);
 		void		checkIsValidCgi();
 		void		envPath(Server* server);
 
-		bool		checkIsCgi(strVecIt it, strVecIt end, Server* server);
+		bool		saveUri(strVecIt it, strVecIt end, Server* server);
 		bool		checkValidCgi(strVecIt it, Location *loc);
 		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
 		void		addPathInfo(strVecIt it, strVecIt end);

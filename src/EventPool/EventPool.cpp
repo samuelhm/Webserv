@@ -57,6 +57,8 @@ str		EventPool::getRequest(int fdTmp)
 		total_bytes += bytes_read;
 		request.append(buffer);
 		std::memset(buffer, 0, bytes_read);
+		if (bytes_read != 4096)
+			break;
 	}
 	if (bytes_read == -1)
 		throw socketReadException(fdTmp);

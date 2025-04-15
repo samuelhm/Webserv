@@ -55,8 +55,8 @@ void	HttpRequest::saveScriptNameAndQueryString(strVecIt it, strVecIt end) {
 		_resource = (*it).substr(0);
 }
 
-bool	HttpRequest::checkIsCgi(strVecIt it, strVecIt end, Server* server) {
-	Location *loc = findLocation(server);
+bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
+	Location *loc = findLocation(server, _locationUri + (*it));
 	if (!loc)
 		return false;
 
