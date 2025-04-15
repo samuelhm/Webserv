@@ -16,6 +16,9 @@
 #include "HttpRequest.hpp"
 #include "AHttp.hpp"
 
+class Server;
+class HttpRequest;
+
 class HttpResponse : public AHttp {
 	public:
 		str							_line0;
@@ -26,7 +29,6 @@ class HttpResponse : public AHttp {
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);
 		HttpResponse(const HttpResponse &other);
+		HttpResponse(int errorCode);
 		~HttpResponse();
 };
-
-
