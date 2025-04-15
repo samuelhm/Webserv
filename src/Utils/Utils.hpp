@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:35 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/15 16:09:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/15 16:52:00 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,13 @@
 #include <sstream>
 #include <algorithm>
 #include "../HTTP/HttpRequest.hpp"
+#include "../HTTP/HttpResponse.hpp"
 #include "Logger.hpp"
 
 class Server;
 class Location;
 class HttpRequest;
+class HttpResponse;
 
 namespace Utils {
 	extern std::map<int, str>	_statusStr;
@@ -38,6 +40,7 @@ namespace Utils {
 	bool				setUpServers(std::vector<Server*>& servers);
 	str					requestTypeToStr(RequestType type);
 	void				printRequest(HttpRequest &Request);
+	HttpResponse 		&codeResponse(int errorCode);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {

@@ -196,3 +196,26 @@ str Utils::requestTypeToStr(RequestType type) {
 		default: return "UNKNOWN";
 	}
 }
+
+HttpResponse &Utils::codeResponse(int errorCode)
+{
+	static HttpResponse resp414(414);
+	static HttpResponse resp431(431);
+	static HttpResponse resp400(400);
+	static HttpResponse resp404(404);
+	static HttpResponse resp405(405);
+	static HttpResponse resp500(500);
+
+	switch (errorCode)
+	{
+		case 414: return resp414;
+		case 431: return resp431;
+		case 400: return resp400;
+		case 404: return resp404;
+		case 405: return resp405;
+		case 500: return resp500;
+		default:
+			Logger::log("getStaticErrorResponse: código no soportado: " + intToStr(errorCode), WARNING);
+			return resp500; // fallback
+	}
+}

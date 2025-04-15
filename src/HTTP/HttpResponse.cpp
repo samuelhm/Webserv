@@ -3,16 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42barcelona.fr> +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/14 12:36:46 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/15 16:44:30 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cstdlib>
 #include "HttpResponse.hpp"
 #include "../Utils/Utils.hpp"
+
+HttpResponse::HttpResponse::HttpResponse(int errorCode) : AHttp()
+{
+	_status = errorCode;
+	_line0.append("HTTP/1.1 ");
+	_line0.append(Utils::intToStr(errorCode));
+	_line0.append(" ");
+	_line0.append(Utils::_statusStr[errorCode]);
+	_line0.append("\r\n");
+	_body = "<html><head><title>";
+	_body += Utils::intToStr(errorCode) + " " + Utils::_statusStr[errorCode];
+	_body += "</title></head><body><h1>";
+	_body += Utils::intToStr(errorCode) + " " + Utils::_statusStr[errorCode];
+	_body += "</h1></body></html>\r\n";
+	_header["Content-Type"] = "text/html\r\n";
+	_header["Content-Length"] = Utils::intToStr(_body.length());
+}
+
 
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
 	if (request.getBadRequest()) {
@@ -86,5 +104,3 @@ void HttpResponse::setErrorCode(int ErrorCode, Server* server)
 	_header["Content-Type"] = "text/html\r\n";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 }
-
-
