@@ -24,7 +24,7 @@ bool	HttpRequest::checkValidCgi(strVecIt it, Location *loc) {
 	const strVec	vec = loc->getCgiExtension();
 	str 			extension = (*it).substr((*it).find_last_of('.'));
 
-	for (int i = 0; i < vec.size(); i++) {
+	for (std::size_t i = 0; i < vec.size(); i++) {
 		if (extension == vec[i].c_str()) {
 			_isCgi = true;
 			if (isValidCgi.good() && !dir) {
@@ -39,18 +39,19 @@ bool	HttpRequest::checkValidCgi(strVecIt it, Location *loc) {
 }
 
 void	HttpRequest::saveScriptNameAndQueryString(strVecIt it, strVecIt end) {
+	(void)end;
 	size_t infoPos = (*it).find('?');
 	if (infoPos != str::npos) {
-		if ((it + 1) != end)
-			return ; // IMPORTANT add an error here where --> adios.py?algo=algomas (/) algoMas
 		_queryString = (*it).substr(infoPos + 1);
-		if ((*it).find('.') == str::npos)
-			_pathInfo.append("/" + (*it).substr(0, infoPos));
-		else
-			_resource = (*it).substr(0, infoPos);
+		_resource = (*it).substr(0, infoPos);
+		// if ((it + 1) != end) {
+		// 	for
+		// }
 		return ;
 	}
-	if ((*it).find('.') != str::npos)
+	if ((*it).find('.') == str::npos)
+		_pathInfo.append("/" + (*it).substr(0, infoPos));
+	else
 		_resource = (*it).substr(0);
 }
 
@@ -80,7 +81,7 @@ bool	HttpRequest::checkIsCgi(strVecIt it, strVecIt end, Server* server) {
 			_resourceExist = true;
 			break ;
 		}
-		_locationPath.append("/" + (*it));
+		_locationUri.append("/" + (*it));
 	}
 	if (!_isCgi || !loc->getCgiEnable())
 		return false;

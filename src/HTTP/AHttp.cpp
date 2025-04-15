@@ -23,7 +23,7 @@ AHttp::AHttp(const AHttp &other) { *this = other; }
 AHttp& AHttp::operator=(const AHttp &other) {
 
 	if (this != &other) {
-		_path = other._path ;
+		_uri = other._uri ;
 		_header = other._header ;
 		_body = other._body ;
 	}
@@ -32,7 +32,7 @@ AHttp& AHttp::operator=(const AHttp &other) {
 
 AHttp::~AHttp() {}
 
-strMap& AHttp::get_header() { return _header; }
-const str& AHttp::get_body() const { return _body; }
-const str& AHttp::get_path() const { return _path; }
+strMap& AHttp::getHeader() { return _header; }
+const str& AHttp::getBody() const { return _body; }
+const str& AHttp::getUri() const { return _uri; }
 

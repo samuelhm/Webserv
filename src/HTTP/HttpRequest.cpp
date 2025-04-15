@@ -28,9 +28,8 @@ const str HttpRequest::saveHeader(const str &request) {
         str value = line.substr(separator + 2);
         _header[key] = value;
     }
-    if (end + 2 < request.length()) {
+    if (end + 2 < request.length())
         return saveHeader(request.substr(end + 2));
-    }
     return request;
 }
 
@@ -60,7 +59,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	size_t path_end = line.find(" ", end);
 	if (path_end == str::npos)
 		throw badHeaderException(DEFAULT_ERROR);
-	_path = line.substr(end, path_end - end);
+	_uri = line.substr(end, path_end - end);
 	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") //aqui no tinene \r\n porque ya lo quitamos en el constructor
 		throw badHeaderException("Bad Protocol version");
 	//_resource
@@ -81,16 +80,16 @@ bool HttpRequest::checkResource(Server const &server) {
 }
 
 Location*	HttpRequest::findLocation(Server* Server) {
-	Logger::log(str("Looking for Location: ") + _path, INFO);
+	Logger::log(str("Looking for Location: ") + _uri, INFO);
 	std::vector<Location*> locations = Server->getLocations();
-	for (int i = 0 ; i < locations.size(); i++) {
-		Logger::log(str("Comparando Location: ") + _locationPath + "con: " + locations[i]->getUrlPath());
-		if (_locationPath == locations[i]->getUrlPath()) {
+	for (std::size_t i = 0 ; i < locations.size(); i++) {
+		Logger::log(str("Comparando Location: ") + _locationUri + "con: " + locations[i]->getUrlPath());
+		if (_locationUri == locations[i]->getUrlPath()) {
 			Logger::log("Location Encontrada", USER);
 			return locations[i];
 		}
 	}
-	Logger::log(str("No se encontro location para este recurso: ") + _path + _resource, USER);
+	Logger::log(str("No se encontro location para este recurso: ") + _uri + _resource, USER);
 	return NULL;
 }
 
@@ -131,27 +130,31 @@ void	HttpRequest::autoIndex(Location *loc) {
 }
 
 void	HttpRequest::envPath(Server* server) {
-	strVec		locationPaths = Utils::split(_path, '/');
+	strVec		locationUris = Utils::split(_uri, '/');
 	strVecIt	it;
 	bool isCgi;
-	for (it = locationPaths.begin() ; it != locationPaths.end(); ++it) {
+	for (it = locationUris.begin() ; it != locationUris.end(); ++it) {
 		isCgi = false;
-		if ((*it).find('.') != str::npos) {
-			isCgi = checkIsCgi(it, locationPaths.end(), server);
-			if (!isCgi)
-				autoIndex(findLocation(server));
-		}
-		if (!(*it).empty() && !isCgi && (it +1) != locationPaths.end() && *(it +1) != "")
-			_locationPath.append("/" + (*it));
+		if ((*it).find('.') != str::npos)
+			isCgi = checkIsCgi(it, locationUris.end(), server);
+		if (!(*it).empty() && !isCgi && (it +1) != locationUris.end() && *(it +1) != "")
+			_locationUri.append("/" + (*it));
 		else if (*(it + 1) == "")
 			_resourceExist = false;
 		else
 			_resource.append((*it));
+		if (_resource.empty() && _uri[_uri.size() - 1] != '/') {
+			_redirect = true; // IMPRTANT REDIRECTIONS check
+			_locationUri.append("/");
+		}
+		else if(!isCgi)
+			autoIndex(findLocation(server));
 	}
 }
 
 HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _validMethod(false), _isValidCgi(false), _headerTooLarge(false)
+	: AHttp(request), _badRequest(false), _validMethod(false),
+		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
 {
 	_location = NULL;
 

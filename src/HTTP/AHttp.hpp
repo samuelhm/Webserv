@@ -18,7 +18,7 @@
 
 class AHttp {
 	protected:
-		str							_path;
+		str							_uri;
 		strMap			_header;
 		str							_body;
 	public:
@@ -28,8 +28,8 @@ class AHttp {
 		AHttp& operator=(const AHttp &other);
 		virtual ~AHttp() = 0;
 
-		const str& get_path() const;
-		strMap& get_header();
-		const str& get_body() const;
+		const str&		getUri() const;
+		strMap&			getHeader();
+		const str&		getBody() const;
 };
 

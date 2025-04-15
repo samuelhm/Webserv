@@ -19,7 +19,7 @@
 
 void		setLocationParams(Location *location, strMap const &options);
 bool 		isValidPath(str const &path);
-str getLocationPath(str const &locationString);
+str getlocationUri(str const &locationString);
 Location	*getLocation(const str &locationString, const str &serverName);
 RequestType strToRequest(const str &method);
 

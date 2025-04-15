@@ -77,19 +77,19 @@ void	EventPool::sendResponse(HttpResponse &response, int fdTmp, const strMap& m)
 	str err;
 	err.append(response._line0);
 	strMap::iterator it;
-	for (it = response.get_header().begin(); it != response.get_header().end(); ++it) {
+	for (it = response.getHeader().begin(); it != response.getHeader().end(); ++it) {
 		err.append(it->first);
 		err.append(": ");
 		err.append(it->second);
 		err.append("\r\n");
 	}
-	err.append(response.get_body());
+	err.append(response.getBody());
 	ssize_t error = write(fdTmp, err.c_str(), err.size());
 	if (error == -1)
 		Logger::log("Cannot Write on Socket!.", ERROR);
 	Logger::log(str("Sending resource to fd: ") + Utils::intToStr(fdTmp), USER);
 	Logger::log(str("Sending to client the header: \n") + Utils::returnMap(m), INFO);
-	Logger::log(str("Sending to client the body:\n") + response.get_body(), INFO);
+	Logger::log(str("Sending to client the body:\n") + response.getBody(), INFO);
 }
 
 struct eventStructTmp* EventPool::createEventStruct(int fd, Server* server, bool serverOrClient)
@@ -198,14 +198,14 @@ bool	EventPool::checkCGI(str path, Server server)
 	Path = AutoIndex::getPrevPath(Path);
 	Path.erase(Path.size() - 1);
 	std::vector<Location*> locations = server.getLocations();
-	for (int i = 0; i < locations.size(); i++)
+	for (std::size_t i = 0; i < locations.size(); i++)
 	{
 		if (Path == locations[i]->getRoot())
 		{
 			if (!locations[i]->getCgiEnable())
 				return false;
 			strVec extensions = locations[i]->getCgiExtension();
-			for (int j = 0; j < extensions.size(); j++)
+			for (std::size_t j = 0; j < extensions.size(); j++)
 			{
 				if (ext == extensions[j])
 					return true;
@@ -222,7 +222,7 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 		str reqStr = getRequest(fd);
 		HttpRequest request(reqStr, eventStrct->server);
 		HttpResponse response(request, eventStrct->server);
-		sendResponse(response, fd, response.get_header());
+		sendResponse(response, fd, response.getHeader());
 	} catch(const disconnectedException& e) {
 		Logger::log(str("Disconnection occur: ") + e.what(), WARNING);
 	} catch(const socketReadException& e) {

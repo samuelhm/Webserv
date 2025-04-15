@@ -19,7 +19,7 @@ Location *getLocation(const str &locationString, const str &serverName) {
 
   std::getline(locationBlock, line);
   Logger::log(str("Parsing Location block line: ") + line, INFO);
-  str location_path = getLocationPath(line);
+  str location_path = getlocationUri(line);
 
   std::getline(locationBlock, line);
   if (line.compare("[") != 0) { throw BadSyntaxLocationBlockException("Not found Open Bracker ["); }
@@ -99,7 +99,7 @@ bool isValidPath(str const &path) {
   return true;
 }
 
-str getLocationPath(str const &locationString) {
+str getlocationUri(str const &locationString) {
   std::istringstream line(locationString);
   str tmp;
   if (!std::getline(line, tmp, ':')) { throw BadSyntaxLocationBlockException(tmp); }

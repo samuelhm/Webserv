@@ -29,10 +29,11 @@ class HttpRequest : public AHttp {
 		bool		_isValidCgi;
 		str			_localPathResource;
 		Location*	_location;
-		str			_locationPath;
+		str			_locationUri;
 		str			_queryString;
 		str			_pathInfo;
 		bool		_headerTooLarge; // Para cabeceras mayores a LIMIT_HEADER_SIZE // Se podria mover a AHttp?
+		bool		_redirect;
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);

@@ -52,8 +52,9 @@ void HttpResponse::setResource(const HttpRequest &request, Server* server)
   _line0.append(Utils::_statusStr[_status]);
   _line0.append("\r\n");
   str filepath;
-  filepath.append(server->getRoot()); //NO ESTAMOS COMPROBANDO LOCATION ESTAMOS EN GET ROOT
-  filepath.append(request.get_path());
+  filepath.append(server->getRoot()); // NO ESTAMOS COMPROBANDO LOCATION ESTAMOS EN GET ROOT
+  if (!request.getLocation()->getRoot().empty())
+    filepath.append(request.getLocation()->getRoot());
   if (filepath[filepath.length() - 1] == '/')
     filepath.append(server->getLocations().at(0)->getIndex());
   try { _body.append(Utils::fileToStr(filepath)); }
