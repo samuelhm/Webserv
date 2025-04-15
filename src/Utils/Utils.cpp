@@ -193,7 +193,6 @@ str Utils::requestTypeToStr(RequestType type) {
 		case DELETE: return "DELETE"; break;
 		case OPTIONS: return "OPTIONS"; break;
 		case PUT: return "PUT"; break;
-		// Añade más si tienes
 		default: return "UNKNOWN";
 	}
 }
