@@ -189,10 +189,6 @@ void	HttpRequest::envPath(Server* server) {
 			saveUri(it, locationUris.end(), server);
 		if (_resourceExist)
 			break ;
-		if (_resource.empty() && _uri[_uri.size() - 1] != '/') {
-			_redirect = true; // IMPRTANT REDIRECTIONS check
-			_locationUri.append("/");
-		}
 		if (!(*it).empty() && (it + 1) != locationUris.end()) //IMPORTANT check && *(it +1) != ""
 			_locationUri.append("/" + (*it));
 		// else if ((it + 1) != locationUris.end() && !_redirect)
