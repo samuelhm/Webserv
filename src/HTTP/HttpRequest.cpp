@@ -22,22 +22,14 @@ HttpRequest::HttpRequest(str request, Server *server)
 {
 	_location = NULL;
 
-	// Check header size
-	str::size_type end = request.find("\r\n\r\n");
+	str::size_type end = request.find("\r\n");
 	if (end == str::npos) {
-		_badRequest = true; return ;
-	}
-	else if (end > LIMIT_HEADER_SIZE) {
-		_headerTooLarge = true; return;
-	}
-
-	end = request.find("\r\n"); // IMPORTANT Estamos chequeando dos veces. Aqui
-	if (end == str::npos) {
+		Logger::log("no \\r\\n found!!!", USER);
 		_badRequest = true; return ;
 	}
 	const str line = request.substr(0, end + 2);
 	try {
-		checkHeaderMRP(line); // IMPORTANT y aqui dentro.
+		checkHeaderMRP(line);
 		envPath(server);
 		if(!checkResource(*server))
 			return ;
@@ -74,13 +66,10 @@ const str HttpRequest::saveHeader(const str &request) {
 #define DEFAULT_ERROR "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"
 
 void HttpRequest::checkHeaderMRP(const str &line) {
-	str::size_type end = line.find("\r\n");
-    if (end == str::npos)
-		throw badHeaderException("No \\r\\n found at status line");
 	Logger::log(str("Cheacking Heder: ") + line, INFO);
 	if (line.empty())
 		throw badHeaderException("Empty Http request received.");
-	end = line.find(" ", 0);
+	size_t end = line.find(" ", 0);
 	if (end == str::npos)
 		throw badHeaderException("No space after method received.");
 	str	method = line.substr(0, end);

@@ -50,6 +50,7 @@ class EventPool {
 		void					handleClientConnection(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
 		bool					checkCGI(str path, Server server);
+		bool					headerTooLarge(str const &request);
 
 	public:
 		EventPool(std::vector<Server*> &Servers);
@@ -84,6 +85,15 @@ class EventPool {
 			AcceptConnectionException(str const &msg);
 				const char *what() const throw();
 				virtual ~AcceptConnectionException() throw() {}
+		};
+		class headerTooLargeException : public std::exception
+		{
+			private:
+				const str message;
+			public:
+				headerTooLargeException(int fd);
+				const char *what() const throw();
+				virtual ~headerTooLargeException() throw() {}
 		};
 };
 
