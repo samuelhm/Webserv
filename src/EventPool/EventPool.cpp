@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/16 20:04:40 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/16 20:18:55 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,16 +253,16 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 		return Utils::codeResponse(400);
 	else if (request.getValidMethod())
 		return Utils::codeResponse(405);
-	else if (!request.getResource() || request.getLocation() == NULL)
+	else if (!request.getResourceExist() || request.getLocation() == NULL)
 		return Utils::codeResponse(404);
 	else if (request.getIsCgi() && !request.getIsValidCgi())
 		return Utils::codeResponse(500);
 	else if (request.getRedirect())
 		throw std::exception();
 	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false))
-		return Utils::codeResponse(403),
+		return Utils::codeResponse(403);
 	else
-		return HttpResponse(request);
+		return HttpResponse(request, server);
 }
 
 EventPool::disconnectedException::disconnectedException(int fd) {
