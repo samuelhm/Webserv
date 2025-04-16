@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/15 16:44:30 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/16 20:05:33 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,33 +33,7 @@ HttpResponse::HttpResponse::HttpResponse(int errorCode) : AHttp()
 
 
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
-	if (request.getBadRequest()) {
-		setErrorCode(400, server);
-    return ;
-  }
-  else if (!request.getValidMethod()) {
-    setErrorCode(405, server);
-    return;
-  }
-  else if (!request.getResorceExist()) {
-    setErrorCode(404, server);
-    return;
-  }
-  else if (request.getHeaderTooLarge()) {
-    setErrorCode(431, server);
-    return;
-  }
-  // else if (request.getLocation()->getAutoindex());
-    //
-  else if (request.getIsCgi() && !request.getIsValidCgi()) {
-    setErrorCode(500, server);
-    return;
-  }
-  //isCgi -> validCgi
-  else if (!request.getIsCgi())
-    setResource(request, server);
-  // else
-  //   do response
+
 }
 
 void HttpResponse::setResource(const HttpRequest &request, Server* server)

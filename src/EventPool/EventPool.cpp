@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/15 16:13:32 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/16 20:04:40 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,7 +224,7 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 		str reqStr = getRequest(fd);
 		HttpRequest request(reqStr, eventStrct->server);
 		Utils::printRequest(request);
-		HttpResponse response(request, eventStrct->server);
+		HttpResponse response = stablishResponse(request, eventStrct->server);
 		sendResponse(response, fd, response.getHeader());
 	} catch(const disconnectedException& e) {
 		Logger::log(str("Disconnection occur: ") + e.what(), WARNING);
@@ -245,6 +245,24 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 	}
 	delete eventStruct; //Jamas deberia ser nulo llegado a este punto.
 	eventStruct = NULL; //Protección para errores en destructor.
+}
+
+HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
+{
+	if (request.getBadRequest())
+		return Utils::codeResponse(400);
+	else if (request.getValidMethod())
+		return Utils::codeResponse(405);
+	else if (!request.getResource() || request.getLocation() == NULL)
+		return Utils::codeResponse(404);
+	else if (request.getIsCgi() && !request.getIsValidCgi())
+		return Utils::codeResponse(500);
+	else if (request.getRedirect())
+		throw std::exception();
+	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false))
+		return Utils::codeResponse(403),
+	else
+		return HttpResponse(request);
 }
 
 EventPool::disconnectedException::disconnectedException(int fd) {
