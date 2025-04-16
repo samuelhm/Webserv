@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/16 20:18:55 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/16 20:32:36 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,7 +259,7 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 		return Utils::codeResponse(500);
 	else if (request.getRedirect())
 		throw std::exception();
-	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false))
+	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false) && request.getResource().empty())
 		return Utils::codeResponse(403);
 	else
 		return HttpResponse(request, server);
