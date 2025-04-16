@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   CGI.cpp                                            :+:      :+:    :+:   */
+/*   UriParse.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/12 15:02:57 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/16 17:55:48 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 bool	HttpRequest::checkValidCgi(strVecIt it, Location *loc) {
 	str				localPathResource = _localPathResource + str("/") + (*it).c_str();
 	DIR*			dir = opendir(localPathResource.c_str());
-	std::ifstream	isValidCgi((*it).c_str());
+	std::ifstream	isValidCgi(localPathResource.c_str());
 	const strVec	vec = loc->getCgiExtension();
 	str 			extension = (*it).substr((*it).find_last_of('.'));
 
@@ -39,24 +39,35 @@ bool	HttpRequest::checkValidCgi(strVecIt it, Location *loc) {
 }
 
 void	HttpRequest::saveScriptNameAndQueryString(strVecIt it, strVecIt end) {
-	(void)end;
 	size_t infoPos = (*it).find('?');
 	if (infoPos != str::npos) {
 		_queryString = (*it).substr(infoPos + 1);
-		_resource = (*it).substr(0, infoPos);
-		// if ((it + 1) != end) {
-		// 	for
-		// }
+		if (_resource.empty())
+			_resource = (*it).substr(0, infoPos);
+		if ((*it).find('.') == str::npos)
+			_pathInfo.append("/" + (*it).substr(0, infoPos));
+		if ((it + 1) != end) {
+			for (; it != end; it++)
+				_queryString.append("/" + (*it));
+		}
 		return ;
 	}
-	if ((*it).find('.') == str::npos)
-		_pathInfo.append("/" + (*it).substr(0, infoPos));
 	else
 		_resource = (*it).substr(0);
 }
 
+void	HttpRequest::addPathInfo(strVecIt it, strVecIt end) {
+	for (; it != end; it++) {
+		if ((*it).find('?') != str::npos) {
+			saveScriptNameAndQueryString(it, end);
+			break ;
+		}
+		_pathInfo.append("/" + (*it));
+	}
+}
+
 bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
-	Location *loc = findLocation(server, _locationUri + (*it));
+	Location *loc = findLocation(server, _locationUri);
 	if (!loc)
 		return false;
 
@@ -75,7 +86,7 @@ bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
 			break ;
 		}
 		str	localPathResource = _localPathResource + str("/") + (*it).c_str();
-		if (!opendir(localPathResource.c_str())) {
+		if (std::ifstream(localPathResource.c_str()).good() && !opendir(localPathResource.c_str())) {
 			_resource = (*it).substr(0);
 			_localPathResource = localPathResource;
 			_resourceExist = true;

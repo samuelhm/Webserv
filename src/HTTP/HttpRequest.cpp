@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/15 15:41:46 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/16 17:51:28 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <fstream>
 
 HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _validMethod(false),
+	: AHttp(request), _badRequest(false), _resourceExist(false), _validMethod(false),
 		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
 {
 	_location = NULL;
@@ -160,16 +160,6 @@ bool	HttpRequest::checkAllowMethod()
 	return _validMethod;
 }
 
-void	HttpRequest::addPathInfo(strVecIt it, strVecIt end) {
-	for (; it != end; it++) {
-		if ((*it).find('?') != str::npos) {
-			saveScriptNameAndQueryString(it, end);
-			break ;
-		}
-		_pathInfo.append("/" + (*it));
-	}
-}
-
 void	HttpRequest::autoIndex(Location *loc) {
 	if (!loc->getIndex().empty()) {
 		_resource = loc->getIndex();
@@ -193,8 +183,8 @@ void	HttpRequest::envPath(Server* server) {
 			_locationUri.append("/" + (*it));
 		// else if ((it + 1) != locationUris.end() && !_redirect)
 		// 	_resource = it.cs
-		autoIndex(findLocation(server)); // IMPOERTANT improve this function and change where it is
 	}
+	// autoIndex(findLocation(server)); // IMPOERTANT improve this function and change where it is
 }
 
 HttpRequest::~HttpRequest() {}
