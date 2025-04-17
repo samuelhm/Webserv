@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/15 16:44:30 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 13:51:28 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cstdlib>
 #include "HttpResponse.hpp"
 #include "../Utils/Utils.hpp"
+#include <cstdlib>
 
 HttpResponse::HttpResponse::HttpResponse(int errorCode) : AHttp()
 {
@@ -41,7 +41,7 @@ HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp()
     setErrorCode(405, server);
     return;
   }
-  else if (!request.getResorceExist()) {
+  else if (!request.getResourceExists()) {
     setErrorCode(404, server);
     return;
   }
@@ -58,8 +58,8 @@ HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp()
   //isCgi -> validCgi
   else if (!request.getIsCgi())
     setResource(request, server);
-  // else
-  //   do response
+  else
+    cgiExec(request);
 }
 
 void HttpResponse::setResource(const HttpRequest &request, Server* server)

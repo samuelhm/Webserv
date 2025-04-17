@@ -6,7 +6,7 @@
 #    By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/04/16 17:03:32 by erigonza         ###   ########.fr        #
+#    Updated: 2025/04/17 12:44:28 by erigonza         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ CPPFLAGS	+=	-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
 SRC			=	src/main.cpp \
 				src/EventPool/EventPool.cpp \
 				src/ConfigFile/Location.cpp src/ConfigFile/Server.cpp \
-				src/HTTP/HttpRequest.cpp src/HTTP/UriParse.cpp src/HTTP/HttpResponse.cpp \
+				src/HTTP/HttpRequest.cpp src/HTTP/UriParse.cpp src/HTTP/HttpResponse.cpp src/HTTP/CgiExec.cpp\
 				src/HTTP/AHttp.cpp src/ConfigFile/ParseConfig.cpp src/ConfigFile/ParseLocation.cpp \
 				src/Utils/Utils.cpp src/Utils/AutoIndex.cpp src/Utils/Logger.cpp
 

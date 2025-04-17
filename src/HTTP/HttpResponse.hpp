@@ -12,19 +12,25 @@
 
 #pragma once
 
-#include "../ConfigFile/Server.hpp"
-#include "HttpRequest.hpp"
 #include "AHttp.hpp"
+#include "HttpRequest.hpp"
+#include "../ConfigFile/Server.hpp"
 
 class Server;
 class HttpRequest;
 
 class HttpResponse : public AHttp {
 	public:
-		str							_line0;
-		int							_status;
-		void	setErrorCode(int ErrorCode, Server* server);
-		void 	setResource(const HttpRequest &request, Server* server);
+		str					_line0;
+		int					_status;
+		char				**_envp;
+		char				**_argv;
+		str					_cgiOutput;
+		void					setErrorCode(int ErrorCode, Server* server);
+		void 					setResource(const HttpRequest &request, Server* server);
+		void					cgiExec(const HttpRequest &request);
+		void					cgiSaveItems(const HttpRequest &request);
+		void					cgiFree();
 
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);

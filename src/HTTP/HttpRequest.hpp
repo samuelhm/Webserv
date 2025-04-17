@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/15 16:39:57 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 13:52:01 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,10 @@ class HttpRequest : public AHttp {
 		RequestType	_type;
 		bool		_badRequest;
 		str			_receivedMethod;
-		str			_resource; // falta parte Erik
-		bool		_resourceExist; // -> existe el archivo y si es carpeta index, o autoindex
+		str			_resource;
+		bool		_resourceExists;
 		bool		_validMethod;
-		bool		_isCgi; // falta parte Erik
+		bool		_isCgi;
 		bool		_isValidCgi;
 		str			_localPathResource;
 		Location*	_location;
@@ -63,7 +63,7 @@ class HttpRequest : public AHttp {
 		//Getters
 		RequestType	getType() const;
 		bool		getBadRequest() const;
-		bool		getResorceExist() const;
+		bool		getResourceExists() const;
 		bool		getValidMethod() const;
 		bool		getIsCgi() const;
 		bool		getIsValidCgi() const;
@@ -72,7 +72,6 @@ class HttpRequest : public AHttp {
 		bool		getHeaderTooLarge() const;
 		str			getReceivedMethod() const;
 		str			getResource() const;
-		bool		getResourceExist() const;
 		str			getLocalPathResource() const;
 		str			getLocationUri() const;
 		str			getQueryString() const;

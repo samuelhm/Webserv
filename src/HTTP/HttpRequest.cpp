@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/16 17:51:28 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/17 13:53:16 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <fstream>
 
 HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _resourceExist(false), _validMethod(false),
+	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false),
 		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
 {
 	_location = NULL;
@@ -31,8 +31,8 @@ HttpRequest::HttpRequest(str request, Server *server)
 	try {
 		checkHeaderMRP(line);
 		envPath(server);
-		if(!checkResource(*server))
-			return ;
+		// if(!checkResource(*server))
+		// 	return ;
 		if(!checkAllowMethod())
 			return ;
 		_location = findLocation(server);
@@ -94,17 +94,17 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	//_queryString
 }
 
-bool HttpRequest::checkResource(Server const &server) {
-  _resourceExist = false;
-  if (!_location)
-    return false;
-  str root = _location->getRoot();
-  if (root.empty())
-    root = server.getRoot();
-  std::ifstream resource((root + _resource).c_str());
-  _resourceExist = resource.good();
-  return resource;
-}
+// bool HttpRequest::checkResource(Server const &server) {
+//   _resourceExists = false;
+//   if (!_location)
+//     return false;
+//   str root = _location->getRoot();
+//   if (root.empty())
+//     root = server.getRoot();
+//   std::ifstream resource((root + _resource).c_str());
+//   _resourceExists = resource.good();
+//   return resource;
+// }
 
 Location*	HttpRequest::findLocation(Server* Server) {
 	Logger::log(str("Looking for Location: ") + _uri, INFO);
@@ -152,12 +152,12 @@ bool	HttpRequest::checkAllowMethod()
 void	HttpRequest::autoIndex(Location *loc) {
 	if (!loc->getIndex().empty()) {
 		_resource = loc->getIndex();
-		_resourceExist = true;
+		_resourceExists = true;
 	}
 	else if (loc->getAutoindex())
-		_resourceExist = true;
+		_resourceExists = true;
 	else
-		_resourceExist = false;
+		_resourceExists = false;
 }
 
 void	HttpRequest::envPath(Server* server) {
@@ -166,7 +166,7 @@ void	HttpRequest::envPath(Server* server) {
 	for (it = locationUris.begin() ; it != locationUris.end(); ++it) {
 		if ((*it).find('.') != str::npos)
 			saveUri(it, locationUris.end(), server);
-		if (_resourceExist)
+		if (_resourceExists)
 			break ;
 		if (!(*it).empty() && (it + 1) != locationUris.end()) //IMPORTANT check && *(it +1) != ""
 			_locationUri.append("/" + (*it));
@@ -181,7 +181,7 @@ HttpRequest::~HttpRequest() {}
 //Getters
 RequestType	HttpRequest::getType() const { return _type; }
 bool		HttpRequest::getBadRequest() const { return _badRequest; }
-bool		HttpRequest::getResorceExist() const { return _resourceExist; }
+bool		HttpRequest::getResourceExists() const { return _resourceExists; }
 bool		HttpRequest::getValidMethod() const { return _validMethod; }
 bool		HttpRequest::getIsCgi() const { return _isCgi; }
 bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
@@ -189,7 +189,6 @@ bool		HttpRequest::getHeaderTooLarge() const { return _headerTooLarge; }
 Location*	HttpRequest::getLocation() const { return _location; }
 str			HttpRequest::getReceivedMethod() const { return _receivedMethod; }
 str			HttpRequest::getResource() const { return _resource; }
-bool		HttpRequest::getResourceExist() const { return _resourceExist; }
 str			HttpRequest::getLocalPathResource() const { return _localPathResource; }
 str			HttpRequest::getLocationUri() const { return _locationUri; }
 str			HttpRequest::getQueryString() const { return _queryString; }
@@ -199,7 +198,7 @@ bool		HttpRequest::getRedirect() const { return _redirect; }
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }
 void		HttpRequest::setBadRequest(bool badRequest) { _badRequest = badRequest; }
-void		HttpRequest::setResorceExist(bool resorceExist) { _resourceExist = resorceExist; }
+void		HttpRequest::setResorceExist(bool resorceExist) { _resourceExists = resorceExist; }
 void		HttpRequest::setValidMethod(bool validMethod) { _validMethod = validMethod; }
 void		HttpRequest::setIsCgi(bool isCgi) { _isCgi = isCgi; }
 void		HttpRequest::setIsValidCgi(bool isValidCgi) { _isValidCgi = isValidCgi; }
