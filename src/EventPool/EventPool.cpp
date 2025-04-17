@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 15:19:56 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 22:59:12 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,17 +260,17 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 {
 	if (request.getBadRequest())
-		return Utils::codeResponse(400);
+		return Utils::codeResponse(400, server);
 	else if (request.getValidMethod())
-		return Utils::codeResponse(405);
+		return Utils::codeResponse(405, server);
 	else if (!request.getResourceExists() || request.getLocation() == NULL)
-		return Utils::codeResponse(404);
+		return Utils::codeResponse(404, server);
 	else if (request.getIsCgi() && !request.getIsValidCgi())
-		return Utils::codeResponse(500);
+		return Utils::codeResponse(500, server);
 	else if (request.getRedirect())
 		throw std::exception();
 	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false && request.getResource().empty()))
-		return Utils::codeResponse(403);
+		return Utils::codeResponse(403, server);
 	else
 		return HttpResponse(request, server);
 }

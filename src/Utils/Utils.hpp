@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:35 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/15 16:52:00 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 22:58:19 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,8 @@ namespace Utils {
 	bool				setUpServers(std::vector<Server*>& servers);
 	str					requestTypeToStr(RequestType type);
 	void				printRequest(HttpRequest &Request);
-	HttpResponse 		&codeResponse(int errorCode);
+	HttpResponse 		&codeResponse(int errorCode, Server *server);
+	str 				getMimeType(const str &filename);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {

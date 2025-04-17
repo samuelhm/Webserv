@@ -15,6 +15,8 @@
 #include "AHttp.hpp"
 #include "HttpRequest.hpp"
 #include "../ConfigFile/Server.hpp"
+#include <fstream>
+
 
 class Server;
 class HttpRequest;
@@ -27,14 +29,19 @@ class HttpResponse : public AHttp {
 		char				**_argv;
 		str					_cgiOutput;
 		void					setErrorCode(int ErrorCode, Server* server);
-		void 					setResource(const HttpRequest &request, Server* server);
 		void					cgiExec(const HttpRequest &request);
 		void					cgiSaveItems(const HttpRequest &request);
 		void					cgiFree();
+		void					staticFileExec(const HttpRequest &request, Server* server);
+		void					staticFileGet(const HttpRequest &request, Server* server);
+		void					staticFilePost(const HttpRequest &request, Server* server);
+		void					staticFilePut(const HttpRequest &request, Server* server);
+		void					staticFileOptions(const HttpRequest &request, Server* server);
+		void					staticFileDelete(const HttpRequest &request, Server* server);
 
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);
 		HttpResponse(const HttpResponse &other);
-		HttpResponse(int errorCode);
+		HttpResponse(int errorCode, Server *server);
 		~HttpResponse();
 };
