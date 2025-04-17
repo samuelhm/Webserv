@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/17 14:52:40 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/17 18:04:12 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,12 @@
 #include <fstream>
 #include <dirent.h>
 
-bool	HttpRequest::checkValidCgi(strVecIt it, Location *loc) {
-	str				localPathResource = _localPathResource + str("/") + (*it).c_str();
+bool	HttpRequest::checkValidCgi(str tmp, Location *loc) {
+	str				localPathResource = _localPathResource + str("/") + tmp;
 	DIR*			dir = opendir(localPathResource.c_str());
 	std::ifstream	isValidCgi(localPathResource.c_str());
 	const strVec	vec = loc->getCgiExtension();
-	str 			extension = (*it).substr((*it).find_last_of('.'));
+	str 			extension = tmp.substr(tmp.find_last_of('.'));
 
 	for (std::size_t i = 0; i < vec.size(); i++) {
 		if (extension == vec[i].c_str()) {
@@ -66,20 +66,61 @@ void	HttpRequest::addPathInfo(strVecIt it, strVecIt end) {
 	}
 }
 
-bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
-	Location *loc = findLocation(server, _locationUri);
-	if (!loc)
-		return false;
+#include <sys/types.h>
+#include <sys/stat.h>
 
-	_localPathResource = server->getRoot();
-	if (!loc->getRoot().empty())
-		_localPathResource.append(loc->getRoot());
-	strVec validExtensions = loc->getCgiExtension();
-	if (validExtensions.empty())
+bool isRegularFile(const char* path) {
+    struct stat path_stat;
+    if (stat(path, &path_stat) == 0) {
+        return S_ISREG(path_stat.st_mode);
+    }
+    return false;
+}
+
+bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
+	str			tmpSrcPath;
+	
+	if (_uri == "/" || _uri.empty()) {
+		_locationUri = "/";
+		if (!findLocation(server, _locationUri))
+			return false;
+		// check if there is sth in "/"; else check autoindex & save method 
+		return true;
+	}
+	it++;
+	for (; it != end; it++) {
+		_locationUri.append("/" + (*it));
+		_location = findLocation(server, _locationUri);
+		if (!_location)
+			continue;
+		tmpSrcPath = server->getRoot();
+		if (!_location->getRoot().empty())
+			tmpSrcPath.append(_location->getRoot());
+		str tmp = (*(it + 1));
+		if (tmp.find('?') != str::npos)
+			tmp = tmp.substr(0, tmp.find('?'));
+		tmpSrcPath.append("/" + tmp);
+		std::ifstream isValidCgi(tmpSrcPath.c_str());
+		if (isValidCgi.is_open() && isRegularFile(tmpSrcPath.c_str())) {
+			_locationUri = _locationUri.substr(0, _locationUri.find_last_of('/'));
+			it++;
+			break ;
+		}
+	}
+	if (!_location)
 		return false;
+	_localPathResource = server->getRoot();
+	if (!_location->getRoot().empty())
+		_localPathResource.append(_location->getRoot());
+	strVec validExtensions = _location->getCgiExtension();
+	if (validExtensions.empty())
+		return true;
 	str total_path = server->getRoot();
 	for (; it != end; it++) {
-		if ((*it).find('.') != str::npos && checkValidCgi(it, loc)) {
+		str tmp = (*it);
+		if (tmp.find('?') != str::npos)
+			tmp = tmp.substr(0, tmp.find('?'));
+		if ((*it).find('.') != str::npos && checkValidCgi(tmp, _location)) {
 			saveScriptNameAndQueryString(it, end);
 			if ((*it).find('?') == str::npos)
 				addPathInfo(it + 1, end);
@@ -94,8 +135,5 @@ bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
 		}
 		_locationUri.append("/" + (*it));
 	}
-	if (!_isCgi || !loc->getCgiEnable())
-		return false;
-	_location = findLocation(server);
 	return true;
 }
