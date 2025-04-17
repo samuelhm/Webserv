@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 23:27:27 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 23:30:05 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,12 +51,11 @@ void HttpResponse::staticFilePost(const HttpRequest &request, Server* server)
 		setErrorCode(400, server);
 		return;
 	}
-	if (body.size() > static_cast<size_t>(server->getBodySize())) {
+	if (body.size() > server->getBodySize()) {
 		Logger::log("POST rechazado: body excede client_max_body_size", WARNING);
 		setErrorCode(413, server);
 		return;
 	}
-
 	str fullPath = server->getRoot() + loc->getRoot() + loc->getUploadPath() + request.getResource();
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
 	if (!out.is_open()) {
@@ -82,7 +81,7 @@ void HttpResponse::staticFilePut(const HttpRequest &request, Server* server)
 		setErrorCode(400, server);
 		return;
 	}
-	if (body.size() > static_cast<size_t>(server->getBodySize())) {
+	if (body.size() > server->getBodySize()) {
 		Logger::log("PUT rechazado: body excede client_max_body_size", WARNING);
 		setErrorCode(413, server);
 		return;
