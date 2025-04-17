@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 13:53:16 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/17 15:46:38 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,9 @@ HttpRequest::HttpRequest(str request, Server *server)
 		envPath(server);
 		// if(!checkResource(*server))
 		// 	return ;
+		_location = findLocation(server);
 		if(!checkAllowMethod())
 			return ;
-		_location = findLocation(server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
@@ -136,6 +136,10 @@ Location*	HttpRequest::findLocation(Server* Server, const str &uri) {
 
 bool	HttpRequest::checkAllowMethod()
 {
+	if (!_location) {
+		Logger::log("Comprobando metodo en una location NULL");
+		return false;
+	}
 	int method = (_receivedMethod == "GET")		? 0 :
 				(_receivedMethod == "POST")		? 1 :
 				(_receivedMethod == "DELETE")	? 2 :
@@ -161,14 +165,14 @@ void	HttpRequest::autoIndex(Location *loc) {
 }
 
 void	HttpRequest::envPath(Server* server) {
-	strVec		locationUris = Utils::split(_uri, '/');
+	strVec		locationUris = Utils::split(_uri, "/");
 	strVecIt	it;
 	for (it = locationUris.begin() ; it != locationUris.end(); ++it) {
 		if ((*it).find('.') != str::npos)
 			saveUri(it, locationUris.end(), server);
 		if (_resourceExists)
 			break ;
-		if (!(*it).empty() && (it + 1) != locationUris.end()) //IMPORTANT check && *(it +1) != ""
+		if ((*it).empty() && (it + 1) != locationUris.end()) //IMPORTANT check && *(it +1) != ""
 			_locationUri.append("/" + (*it));
 		// else if ((it + 1) != locationUris.end() && !_redirect)
 		// 	_resource = it.cs

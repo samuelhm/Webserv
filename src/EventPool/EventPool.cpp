@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 15:14:29 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 15:19:56 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,55 +228,6 @@ bool EventPool::checkCGI(str path, Server server) {
   return false;
 }
 
-void EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct) {
-  try {
-    str reqStr = getRequest(fd);
-    HttpRequest request(reqStr, eventStrct->server);
-    Utils::printRequest(request);
-    HttpResponse response(request, eventStrct->server);
-    sendResponse(response, fd, response.getHeader());
-  } catch (const disconnectedException &e) {
-    Logger::log(str("Disconnection occur: ") + e.what(), WARNING);
-  } catch (const socketReadException &e) {
-    Logger::log(str("Socket Read Error: ") + e.what(), WARNING);
-  } catch (const headerTooLargeException &e) {
-		HttpResponse  response(Utils::codeResponse(431));
-    sendResponse(response, fd, response.getHeader());
-    Logger::log(e.what(), WARNING);
-  } catch (...) {
-    Logger::log("UNKNOWN FATAL ERROR ON handleClientRequest", ERROR);
-  }
-  safeCloseAndDelete(fd, eventStrct);
-}
-
-bool	EventPool::checkCGI(str path, Server server)
-{
-	// if (!isCgi(path))
-		// return false;
-	str Path = path;
-	str ext = path.substr(path.find_last_of('.'));
-	Path.append("/");
-	Path = AutoIndex::getPrevPath(Path);
-	Path.erase(Path.size() - 1);
-	std::vector<Location*> locations = server.getLocations();
-	for (std::size_t i = 0; i < locations.size(); i++)
-	{
-		if (Path == locations[i]->getRoot())
-		{
-			if (!locations[i]->getCgiEnable())
-				return false;
-			strVec extensions = locations[i]->getCgiExtension();
-			for (std::size_t j = 0; j < extensions.size(); j++)
-			{
-				if (ext == extensions[j])
-					return true;
-			}
-			return false;
-		}
-	}
-	return false;
-}
-
 void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
 	try {
@@ -312,13 +263,13 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 		return Utils::codeResponse(400);
 	else if (request.getValidMethod())
 		return Utils::codeResponse(405);
-	else if (!request.getResourceExist() || request.getLocation() == NULL)
+	else if (!request.getResourceExists() || request.getLocation() == NULL)
 		return Utils::codeResponse(404);
 	else if (request.getIsCgi() && !request.getIsValidCgi())
 		return Utils::codeResponse(500);
 	else if (request.getRedirect())
 		throw std::exception();
-	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false) && request.getResource().empty())
+	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false && request.getResource().empty()))
 		return Utils::codeResponse(403);
 	else
 		return HttpResponse(request, server);
