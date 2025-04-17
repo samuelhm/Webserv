@@ -6,13 +6,13 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/16 20:22:03 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 15:12:59 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cstdlib>
 #include "HttpResponse.hpp"
 #include "../Utils/Utils.hpp"
+#include <cstdlib>
 
 HttpResponse::HttpResponse::HttpResponse(int errorCode) : AHttp()
 {
@@ -33,8 +33,10 @@ HttpResponse::HttpResponse::HttpResponse(int errorCode) : AHttp()
 
 
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
-  (void)request;
-  this->setErrorCode(500, server);
+	if (!request.getIsCgi())
+    setResource(request, server);
+  else
+    cgiExec(request);
 }
 
 void HttpResponse::setResource(const HttpRequest &request, Server* server)

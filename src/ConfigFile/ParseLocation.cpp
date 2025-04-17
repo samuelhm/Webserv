@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ParseLocation.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/16 20:48:18 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ void setLocationParams(Location *location, strMap const &options) {
     }
     else if (it->first == "cgi_enable") {
       if (it->second == "on")
-        location->setUploadEnable(true);
+        location->setCgiEnable(true);
     }
     else if (it->first == "index")
       location->setIndex(it->second);

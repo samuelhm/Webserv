@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/16 19:50:43 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/17 15:13:34 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ class EventPool {
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
 		bool					checkCGI(str path, Server server);
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
+		bool					headerTooLarge(str const &request);
 
 	public:
 		EventPool(std::vector<Server*> &Servers);
@@ -85,5 +86,14 @@ class EventPool {
 			AcceptConnectionException(str const &msg);
 				const char *what() const throw();
 				virtual ~AcceptConnectionException() throw() {}
+		};
+		class headerTooLargeException : public std::exception
+		{
+			private:
+				const str message;
+			public:
+				headerTooLargeException(int fd);
+				const char *what() const throw();
+				virtual ~headerTooLargeException() throw() {}
 		};
 };

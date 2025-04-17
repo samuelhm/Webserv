@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/16 17:55:48 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/17 14:52:40 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ bool	HttpRequest::checkValidCgi(strVecIt it, Location *loc) {
 			_isCgi = true;
 			if (isValidCgi.good() && !dir) {
 				_localPathResource = localPathResource;
-				_resourceExist = true;
+				_resourceExists = true;
 				_isValidCgi = true;
 				return true;
 			}
@@ -89,7 +89,7 @@ bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
 		if (std::ifstream(localPathResource.c_str()).good() && !opendir(localPathResource.c_str())) {
 			_resource = (*it).substr(0);
 			_localPathResource = localPathResource;
-			_resourceExist = true;
+			_resourceExists = true;
 			break ;
 		}
 		_locationUri.append("/" + (*it));
@@ -99,11 +99,3 @@ bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
 	_location = findLocation(server);
 	return true;
 }
-
-// /hola aaaa bbbbbbbb adios.py?algo=algomas
-// /hola aaaa bbbbbbbb adios.py hola adios a?hola=a
-// /hola aaaa bbbbbbbb adios.py hola adios a
-
-// we gotta check for those but it should work
-// /hola aaaa bbbbbbbb adios.py hola adios a.py?hola=a
-// /hola aaaa bbbbbbbb adios.py hola adios a.py

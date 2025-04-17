@@ -166,7 +166,7 @@ void Utils::printRequest(HttpRequest &request)
 	Logger::log(str("Request Type: ") + requestTypeToStr(request.getType()), WARNING);
 	Logger::log(str("Received Method: ") + request.getReceivedMethod(), WARNING);
 	Logger::log(str("Resource: ") + request.getResource(), WARNING);
-	Logger::log(str("Resource Exists: ") + (request.getResourceExist() ? "true" : "false"), WARNING);
+	Logger::log(str("Resource Exists: ") + (request.getResourceExists() ? "true" : "false"), WARNING);
 	Logger::log(str("Valid Method: ") + (request.getValidMethod() ? "true" : "false"), WARNING);
 	Logger::log(str("Is CGI: ") + (request.getIsCgi() ? "true" : "false"), WARNING);
 	Logger::log(str("Is Valid CGI: ") + (request.getIsValidCgi() ? "true" : "false"), WARNING);
