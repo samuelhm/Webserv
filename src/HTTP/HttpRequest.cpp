@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 13:53:16 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/18 10:53:51 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <fstream>
 
 HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false),
+	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
 		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
 {
 	_location = NULL;
@@ -30,7 +30,11 @@ HttpRequest::HttpRequest(str request, Server *server)
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		envPath(server);
+		if (!envPath(server)) {
+			// check autoindex here	
+			return ;
+		}
+		// por ahora se va
 		// if(!checkResource(*server))
 		// 	return ;
 		if(!checkAllowMethod())
@@ -160,20 +164,13 @@ void	HttpRequest::autoIndex(Location *loc) {
 		_resourceExists = false;
 }
 
-void	HttpRequest::envPath(Server* server) {
+bool	HttpRequest::envPath(Server* server) {
 	strVec		locationUris = Utils::split(_uri, '/');
 	strVecIt	it;
-	for (it = locationUris.begin() ; it != locationUris.end(); ++it) {
-		if ((*it).find('.') != str::npos)
-			saveUri(it, locationUris.end(), server);
-		if (_resourceExists)
-			break ;
-		if (!(*it).empty() && (it + 1) != locationUris.end()) //IMPORTANT check && *(it +1) != ""
-			_locationUri.append("/" + (*it));
-		// else if ((it + 1) != locationUris.end() && !_redirect)
-		// 	_resource = it.cs
-	}
-	// autoIndex(findLocation(server)); // IMPOERTANT improve this function and change where it is
+
+	if (!saveUri(locationUris.begin(), locationUris.end(), server))
+		return false;
+	return true;
 }
 
 HttpRequest::~HttpRequest() {}
