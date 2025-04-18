@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 17:48:31 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/18 10:53:51 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <fstream>
 
 HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false),
+	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
 		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
 {
 	_location = NULL;

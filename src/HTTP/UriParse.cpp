@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/17 18:04:12 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/18 11:01:48 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <iostream>
 #include <fstream>
 #include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 bool	HttpRequest::checkValidCgi(str tmp, Location *loc) {
 	str				localPathResource = _localPathResource + str("/") + tmp;
@@ -66,9 +68,6 @@ void	HttpRequest::addPathInfo(strVecIt it, strVecIt end) {
 	}
 }
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 bool isRegularFile(const char* path) {
     struct stat path_stat;
     if (stat(path, &path_stat) == 0) {
@@ -82,10 +81,22 @@ bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
 	
 	if (_uri == "/" || _uri.empty()) {
 		_locationUri = "/";
-		if (!findLocation(server, _locationUri))
+		_location = findLocation(server, _locationUri);
+		if (!_location)
 			return false;
-		// check if there is sth in "/"; else check autoindex & save method 
-		return true;
+		tmpSrcPath = server->getRoot();
+		if (!_location->getRoot().empty())
+			tmpSrcPath.append(_location->getRoot());
+		_resource = _location->getIndex();
+		if (_resource.empty())
+			return false;
+		tmpSrcPath.append("/" + _resource);
+		std::ifstream isValidCgi(tmpSrcPath.c_str());
+		if (isValidCgi.is_open() && isRegularFile(tmpSrcPath.c_str())) {
+			_resourceExists = true;
+			return true;
+		}
+		return false;
 	}
 	it++;
 	for (; it != end; it++) {
@@ -102,7 +113,6 @@ bool	HttpRequest::saveUri(strVecIt it, strVecIt end, Server* server) {
 		tmpSrcPath.append("/" + tmp);
 		std::ifstream isValidCgi(tmpSrcPath.c_str());
 		if (isValidCgi.is_open() && isRegularFile(tmpSrcPath.c_str())) {
-			_locationUri = _locationUri.substr(0, _locationUri.find_last_of('/'));
 			it++;
 			break ;
 		}
