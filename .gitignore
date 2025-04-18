@@ -5,7 +5,6 @@ ubuntu_tester
 ubuntu_cgi_tester
 # Carpetas de web de pruebas
 YoupiBanane/
-www/
 # Script para crear estructura YoupiBanane ( DESCOMENTAR PARA LA INTRA )
 # ./Pre_Tester.sh
 # config_tester.conf
