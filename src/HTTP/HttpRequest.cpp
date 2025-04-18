@@ -15,7 +15,7 @@
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
+		_isValidCgi(false), _headerTooLarge(false), _redirect("")
 {
 	_location = NULL;
 
@@ -27,12 +27,13 @@ HttpRequest::HttpRequest(str request, Server *server)
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		// por ahora se va
-		// if(!checkResource(*server))
-		// 	return ;
 		_location = findLocation(server);
 		if(!checkAllowMethod())
 			return ;
+		if (locationHasRedirection(_location)) {
+			_redirect = _location->getRedirect();
+			return;
+		}
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
@@ -174,6 +175,16 @@ bool HttpRequest::isRegularFile(str fullResource) {
     return false;
 }
 
+bool	HttpRequest::locationHasRedirection(const Location *loc) {
+	if (!loc) {
+		Logger::log("Location es null, no es posible comprobar redirect", ERROR);
+		return false;
+	}
+	if (loc->getRedirect().empty())
+		return false;
+	return true;
+}
+
 HttpRequest::~HttpRequest() {}
 
 //Getters
@@ -191,7 +202,7 @@ str			HttpRequest::getLocalPathResource() const { return _localPathResource; }
 str			HttpRequest::getLocationUri() const { return _locationUri; }
 str			HttpRequest::getQueryString() const { return _queryString; }
 str			HttpRequest::getPathInfo() const { return _pathInfo; }
-bool		HttpRequest::getRedirect() const { return _redirect; }
+str			HttpRequest::getRedirect() const { return _redirect; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }

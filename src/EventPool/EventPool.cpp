@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 13:45:02 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/18 23:17:42 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -280,7 +280,7 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 		return Utils::codeResponse(404, server);
 	else if (request.getIsCgi() && !request.getIsValidCgi())
 		return Utils::codeResponse(500, server);
-	else if (request.getRedirect())
+	else if (!request.getRedirect().empty())
 		throw std::exception();
 	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false && request.getResource().empty()))
 		return Utils::codeResponse(403, server);
