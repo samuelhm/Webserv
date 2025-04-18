@@ -17,6 +17,7 @@
 #include <map>
 #include <vector>
 #define LIMIT_HEADER_SIZE 1024
+#define NUMBER_OF_WORKERS 6
 
 typedef std::string str;
 typedef std::vector<str> strVec;

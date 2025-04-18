@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/09 11:57:14 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/18 13:54:51 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <csignal>
+#include <sys/wait.h>
 
 volatile sig_atomic_t epollRun = 1;
 
@@ -47,27 +48,43 @@ int main(int ac, char **av)
 	Utils::fillStatusStr();
 	try {
 		std::vector<Server*> Servers = parseConfigFile(av[1]);
-		if (!Utils::setUpServers(Servers))
-		{
-			Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
-			Logger::log("Fail setting up servers", ERROR);
-			return 1;
-		}
-		EventPool pool(Servers);
-		pool.poolLoop(Servers);
-		Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
-		Servers.clear();
-	}
-	catch (ConfigFileException &e) {
-		Logger::log(e.what(), ERROR);
-		if (!e.getServer().empty())
-			Utils::foreach(e.getServer().begin(), e.getServer().end(), Utils::deleteItem<Server>);
-		return 1;
-	}
-	catch (std::exception &e)
-	{
-		Logger::log(e.what(), ERROR);
-		return 1;
-	}
-	return 0;
+
+    int pids[NUMBER_OF_WORKERS], active_workers = 0;
+    for (; active_workers < NUMBER_OF_WORKERS; active_workers++) {
+        pids[active_workers] = fork();
+        if (pids[active_workers] == 0 || pids[active_workers] == -1)
+          break;
+    }
+    if (active_workers == NUMBER_OF_WORKERS)
+      --active_workers;
+
+    if (pids[active_workers] == 0) {
+      if (!Utils::setUpServers(Servers))
+      {
+        Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
+        Logger::log("Fail setting up servers", ERROR);
+        return 1;
+      }
+      EventPool pool(Servers);
+      pool.poolLoop(Servers);
+      Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
+      Servers.clear();
+    } else {
+      for (int i = 0; i < active_workers; i++) {
+        waitpid(pids[i], NULL, 0);
+      }
+    }
+  }
+  catch (ConfigFileException &e) {
+    Logger::log(e.what(), ERROR);
+    if (!e.getServer().empty())
+      Utils::foreach(e.getServer().begin(), e.getServer().end(), Utils::deleteItem<Server>);
+    return 1;
+  }
+  catch (std::exception &e)
+  {
+    Logger::log(e.what(), ERROR);
+    return 1;
+  }
+  return 0;
 }
