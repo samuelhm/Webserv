@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 15:46:38 by shurtado         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "HttpRequest.hpp"
 #include <string>
 #include <exception>
@@ -17,7 +5,7 @@
 #include <fstream>
 
 HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false),
+	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
 		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
 {
 	_location = NULL;
@@ -30,7 +18,11 @@ HttpRequest::HttpRequest(str request, Server *server)
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		envPath(server);
+		if (!envPath(server)) {
+			// check autoindex here	
+			return ;
+		}
+		// por ahora se va
 		// if(!checkResource(*server))
 		// 	return ;
 		_location = findLocation(server);
@@ -89,22 +81,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	_uri = line.substr(end, path_end - end);
 	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") //aqui no tinene \r\n porque ya lo quitamos en el constructor
 		throw badHeaderException("Bad Protocol version");
-	//_resource
-	//_varCgi
-	//_queryString
 }
-
-// bool HttpRequest::checkResource(Server const &server) {
-//   _resourceExists = false;
-//   if (!_location)
-//     return false;
-//   str root = _location->getRoot();
-//   if (root.empty())
-//     root = server.getRoot();
-//   std::ifstream resource((root + _resource).c_str());
-//   _resourceExists = resource.good();
-//   return resource;
-// }
 
 Location*	HttpRequest::findLocation(Server* Server) {
 	Logger::log(str("Looking for Location: ") + _uri, INFO);
@@ -164,20 +141,13 @@ void	HttpRequest::autoIndex(Location *loc) {
 		_resourceExists = false;
 }
 
-void	HttpRequest::envPath(Server* server) {
-	strVec		locationUris = Utils::split(_uri, "/");
+bool	HttpRequest::envPath(Server* server) {
+	strVec		locationUris = Utils::split(_uri, '/');
 	strVecIt	it;
-	for (it = locationUris.begin() ; it != locationUris.end(); ++it) {
-		if ((*it).find('.') != str::npos)
-			saveUri(it, locationUris.end(), server);
-		if (_resourceExists)
-			break ;
-		if ((*it).empty() && (it + 1) != locationUris.end()) //IMPORTANT check && *(it +1) != ""
-			_locationUri.append("/" + (*it));
-		// else if ((it + 1) != locationUris.end() && !_redirect)
-		// 	_resource = it.cs
-	}
-	// autoIndex(findLocation(server)); // IMPOERTANT improve this function and change where it is
+
+	if (!saveUri(locationUris.begin(), locationUris.end(), server))
+		return false;
+	return true;
 }
 
 HttpRequest::~HttpRequest() {}

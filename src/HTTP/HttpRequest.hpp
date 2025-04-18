@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 13:52:01 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/17 17:59:04 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,10 +51,10 @@ class HttpRequest : public AHttp {
 		bool		checkAllowMethod();
 		// void		saveUri(Server *server);
 		void		checkIsValidCgi();
-		void		envPath(Server* server);
+		bool		envPath(Server* server);
 
 		bool		saveUri(strVecIt it, strVecIt end, Server* server);
-		bool		checkValidCgi(strVecIt it, Location *loc);
+		bool		checkValidCgi(str tmp, Location *loc);
 		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
 		void		addPathInfo(strVecIt it, strVecIt end);
 		void		autoIndex(Location *loc);

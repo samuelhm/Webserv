@@ -1,21 +1,10 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   EventPool.cpp                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 22:59:12 by shurtado         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "EventPool.hpp"
 #include "../Utils/AutoIndex.hpp"
 #include "../Utils/Utils.hpp"
 #include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
+#include <poll.h>
 
 EventPool::EventPool(std::vector<Server *> &Servers) {
   _pollFd = epoll_create(1);
@@ -51,31 +40,41 @@ EventPool::~EventPool() {
 bool EventPool::headerTooLarge(str const &request) {
 	size_t end = request.find("\r\n\r\n");
 	if (end == std::string::npos)
-		return (request.size() >= LIMIT_HEADER_SIZE);
-	return (end >= LIMIT_HEADER_SIZE);
+		return (request.size() > LIMIT_HEADER_SIZE);
+	return (end > LIMIT_HEADER_SIZE);
 }
 
 str EventPool::getRequest(int socketFd) {
-  str request;
   char buffer[4096];
   std::memset(buffer, 0, 4096);
-  ssize_t total_bytes = 0;
+  size_t total_bytes = 0;
   ssize_t bytes_read = 0;
 
-  while ((bytes_read = read(socketFd, buffer, sizeof(buffer) - 1)) > 0)
-	{
+  struct pollfd pfd;
+  pfd.fd = socketFd;
+  pfd.events = POLLIN;
+
+  poll(&pfd, 1, 0);
+  str request;
+  while (pfd.revents & POLLIN)
+  {
+    bytes_read = recv(socketFd, buffer, sizeof(buffer), MSG_DONTWAIT);
+    if (bytes_read == -1)
+      throw socketReadException(socketFd);
     total_bytes += bytes_read;
-    request.append(buffer);
+    request.append(buffer, bytes_read);
     std::memset(buffer, 0, bytes_read);
 		if (request.size() >= LIMIT_HEADER_SIZE && headerTooLarge(request))
 			throw headerTooLargeException(socketFd);
+    poll(&pfd, 1, 0);
+    if (pfd.revents & (POLLHUP | POLLERR))
+      break;
   }
-  if (bytes_read == -1 && (errno != EAGAIN && errno != EWOULDBLOCK))
-    throw socketReadException(socketFd);
+
   if (total_bytes == 0)
     throw disconnectedException(socketFd);
-  Logger::log(str("HTTP Request Received.") + request, INFO);
 
+  Logger::log(str("HTTP Request Received.") + request, INFO);
   return (request);
 }
 
@@ -151,13 +150,10 @@ bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp) {
 
 void EventPool::poolLoop(std::vector<Server *> &Servers) {
   while (epollRun) {
-    _nfds =
-        epoll_wait(_pollFd, events, 1024, -1); // -1 = bloquea indefinidamente
+    _nfds = epoll_wait(_pollFd, events, 1024, -1);
     if (_nfds == -1) {
-      if (errno == EINTR) { // IMPORTANT para explicar: También se podría: if
-                            // (epollRun == 0) vendría siendo lo mismo
-        Logger::log("Graceful shutdown initiated: exiting epoll event loop due "
-                    "to signal.",
+      if (epollRun == 0) {
+        Logger::log("Graceful shutdown initiated: exiting epoll event loop due to signal.",
                     USER);
         break;
       }
