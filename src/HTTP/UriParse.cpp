@@ -23,7 +23,7 @@ bool	HttpRequest::asignBoolsCgi(str tmp, const strVec vec) {
 	str				localPathResource = _localPathResource + str("/") + tmp;
 	// const strVec	vec = loc->getCgiExtension();
 	str 			extension = tmp.substr(tmp.find_last_of('.'));
-	
+
 	if (vec.empty())
 		return false;
 	for (std::size_t i = 0; i < vec.size(); i++) {
@@ -71,27 +71,32 @@ void	HttpRequest::addPathInfo(strVecIt it, strVecIt end) {
 bool isRegularFile(const char* path) {
 	struct stat		path_stat;
 	std::ifstream	isValidFile(path); // IMPORTANT: if leaks free "path"
-	
+
     if (isValidFile.is_open() && stat(path, &path_stat) == 0)
         return S_ISREG(path_stat.st_mode);
     return false;
 }
 
 bool	HttpRequest::justABar(Server* server) {
-	str		tmpSrcPath; 
-
 	_locationUri = "/";
 	_location = findLocation(server, _locationUri);
 	if (!_location)
 		return false;
-	tmpSrcPath = server->getRoot();
+	_localPathResource = server->getRoot();
 	if (!_location->getRoot().empty())
-		tmpSrcPath.append(_location->getRoot());
+		_localPathResource.append(_location->getRoot());
 	_resource = _location->getIndex();
-	if (_resource.empty())
-		return false;
-	tmpSrcPath.append("/" + _resource);
-	if (isRegularFile(tmpSrcPath.c_str())) {
+	if (_resource.empty()) {
+		if(!_location->getAutoindex()) {
+			return false;
+		}
+		else {
+			_resourceExists = true;
+			return true;
+		}
+	}
+	_localPathResource.append("/" + _resource);
+	if (isRegularFile(_localPathResource.c_str())) {
 		_resourceExists = true;
 		return true;
 	}
