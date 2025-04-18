@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 13:51:28 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/17 23:30:05 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,75 +14,165 @@
 #include "../Utils/Utils.hpp"
 #include <cstdlib>
 
-HttpResponse::HttpResponse::HttpResponse(int errorCode) : AHttp()
+HttpResponse::HttpResponse(int errorCode, Server *server) : AHttp()
 {
-	_status = errorCode;
-	_line0.append("HTTP/1.1 ");
-	_line0.append(Utils::intToStr(errorCode));
-	_line0.append(" ");
-	_line0.append(Utils::_statusStr[errorCode]);
-	_line0.append("\r\n");
-	_body = "<html><head><title>";
-	_body += Utils::intToStr(errorCode) + " " + Utils::_statusStr[errorCode];
-	_body += "</title></head><body><h1>";
-	_body += Utils::intToStr(errorCode) + " " + Utils::_statusStr[errorCode];
-	_body += "</h1></body></html>\r\n";
+	setErrorCode(errorCode, server);
+}
+
+void  HttpResponse::staticFileGet(const HttpRequest &request, Server* server)
+{
+  str filepath = request.getLocalPathResource();
+	try {
+		_body = Utils::fileToStr(filepath);
+		_status = 200;
+		_line0.append("HTTP/1.1 ");
+		_line0.append(Utils::intToStr(_status) + " ");
+		_line0.append(Utils::_statusStr[_status] + "\r\n");
+		_header["Content-Type"] = Utils::getMimeType(filepath) + "\r\n";
+		_header["Content-Length"] = Utils::intToStr(_body.length());
+	}
+	catch (const std::exception &e) {
+		Logger::log(str("Error abriendo archivo en GET: ") + e.what(), WARNING);
+		setErrorCode(404, server);
+	}
+}
+
+void HttpResponse::staticFilePost(const HttpRequest &request, Server* server)
+{
+	Location* loc = request.getLocation();
+	if (!loc || !loc->getUploadEnable()) {
+		Logger::log("POST rechazado: upload no habilitado en esta location", WARNING);
+		setErrorCode(403, server);
+		return;
+	}
+	const str& body = request.getBody();
+	if (body.empty()) {
+		Logger::log("POST rechazado: cuerpo vacío", WARNING);
+		setErrorCode(400, server);
+		return;
+	}
+	if (body.size() > server->getBodySize()) {
+		Logger::log("POST rechazado: body excede client_max_body_size", WARNING);
+		setErrorCode(413, server);
+		return;
+	}
+	str fullPath = server->getRoot() + loc->getRoot() + loc->getUploadPath() + request.getResource();
+	std::ofstream out(fullPath.c_str(), std::ios::binary);
+	if (!out.is_open()) {
+		Logger::log(str("POST error: no se pudo crear el archivo en disco: ") + fullPath, ERROR);
+		setErrorCode(500, server);
+		return;
+	}
+	out << body; //IMPORTANT Sobreescribir por defecto? o detectar que existe y mandar error?
+	out.close();
+	_status = 201;
+	_line0 = "HTTP/1.1 201 Created\r\n";
+	_body = "<html><body><h1>File upload Success: " + request.getResource() + "</h1></body></html>";
 	_header["Content-Type"] = "text/html\r\n";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 }
 
-
-HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
-	if (request.getBadRequest()) {
+void HttpResponse::staticFilePut(const HttpRequest &request, Server* server)
+{
+	Location* loc = request.getLocation();
+	const str& body = request.getBody();
+	if (body.empty()) {
+		Logger::log("PUT rechazado: cuerpo vacío", WARNING);
 		setErrorCode(400, server);
-    return ;
-  }
-  else if (!request.getValidMethod()) {
-    setErrorCode(405, server);
-    return;
-  }
-  else if (!request.getResourceExists()) {
-    setErrorCode(404, server);
-    return;
-  }
-  else if (request.getHeaderTooLarge()) {
-    setErrorCode(431, server);
-    return;
-  }
-  // else if (request.getLocation()->getAutoindex());
-    //
-  else if (request.getIsCgi() && !request.getIsValidCgi()) {
-    setErrorCode(500, server);
-    return;
-  }
-  //isCgi -> validCgi
-  else if (!request.getIsCgi())
-    setResource(request, server);
-  else
-    cgiExec(request);
+		return;
+	}
+	if (body.size() > server->getBodySize()) {
+		Logger::log("PUT rechazado: body excede client_max_body_size", WARNING);
+		setErrorCode(413, server);
+		return;
+	}
+	str fullPath = server->getRoot() + loc->getRoot() + request.getResource();
+  std::ifstream check(fullPath.c_str(), std::ios::binary);
+  bool exist = check.is_open();
+	_status = exist ? 200 : 201;
+
+	std::ofstream out(fullPath.c_str(), std::ios::binary | std::ios::trunc);
+	if (!out.is_open()) {
+		Logger::log("PUT error: no se pudo abrir el archivo para escritura: " + fullPath, ERROR);
+		setErrorCode(500, server);
+		return;
+	}
+	out << body;
+	out.close();
+	_line0 = "HTTP/1.1 " + Utils::intToStr(_status) + " " + Utils::_statusStr[_status] + "\r\n";
+	_body = "<html><body><h1>File " + (exist ? str("actualizado") : str("Created")) + " correctly.</h1></body></html>";
+	_header["Content-Type"] = "text/html\r\n";
+	_header["Content-Length"] = Utils::intToStr(_body.length());
 }
 
-void HttpResponse::setResource(const HttpRequest &request, Server* server)
+void HttpResponse::staticFileOptions(const HttpRequest &request, Server* server)
 {
-  _status = 200;
-  _line0.append("HTTP/1.1 ");
-  _line0.append(Utils::intToStr(_status) + " ");
-  _line0.append(Utils::_statusStr[_status]);
-  _line0.append("\r\n");
-  str filepath;
-  filepath.append(server->getRoot()); // NO ESTAMOS COMPROBANDO LOCATION ESTAMOS EN GET ROOT
-  if (!request.getLocation()->getRoot().empty())
-    filepath.append(request.getLocation()->getRoot());
-  if (filepath[filepath.length() - 1] == '/')
-    filepath.append(server->getLocations().at(0)->getIndex());
-  try { _body.append(Utils::fileToStr(filepath)); }
-  catch (std::runtime_error &e) {
-    Logger::log("Not found resource", USER);
-    _body.append(server->getErrorPage(404));
+	Location* loc = request.getLocation();
+	if (!loc) {
+		Logger::log("OPTIONS rechazado: no se encontró Location", WARNING);
+		setErrorCode(404, server);
+		return;
+	}
+	const std::vector<RequestType>& methods = loc->getMethods();
+	str allowed;
+	for (size_t i = 0; i < methods.size(); ++i) {
+		if (i > 0)
+			allowed += ", ";
+		allowed += Utils::requestTypeToStr(methods[i]);
+	}
+	_status = 204;
+	_line0 = "HTTP/1.1 204 No Content\r\n";
+	_header["Allow"] = allowed + "\r\n";
+	_header["Content-Length"] = "0";
+	_header["Content-Type"] = "text/plain\r\n";
+	_body.clear();
+}
+
+void HttpResponse::staticFileDelete(const HttpRequest &request, Server* server)
+{
+	Location* loc = request.getLocation();
+	str path = server->getRoot() + loc->getRoot() + request.getResource();
+
+	std::ifstream check(path.c_str());
+	if (!check.is_open()) {
+		Logger::log("DELETE: recurso no encontrado: " + path, WARNING);
+		setErrorCode(404, server);
+		return;
+	}
+	check.close();
+	if (std::remove(path.c_str()) != 0) {
+		Logger::log("DELETE: fallo al eliminar recurso con std::remove(): " + path, ERROR);
+		setErrorCode(500, server);
+		return;
+	}
+	_status = 200;
+	_line0 = "HTTP/1.1 200 OK\r\n";
+	_body = "<html><body><h1>Resource has been deleted.</h1></body></html>";
+	_header["Content-Type"] = "text/html\r\n";
+	_header["Content-Length"] = Utils::intToStr(_body.length());
+}
+
+void  HttpResponse::staticFileExec(const HttpRequest &request, Server *server)
+{
+  switch (request.getType())
+  {
+    case GET: staticFileGet(request, server); break;
+    case POST: staticFilePost(request, server); break;
+    case PUT: staticFilePut(request, server); break;
+    case OPTIONS: staticFileOptions(request, server); break;
+    case DELETE: staticFileDelete(request, server); break;
+
+    default:
+      Logger::log("Response construcor cannot found valid method", ERROR);
+    break;
   }
-  _body.append("\r\n");
-  _header["Content-Type"] = "text/html\r\n";
-  _header["Content-Length"] = Utils::intToStr(_body.length());
+}
+
+HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
+	if (request.getIsCgi())
+    cgiExec(request);
+  else
+    staticFileExec(request, server);
 }
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) {
@@ -91,16 +181,28 @@ HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) {
 
 HttpResponse::~HttpResponse() {}
 
-void HttpResponse::setErrorCode(int ErrorCode, Server* server)
+void HttpResponse::setErrorCode(int errorCode, Server* server)
 {
-	_status = ErrorCode;
-	_line0.append("HTTP/1.1 ");
-  _line0.append(Utils::intToStr(ErrorCode) + " ");
-  if (Utils::_statusStr[400].empty())
-    Logger::log("Error code is empty", INFO);
-  _line0.append(Utils::_statusStr[ErrorCode] + "\r\n");
-  _body.append(server->getErrorPage(ErrorCode));
-	_body.append("\r\n"); // FIN DE CABECERA
+	_line0.clear();
+	_body.clear();
+	_header.clear();
+
+	_status = errorCode;
+
+	std::map<int, str>::iterator it = Utils::_statusStr.find(errorCode);
+	if (it == Utils::_statusStr.end()) {
+		Logger::log("Código de estado no reconocido: " + Utils::intToStr(errorCode), WARNING);
+		errorCode = 500;
+		_status = 500;
+		it = Utils::_statusStr.find(500);
+	}
+	_line0 = "HTTP/1.1 " + Utils::intToStr(errorCode) + " " + it->second + "\r\n";
+	try {
+		_body = server->getErrorPage(errorCode);
+	} catch (...) {
+		Logger::log("Fallo al obtener página de error personalizada. Usando default.", WARNING);
+		_body = "<html><body><h1>" + Utils::intToStr(errorCode) + " " + it->second + "</h1></body></html>";
+	}
 	_header["Content-Type"] = "text/html\r\n";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 }

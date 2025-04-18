@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 10:53:51 by erigonza         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "HttpRequest.hpp"
 #include <string>
 #include <exception>
@@ -37,9 +25,9 @@ HttpRequest::HttpRequest(str request, Server *server)
 		// por ahora se va
 		// if(!checkResource(*server))
 		// 	return ;
+		_location = findLocation(server);
 		if(!checkAllowMethod())
 			return ;
-		_location = findLocation(server);
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
@@ -93,22 +81,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	_uri = line.substr(end, path_end - end);
 	if (line.substr(path_end + 1) != "HTTP/1.1\r\n") //aqui no tinene \r\n porque ya lo quitamos en el constructor
 		throw badHeaderException("Bad Protocol version");
-	//_resource
-	//_varCgi
-	//_queryString
 }
-
-// bool HttpRequest::checkResource(Server const &server) {
-//   _resourceExists = false;
-//   if (!_location)
-//     return false;
-//   str root = _location->getRoot();
-//   if (root.empty())
-//     root = server.getRoot();
-//   std::ifstream resource((root + _resource).c_str());
-//   _resourceExists = resource.good();
-//   return resource;
-// }
 
 Location*	HttpRequest::findLocation(Server* Server) {
 	Logger::log(str("Looking for Location: ") + _uri, INFO);
@@ -140,6 +113,10 @@ Location*	HttpRequest::findLocation(Server* Server, const str &uri) {
 
 bool	HttpRequest::checkAllowMethod()
 {
+	if (!_location) {
+		Logger::log("Comprobando metodo en una location NULL");
+		return false;
+	}
 	int method = (_receivedMethod == "GET")		? 0 :
 				(_receivedMethod == "POST")		? 1 :
 				(_receivedMethod == "DELETE")	? 2 :

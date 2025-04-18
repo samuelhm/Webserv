@@ -197,14 +197,14 @@ str Utils::requestTypeToStr(RequestType type) {
 	}
 }
 
-HttpResponse &Utils::codeResponse(int errorCode)
+HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 {
-	static HttpResponse resp414(414);
-	static HttpResponse resp431(431);
-	static HttpResponse resp400(400);
-	static HttpResponse resp404(404);
-	static HttpResponse resp405(405);
-	static HttpResponse resp500(500);
+	static HttpResponse resp414(414, server);
+	static HttpResponse resp431(431, server);
+	static HttpResponse resp400(400, server);
+	static HttpResponse resp404(404, server);
+	static HttpResponse resp405(405, server);
+	static HttpResponse resp500(500, server);
 
 	switch (errorCode)
 	{
@@ -218,4 +218,38 @@ HttpResponse &Utils::codeResponse(int errorCode)
 			Logger::log("getStaticErrorResponse: código no soportado: " + intToStr(errorCode), WARNING);
 			return resp500; // fallback
 	}
+}
+
+str Utils::getMimeType(const str &filename)
+{
+	static std::map<str, str> mimeTypes;
+	if (mimeTypes.empty()) {
+		mimeTypes[".html"] = "text/html";
+		mimeTypes[".htm"] = "text/html";
+		mimeTypes[".css"] = "text/css";
+		mimeTypes[".js"] = "application/javascript";
+		mimeTypes[".json"] = "application/json";
+		mimeTypes[".png"] = "image/png";
+		mimeTypes[".jpg"] = "image/jpeg";
+		mimeTypes[".jpeg"] = "image/jpeg";
+		mimeTypes[".gif"] = "image/gif";
+		mimeTypes[".svg"] = "image/svg+xml";
+		mimeTypes[".ico"] = "image/x-icon";
+		mimeTypes[".txt"] = "text/plain";
+		mimeTypes[".pdf"] = "application/pdf";
+		mimeTypes[".xml"] = "application/xml";
+		mimeTypes[".zip"] = "application/zip";
+		mimeTypes[".tar"] = "application/x-tar";
+		mimeTypes[".mp3"] = "audio/mpeg";
+		mimeTypes[".mp4"] = "video/mp4";
+		mimeTypes[".webm"] = "video/webm";
+		mimeTypes[".wasm"] = "application/wasm";
+	}
+	std::size_t dotPos = filename.find_last_of('.');
+	if (dotPos != str::npos) {
+		str ext = filename.substr(dotPos);
+		if (mimeTypes.find(ext) != mimeTypes.end())
+			return mimeTypes[ext];
+	}
+	return "application/octet-stream";
 }

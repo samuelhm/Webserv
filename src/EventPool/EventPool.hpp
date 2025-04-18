@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 13:19:59 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/17 15:13:34 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class EventPool {
 		void					handleClientConnection(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
 		bool					checkCGI(str path, Server server);
+		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
 		bool					headerTooLarge(str const &request);
 
 	public:
@@ -96,4 +97,3 @@ class EventPool {
 				virtual ~headerTooLargeException() throw() {}
 		};
 };
-
