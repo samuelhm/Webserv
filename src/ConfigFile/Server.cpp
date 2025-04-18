@@ -81,6 +81,11 @@ void						Server::socketUp()
 		close(_serverFd);
 		throw std::exception();
 	}
+	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEPORT, &_reuseOption, sizeof(int)) == -1) {
+		Logger::log(str("Fail setting SO_REUSEPORT on server: ") + _serverName, ERROR);
+		close(_serverFd);
+		throw std::exception();
+	}
 	if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) == -1) {
         Logger::log(str("Fail setting 0_NONBLOCK on server: ") + _serverName, ERROR);
 		close(_serverFd);

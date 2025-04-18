@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   EventPool.cpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
+/*   Updated: 2025/04/18 13:45:02 by fcarranz         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "EventPool.hpp"
 #include "../Utils/AutoIndex.hpp"
 #include "../Utils/Utils.hpp"
@@ -5,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <poll.h>
+#include <unistd.h> // We cant use getpid(). DELETE this line
 
 EventPool::EventPool(std::vector<Server *> &Servers) {
   _pollFd = epoll_create(1);
@@ -115,9 +128,12 @@ void EventPool::acceptConnection(int fdTmp, Server *server) {
 
   int client_fd =
       accept(fdTmp, (struct sockaddr *)&client_address, &client_len);
-  if (client_fd == -1)
-    throw AcceptConnectionException("Failed on Accept connetion for server: " +
-                                    server->getServerName());
+  if (client_fd == -1) {
+    Logger::log(str("No aceptada"), INFO);
+    return;
+  }
+  else
+    Logger::log(str("Conexion aceptada"), USER);
   if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
     close(client_fd);
     throw AcceptConnectionException(
@@ -161,6 +177,7 @@ void EventPool::poolLoop(std::vector<Server *> &Servers) {
       perror("epoll_wait");
       throw std::exception();
     }
+    Logger::log("Worker [" + Utils::intToStr(static_cast<size_t>(getpid())) + "] tooked petition", USER); // We cant use getpid(). DELETE this line
     processEvents(Servers);
   }
 }
