@@ -29,7 +29,7 @@ class HttpResponse : public AHttp {
 		char				**_argv;
 		str					_cgiOutput;
 		void					setErrorCode(int ErrorCode, Server* server);
-		void					cgiExec(const HttpRequest &request);
+		void					cgiExec(const HttpRequest &request, Server *server);
 		void					cgiSaveItems(const HttpRequest &request);
 		void					cgiFree();
 		void					staticFileExec(const HttpRequest &request, Server* server);

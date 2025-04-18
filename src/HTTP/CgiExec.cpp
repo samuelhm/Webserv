@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/17 14:56:07 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/18 11:30:45 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,20 +48,22 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	_argv = argv;
 }
 
-void HttpResponse::cgiExec(const HttpRequest &request) {
+void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 	cgiSaveItems(request);
 
 	int pipe_fd[2];
 	if (pipe(pipe_fd) == -1) {
-		perror("pipe");
+		Logger::log("Failed to create pipe", ERROR);
 		cgiFree();
+		setErrorCode(500, server);
 		return;
 	}
 	pid_t pid = fork();
 	if (pid < 0) {
-		perror("fork");
+		Logger::log("Failed to fork", ERROR);
 		cgiFree();
-		return;
+		setErrorCode(500, server);
+		return ;
 	}
 	else if (pid == 0) {
 		close(pipe_fd[0]);
@@ -82,7 +84,7 @@ void HttpResponse::cgiExec(const HttpRequest &request) {
 			_cgiOutput.append(buffer, bytes);
 		close(pipe_fd[0]);
 		int status;
-		waitpid(pid, &status, 0);
+		waitpid(pid, &status, 0); // IMPORTANT: check status here and read cgi properly
 		// std::cout << _cgiOutput << std::endl;
 		cgiFree();
 	}

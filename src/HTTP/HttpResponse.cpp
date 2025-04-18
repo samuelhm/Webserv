@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 23:30:05 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/18 11:28:15 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,9 +170,9 @@ void  HttpResponse::staticFileExec(const HttpRequest &request, Server *server)
 
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
 	if (request.getIsCgi())
-    cgiExec(request);
-  else
-    staticFileExec(request, server);
+		cgiExec(request, server);
+	else
+		staticFileExec(request, server);
 }
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) {
