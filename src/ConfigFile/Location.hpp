@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 13:38:14 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/18 12:15:28 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,5 +63,4 @@ class Location {
 		strVec						_cgiExtension;
 		str							_cgiPath;
 		int							_bodySize;
-
 };

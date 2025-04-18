@@ -5,83 +5,24 @@
 	root:./www/html
 	client_max_body_size:1048576
 
-	error_400:/var/www/errors/400.html
-	error_403:/var/www/errors/403.html
-	error_404:/var/www/errors/404.html
-	error_405:/var/www/errors/405.html
-	error_413:/var/www/errors/413.html
-	error_500:/var/www/errors/500.html
-
 	location:/
-
-
+	[
+		index:index.html
+		allowed_methods:GET
+	]
 	location:/images
 	[
-		allowed_methods:GET POST
-		index:index.html
-		autoindex:off
-
+		allowed_methods:GET POST PUT DELETE OPTIONS
+		autoindex:on
+		root:/images
 	]
-			location:/upload
-		[
-			allowed_methods:POST
-			redirect:/nuevo
-			redirect_code:301
-			upload_enable:on
-      root:    /var/             www/html
-			autoindex:off
-			index:index.html
-			upload_path:/var/www/uploads
-			cgi_enable:on
-			cgi_extension:.py
-			cgi_path:/usr/bin/python3
-		]
 	location:/cgi-bin
 	[
 		allowed_methods:GET POST
-		root:/var/www/cgi-bin
+		root:/cgi-bin
 		index:index.py
-	]
-}
-{
-	server_name:defaultName2
-	listen:localhost:8181
-	is_default:on
-	root:~/www/html2
-	client_max_body_size:1048576
-
-	error_400:/var/www/errors/400.html
-	error_403:/var/www/errors/403.html
-	error_404:/var/www/errors/404.html
-	error_405:/var/www/errors/405.html
-	error_413:/var/www/errors/413.html
-	error_500:/var/www/errors/500.html
-
-	location:/
-	[
-		allowed_methods:GET POST
-		index:index.html
-		autoindex:off
-	]
-
-	location:/upload
-	[
-		allowed_methods:POST
-		redirect:/nuevo
-		redirect_code:301
-		upload_enable:on
-		root:/var/www/html
-		autoindex:off
-		index:index.html
-		upload_path:/var/www/uploads
 		cgi_enable:on
-		cgi_extension:.py
 		cgi_path:/usr/bin/python3
-	]
-	location:/cgi-bin
-	[
-		allowed_methods:GET POST
-		root:/var/www/cgi-bin
-		index:index.py
+		cgi_extension: .php2   .bla .bad_extension   .php .py
 	]
 }

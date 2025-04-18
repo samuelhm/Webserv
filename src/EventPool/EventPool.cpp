@@ -257,7 +257,7 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 {
 	if (request.getBadRequest())
 		return Utils::codeResponse(400, server);
-	else if (request.getValidMethod())
+	else if (!request.getValidMethod())
 		return Utils::codeResponse(405, server);
 	else if (!request.getResourceExists() || request.getLocation() == NULL)
 		return Utils::codeResponse(404, server);

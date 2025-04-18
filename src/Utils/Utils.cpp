@@ -200,7 +200,7 @@ str Utils::requestTypeToStr(RequestType type) {
 HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 {
 	static HttpResponse resp414(414, server);
-	static HttpResponse resp431(431, server);
+	static HttpResponse resp413(413, server);
 	static HttpResponse resp400(400, server);
 	static HttpResponse resp404(404, server);
 	static HttpResponse resp405(405, server);
@@ -209,7 +209,7 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 	switch (errorCode)
 	{
 		case 414: return resp414;
-		case 431: return resp431;
+		case 413: return resp413;
 		case 400: return resp400;
 		case 404: return resp404;
 		case 405: return resp405;
