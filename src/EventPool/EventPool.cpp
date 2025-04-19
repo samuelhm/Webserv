@@ -247,6 +247,8 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 		str reqStr = getRequest(fd);
 		HttpRequest request(reqStr, eventStrct->server);
 		Utils::printRequest(request);
+    safeCloseAndDelete(fd, eventStrct);
+    return ;
 		HttpResponse response = stablishResponse(request, eventStrct->server);
 		sendResponse(response, fd, response.getHeader());
 	} catch(const disconnectedException& e) {
@@ -278,7 +280,7 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 		return Utils::codeResponse(405, server);
 	else if (!request.getResourceExists() || request.getLocation() == NULL)
 		return Utils::codeResponse(404, server);
-	else if (request.getIsCgi() && !request.getIsValidCgi())
+	else if (request.getIsCgi())
 		return Utils::codeResponse(500, server);
 	else if (!request.getRedirect().empty())
 		throw std::exception();

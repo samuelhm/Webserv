@@ -15,7 +15,7 @@
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_isValidCgi(false), _redirect(""), _autoIndex("")
+		_redirect(""), _autoIndex("")
 {
 	_location = NULL;
 
@@ -30,17 +30,21 @@ HttpRequest::HttpRequest(str request, Server *server)
 		_location = findLocation(server);
 		if (!_location)
 			return ;
-		_resource = _uri.substr(_uri.find(_location->getUrlPath()) + 1);
+		size_t length = _location->getUrlPath().size();
+		if (length != 1)
+			length++;
+		_resource = _uri.substr(length);
 		_localPathResource.append(server->getRoot());
 		_localPathResource.append(_location->getRoot());
-		_localPathResource.append(_resource);
+		_localPathResource.append("/" + _resource);
 		if (Utils::isDirectory(_localPathResource)) {
 			if (_uri.at(_uri.length() - 1) != '/') {
 				_redirect = _uri.append("/");
 				return ;
 			}
 			if (!_location->getIndex().empty()) {
-				_resource = _location->getIndex();
+				_resource.append("/" + _location->getIndex());
+				_resourceExists = true;
 				_localPathResource.append(_resource);
 			}
 			else if (_location->getAutoindex())
@@ -58,6 +62,9 @@ HttpRequest::HttpRequest(str request, Server *server)
 			return ;
 		}
 		parseResource();
+		_localPathResource = _localPathResource.substr(0, _localPathResource.find(_resource) + _resource.size());
+		_resourceExists = checkFileExists(_localPathResource);
+
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
@@ -121,8 +128,8 @@ bool HttpRequest::appendPath(std::string &tmpPath, std::string const &uri)
     tmpPath.append("/");
     return true;
   }
-
-  size_t end = uri.find('/', tmpPath.size());
+// /images/algomas
+  size_t end = uri.find('/', tmpPath.size() + 1);
   if (end == std::string::npos)
     end = uri.size();
   else
@@ -192,7 +199,7 @@ void	HttpRequest::autoIndex(Location *loc) {
 		_resourceExists = false;
 }
 
-bool HttpRequest::isRegularFile(str fullResource) {
+bool HttpRequest::checkFileExists(str fullResource) {
     struct stat path_stat;
     if (stat(fullResource.c_str(), &path_stat) == 0)
         return S_ISREG(path_stat.st_mode);
@@ -217,7 +224,6 @@ bool		HttpRequest::getBadRequest() const { return _badRequest; }
 bool		HttpRequest::getResourceExists() const { return _resourceExists; }
 bool		HttpRequest::getValidMethod() const { return _validMethod; }
 bool		HttpRequest::getIsCgi() const { return _isCgi; }
-bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
 Location*	HttpRequest::getLocation() const { return _location; }
 str			HttpRequest::getReceivedMethod() const { return _receivedMethod; }
 str			HttpRequest::getResource() const { return _resource; }
@@ -233,7 +239,6 @@ void		HttpRequest::setBadRequest(bool badRequest) { _badRequest = badRequest; }
 void		HttpRequest::setResorceExist(bool resorceExist) { _resourceExists = resorceExist; }
 void		HttpRequest::setValidMethod(bool validMethod) { _validMethod = validMethod; }
 void		HttpRequest::setIsCgi(bool isCgi) { _isCgi = isCgi; }
-void		HttpRequest::setIsValidCgi(bool isValidCgi) { _isValidCgi = isValidCgi; }
 void 		HttpRequest::setLocation(Location *location) { _location = location; }
 
 HttpRequest::badHeaderException::badHeaderException(const str &msg) : _msg(msg) {}

@@ -169,7 +169,6 @@ void Utils::printRequest(HttpRequest &request)
 	Logger::log(str("Resource Exists: ") + (request.getResourceExists() ? "true" : "false"), WARNING);
 	Logger::log(str("Valid Method: ") + (request.getValidMethod() ? "true" : "false"), WARNING);
 	Logger::log(str("Is CGI: ") + (request.getIsCgi() ? "true" : "false"), WARNING);
-	Logger::log(str("Is Valid CGI: ") + (request.getIsValidCgi() ? "true" : "false"), WARNING);
 	Logger::log(str("Local Path Resource: ") + request.getLocalPathResource(), WARNING);
 	Location* loc = request.getLocation();
 	if (loc)

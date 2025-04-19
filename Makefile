@@ -49,7 +49,7 @@ v: $(NAME)
 
 r: $(NAME)
 	clear
-	@./$(NAME) Config_Empty.conf
+	@./$(NAME) config
 
 
 -include $(DEPS)

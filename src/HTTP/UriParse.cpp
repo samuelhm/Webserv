@@ -12,24 +12,6 @@
 
 #include "HttpRequest.hpp"
 
-bool	HttpRequest::checkValidCgi() {
-	str				localPathResource = _localPathResource + str("/") + _resource;
-	const strVec	vec = _location->getCgiExtension();
-	str 			extension = _resource.substr(_resource.find_last_of('.'));
-
-	if (vec.empty())
-		return false;
-	for (std::size_t i = 0; i < vec.size(); i++) {
-		if (extension == vec[i].c_str()) {
-			_localPathResource = localPathResource; // CHECK do I do this?
-			_isCgi = true;
-			_isValidCgi = true;
-			return true;
-		}
-	}
-	return false;
-}
-
 str	HttpRequest::addPathInfo(str afterSrc) {
 	size_t		breakPoint = afterSrc.find('?');
 	str			tmp;
@@ -37,7 +19,7 @@ str	HttpRequest::addPathInfo(str afterSrc) {
 	if (breakPoint != str::npos) {
 		tmp = afterSrc.substr(0, breakPoint);
 		if (tmp.find('/') != str::npos) {
-			_pathInfo = tmp; // IMPORTANT check if it saves the "?" or not
+			_pathInfo = tmp;
 			return afterSrc.substr(breakPoint);
 		}
 		return afterSrc;
@@ -51,18 +33,42 @@ str	HttpRequest::addPathInfo(str afterSrc) {
 
 void	HttpRequest::parseResource() {
 	str				afterSrc;
-	size_t			breakPoint = _resource.find('?');
+	// size_t			breakPoint = _resource.find('?');
 
-	if (breakPoint == str::npos)
-		breakPoint = _resource.find('/');
-	if (breakPoint != str::npos) {
-		afterSrc = _resource.substr(breakPoint);
-		_resource = _resource.substr(0, breakPoint);
+	// if (breakPoint != str::npos)
+	// 	breakPoint = (_resource.substr(0, breakPoint)).find("/");
+	// if (breakPoint == str::npos)
+	// 	breakPoint = _resource.find('/');
+	// if (breakPoint != str::npos) {
+	// 	afterSrc = _resource.substr(breakPoint);
+	// 	_resource = _resource.substr(0, breakPoint);
+	// }
+	strVec		extensions = _location->getCgiExtension();
+	size_t		extStart = str::npos;
+	str			tmp;
+	str			checkResource = _resource;
+	for (size_t i = 0; i < extensions.size(); i++)
+	{
+		extStart = checkResource.find(extensions[i]);
+		while (extStart != str::npos)
+		{
+			tmp = checkResource.substr(0, extStart + extensions[i].size());
+			if (checkResource[tmp.size()] == '/' || checkResource[tmp.size()]  == '?' || (checkResource.c_str()[tmp.size()] == '\0')) {
+				str		resTmp = _localPathResource.substr(0, _localPathResource.find(tmp) + tmp.size());
+				if (!Utils::isDirectory(resTmp) && _location->getCgiEnable()) {
+					checkResource = checkResource.substr(0, tmp.size());
+					_isCgi = true;
+					afterSrc = _resource.substr((_resource.find(checkResource) + checkResource.size()));
+					_resource = _resource.substr(0, (_resource.find(checkResource) + checkResource.size()));
+					tmp = addPathInfo(afterSrc);
+					if (!tmp.empty())
+						_queryString = tmp.substr(1);
+					return ;
+				}
+			}
+			checkResource = checkResource.substr(_resource.find(tmp) + tmp.size() + 1);
+			extStart = checkResource.find(extensions[i]);
+		}
 	}
-	if (!_location->getCgiEnable() || _resource.find('.') == str::npos || !checkValidCgi() || afterSrc.empty())
-		return ;
-	str		tmp = addPathInfo(afterSrc);
-	if (!tmp.empty())
-		_queryString = tmp.substr(1);
 	return ;
 }

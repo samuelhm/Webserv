@@ -27,7 +27,6 @@ class HttpRequest : public AHttp {
 		bool		_resourceExists;
 		bool		_validMethod;
 		bool		_isCgi;
-		bool		_isValidCgi;
 		str			_localPathResource;
 		Location*	_location;
 		str			_locationUri;
@@ -42,7 +41,6 @@ class HttpRequest : public AHttp {
 		bool		checkResource(Server const &server);
 		bool		appendPath(std::string &tmpPath, std::string const &uri);
 		void		parseResource();
-		bool		checkValidCgi();
 		str			addPathInfo(str afterSrc);
 		bool		checkAllowMethod();
 
@@ -53,7 +51,7 @@ class HttpRequest : public AHttp {
 		Location	*findLocation(Server* Server);
 		Location*	findLocation(Server* Server, const str &uri);
 		void		autoIndex(Location *loc);
-		bool		isRegularFile(str fullResource);
+		bool		checkFileExists(str fullResource);
 		bool		locationHasRedirection(const Location *loc);
 
 		//Getters
