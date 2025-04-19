@@ -57,6 +57,7 @@ HttpRequest::HttpRequest(str request, Server *server)
 			_redirect.append(_resource);
 			return ;
 		}
+		parseResource();
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;

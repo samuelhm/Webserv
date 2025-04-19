@@ -17,6 +17,10 @@
 		root:/images
 		upload_enable:on
 	]
+	location:/images2
+	[
+		redirection:/images
+	]
 	location:/cgi-bin
 	[
 		allowed_methods:GET POST
