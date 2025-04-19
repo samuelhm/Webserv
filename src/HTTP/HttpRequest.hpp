@@ -1,19 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpRequest.hpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 12:53:35 by erigonza         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
-#include "../ConfigFile/Server.hpp"
 #include "AHttp.hpp"
+#include "../ConfigFile/Server.hpp"
 
 class Server;
 class Location;
@@ -50,16 +38,15 @@ class HttpRequest : public AHttp {
 		Location*	findLocation(Server* Server, const str &uri);
 
 		bool		checkAllowMethod();
-		bool		envPath(Server* server);
 		void		autoIndex(Location *loc);
-
 		bool		saveUri(strVecIt it, strVecIt end, Server* server);
 		bool		asignBoolsCgi(str tmp, const strVec vec);
-		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
 		void		addPathInfo(strVecIt it, strVecIt end);
 		bool		justABar(Server* server);
 		strVecIt	findFile(Server* server, strVecIt it, strVecIt end);
-		
+		void		checkIsValidCgi();
+		str			addPathInfo(str afterSrc);
+		bool		isRegularFile(Server* server);
 
 		//Getters
 		RequestType	getType() const;

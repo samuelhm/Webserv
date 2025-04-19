@@ -1,8 +1,5 @@
 #include "HttpRequest.hpp"
-#include <string>
-#include <exception>
-#include <iostream>
-#include <fstream>
+#include <sys/stat.h>
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
@@ -19,7 +16,7 @@ HttpRequest::HttpRequest(str request, Server *server)
 	try {
 		checkHeaderMRP(line);
 		if (!envPath(server)) {
-			// check autoindex here	
+			// check autoindex here
 			return ;
 		}
 		// por ahora se va
@@ -162,13 +159,17 @@ void	HttpRequest::autoIndex(Location *loc) {
 		_resourceExists = false;
 }
 
-bool	HttpRequest::envPath(Server* server) {
-	strVec		locationUris = Utils::split(_uri, '/');
-	strVecIt	it;
+bool HttpRequest::isRegularFile(Server* server) {
+	str				tmp;
 
-	if (!saveUri(locationUris.begin(), locationUris.end(), server))
-		return false;
-	return true;
+	tmp = server->getRoot();
+	if (!_location->getRoot().empty())
+		tmp.append(_location->getRoot());
+	const char*		path = (tmp.append(_resource)).c_str();
+    struct stat path_stat;
+    if (stat(path, &path_stat) == 0)
+        return S_ISREG(path_stat.st_mode);
+    return false;
 }
 
 HttpRequest::~HttpRequest() {}
