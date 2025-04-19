@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 13:54:51 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/19 13:02:40 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,18 @@ void signalQuit(int signum) {
 	(void)signum;
 	epollRun = 0;
 }
+
+void initWorkes(std::vector<int> &pids, int &active_workers)
+{
+  for (; active_workers < NUMBER_OF_WORKERS; active_workers++) {
+    pids[active_workers] = fork();
+    if (pids[active_workers] == 0 || pids[active_workers] == -1)
+      break;
+  }
+  if (active_workers == NUMBER_OF_WORKERS)
+    --active_workers;
+}
+
 int main(int ac, char **av)
 {
 	if (signal(SIGQUIT, signalQuit) == SIG_ERR || signal(SIGINT, signalQuit) == SIG_ERR) {
@@ -49,16 +61,12 @@ int main(int ac, char **av)
 	try {
 		std::vector<Server*> Servers = parseConfigFile(av[1]);
 
-    int pids[NUMBER_OF_WORKERS], active_workers = 0;
-    for (; active_workers < NUMBER_OF_WORKERS; active_workers++) {
-        pids[active_workers] = fork();
-        if (pids[active_workers] == 0 || pids[active_workers] == -1)
-          break;
-    }
-    if (active_workers == NUMBER_OF_WORKERS)
-      --active_workers;
+    std::vector<int> pids(NUMBER_OF_WORKERS);
+    int active_workers = 0;
+    if (NUMBER_OF_WORKERS > 0 )
+      initWorkes(pids, active_workers);
 
-    if (pids[active_workers] == 0) {
+    if (pids.size() == 0 || pids[active_workers] == 0) {
       if (!Utils::setUpServers(Servers))
       {
         Utils::foreach(Servers.begin(), Servers.end(), Utils::deleteItem<Server>);
