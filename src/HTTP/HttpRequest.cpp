@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/19 13:00:34 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/19 13:16:54 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,7 @@ HttpRequest::HttpRequest(str request, Server *server)
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		if (!envPath(server)) {
-			// check autoindex here	
-			return ;
-		}
+
 		// por ahora se va
 		// if(!checkResource(*server))
 		// 	return ;
@@ -149,25 +146,9 @@ void	HttpRequest::autoIndex(Location *loc) {
 		_resourceExists = false;
 }
 
-bool	HttpRequest::envPath(Server* server) {
-	strVec		locationUris = Utils::split(_uri, '/');
-	strVecIt	it;
-
-	if (!saveUri())
-		return false;
-	isRegularFile(server);
-	return true;
-}
-
-bool HttpRequest::isRegularFile(Server* server) {
-	str				tmp;
-	
-	tmp = server->getRoot();
-	if (!_location->getRoot().empty())
-		tmp.append(_location->getRoot());
-	const char*		path = (tmp.append(_resource)).c_str();
+bool HttpRequest::isRegularFile(str fullResource) {
     struct stat path_stat;
-    if (stat(path, &path_stat) == 0)
+    if (stat(fullResource.c_str(), &path_stat) == 0)
         return S_ISREG(path_stat.st_mode);
     return false;
 }
