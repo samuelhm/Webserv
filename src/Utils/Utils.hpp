@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:35 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/17 22:58:19 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/18 22:47:34 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include "../HTTP/HttpRequest.hpp"
 #include "../HTTP/HttpResponse.hpp"
 #include "Logger.hpp"
+#include <dirent.h>
 
 class Server;
 class Location;
@@ -42,6 +43,7 @@ namespace Utils {
 	void				printRequest(HttpRequest &Request);
 	HttpResponse 		&codeResponse(int errorCode, Server *server);
 	str 				getMimeType(const str &filename);
+	bool				isDirectory(const std::string &path);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {

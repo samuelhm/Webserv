@@ -182,7 +182,7 @@ void Utils::printRequest(HttpRequest &request)
 		Logger::log(str("Path Info: ") + request.getPathInfo(), WARNING);
 	}
 	Logger::log(str("Header Too Large: ") + (request.getHeaderTooLarge() ? "true" : "false"), WARNING);
-	Logger::log(str("Redirect: ") + (request.getRedirect() ? "true" : "false"), WARNING);
+	Logger::log(str("Redirect: ") + (request.getRedirect().empty() ? "false" : request.getRedirect()), WARNING);
 	Logger::log("----------------------------", WARNING);
 }
 
@@ -252,4 +252,13 @@ str Utils::getMimeType(const str &filename)
 			return mimeTypes[ext];
 	}
 	return "application/octet-stream";
+}
+
+bool Utils::isDirectory(const std::string &path) {
+	DIR *dir = opendir(path.c_str());
+	if (dir) {
+		closedir(dir);
+		return true;
+	}
+	return false;
 }

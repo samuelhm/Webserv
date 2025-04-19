@@ -1,12 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
+/*   Updated: 2025/04/19 13:16:54 by erigonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "HttpRequest.hpp"
-#include <string>
-#include <exception>
-#include <iostream>
-#include <fstream>
+#include <sys/stat.h>
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_isValidCgi(false), _headerTooLarge(false), _redirect(false)
+		_isValidCgi(false), _headerTooLarge(false), _redirect(""), autoIndex(false)
 {
 	_location = NULL;
 
@@ -18,16 +27,36 @@ HttpRequest::HttpRequest(str request, Server *server)
 	const str line = request.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		if (!envPath(server)) {
-			// check autoindex here	
-			return ;
-		}
-		// por ahora se va
-		// if(!checkResource(*server))
-		// 	return ;
 		_location = findLocation(server);
+		if (!_location)
+			return ;
+		_resource = _uri.substr(_uri.find(_location->getUrlPath()) + 1);
+		_localPathResource.append(server->getRoot());
+		_localPathResource.append(_location->getRoot());
+		_localPathResource.append(_resource);
+		if (Utils::isDirectory(_localPathResource())) {
+			if (_uri.at(_uri.length() - 1) != '/') {
+				_redirect = _uri.append('/');
+				return ;
+			}
+			if (!_location->getIndex().empty()) {
+				_resource = _location->getIndex();
+				_localPathResource.append(_resource);
+			}
+			else if (_location->getAutoindex())
+				_autoIndex = true;
+			else {
+				_location = NULL; //para devolver 404
+				return ;
+			}
+		}
 		if(!checkAllowMethod())
 			return ;
+		if (locationHasRedirection(_location)) {
+			_redirect = _location->getRedirect();
+			_redirect.append(_resource);
+			return ;
+		}
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
@@ -162,11 +191,19 @@ void	HttpRequest::autoIndex(Location *loc) {
 		_resourceExists = false;
 }
 
-bool	HttpRequest::envPath(Server* server) {
-	strVec		locationUris = Utils::split(_uri, '/');
-	strVecIt	it;
+bool HttpRequest::isRegularFile(str fullResource) {
+    struct stat path_stat;
+    if (stat(fullResource.c_str(), &path_stat) == 0)
+        return S_ISREG(path_stat.st_mode);
+    return false;
+}
 
-	if (!saveUri(locationUris.begin(), locationUris.end(), server))
+bool	HttpRequest::locationHasRedirection(const Location *loc) {
+	if (!loc) {
+		Logger::log("Location es null, no es posible comprobar redirect", ERROR);
+		return false;
+	}
+	if (loc->getRedirect().empty())
 		return false;
 	return true;
 }
@@ -188,7 +225,7 @@ str			HttpRequest::getLocalPathResource() const { return _localPathResource; }
 str			HttpRequest::getLocationUri() const { return _locationUri; }
 str			HttpRequest::getQueryString() const { return _queryString; }
 str			HttpRequest::getPathInfo() const { return _pathInfo; }
-bool		HttpRequest::getRedirect() const { return _redirect; }
+str			HttpRequest::getRedirect() const { return _redirect; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }
