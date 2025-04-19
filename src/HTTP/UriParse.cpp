@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   UriParse.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/24 13:12:09 by erigonza          #+#    #+#             */
+/*   Updated: 2025/04/19 13:15:49 by erigonza         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
@@ -38,7 +49,11 @@ str	HttpRequest::addPathInfo(str afterSrc) {
 	return "";
 }
 
+<<<<<<< HEAD
 bool	HttpRequest::saveUri() {
+=======
+void	HttpRequest::parseResource() {
+>>>>>>> 69a27bb ([cgiParser done] correction)
 	str				afterSrc;
 	size_t			breakPoint = _resource.find('?');
 
@@ -48,12 +63,15 @@ bool	HttpRequest::saveUri() {
 		afterSrc = _resource.substr(breakPoint);
 		_resource = _resource.substr(0, breakPoint);
 	}
-	if (!_location->getCgiEnable() || _resource.find('.') == str::npos || !checkValidCgi())
-		return false;
-	if (afterSrc.empty())
-		return true;
+	if (!_location->getCgiEnable() || _resource.find('.') == str::npos || !checkValidCgi() || afterSrc.empty())
+		return ;
 	str		tmp = addPathInfo(afterSrc);
 	if (!tmp.empty())
+<<<<<<< HEAD
 		_queryString = tmp.substr(1);
 	return true;
+=======
+		_queryString = tmp.substr(1);
+	return ;
+>>>>>>> 69a27bb ([cgiParser done] correction)
 }
