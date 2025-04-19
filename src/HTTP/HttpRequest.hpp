@@ -37,11 +37,11 @@ class HttpRequest : public AHttp {
 		str			_redirect;
 		bool		_autoIndex:
 
-		void	parse();
-		void	checkHeaderMRP(const str &line);
+		void		parse();
+		void		checkHeaderMRP(const str &line);
 		const str	saveHeader(const str &request);
-		bool 	checkResource(Server const &server);
-    bool  appendPath(std::string &tmpPath, std::string const &uri);
+		bool		checkResource(Server const &server);
+		bool		appendPath(std::string &tmpPath, std::string const &uri);
 
 
 	public:
