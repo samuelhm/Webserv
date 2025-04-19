@@ -35,6 +35,7 @@ class HttpRequest : public AHttp {
 		str			_pathInfo;
 		bool		_headerTooLarge; // Para cabeceras mayores a LIMIT_HEADER_SIZE // Se podria mover a AHttp?
 		str			_redirect;
+		bool		_autoIndex:
 
 		void	parse();
 		void	checkHeaderMRP(const str &line);

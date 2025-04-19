@@ -15,7 +15,7 @@
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_isValidCgi(false), _headerTooLarge(false), _redirect("")
+		_isValidCgi(false), _headerTooLarge(false), _redirect(""), autoIndex(false)
 {
 	_location = NULL;
 
@@ -28,11 +28,34 @@ HttpRequest::HttpRequest(str request, Server *server)
 	try {
 		checkHeaderMRP(line);
 		_location = findLocation(server);
+		if (!_location)
+			return ;
+		_resource = _uri.substr(_uri.find(_location->getUrlPath()) + 1);
+		_localPathResource.append(server->getRoot());
+		_localPathResource.append(_location->getRoot());
+		_localPathResource.append(_resource);
+		if (Utils::isDirectory(_localPathResource())) {
+			if (_uri.at(_uri.length() - 1) != '/') {
+				_redirect = _uri.append('/');
+				return ;
+			}
+			if (!_location->getIndex().empty()) {
+				_resource = _location->getIndex();
+				_localPathResource.append(_resource);
+			}
+			else if (_location->getAutoindex())
+				_autoIndex = true;
+			else {
+				_location = NULL; //para devolver 404
+				return ;
+			}
+		}
 		if(!checkAllowMethod())
 			return ;
 		if (locationHasRedirection(_location)) {
 			_redirect = _location->getRedirect();
-			return;
+			_redirect.append(_resource);
+			return ;
 		}
 		_body = saveHeader(request.substr(end));
 	} catch(const badHeaderException &e) {
