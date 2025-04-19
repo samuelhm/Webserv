@@ -79,7 +79,7 @@ bool isRegularFile(const char* path) {
 
 bool	HttpRequest::justABar(Server* server) {
 	_locationUri = "/";
-	_location = findLocation(server, _locationUri);
+	_location = findLocation(server);
 	if (!_location)
 		return false;
 	_localPathResource = server->getRoot();
@@ -108,7 +108,7 @@ strVecIt	HttpRequest::findFile(Server* server, strVecIt it, strVecIt end) {
 
 	for (; it != end; it++) {
 		_locationUri.append("/" + (*it));
-		_location = findLocation(server, _locationUri);
+		_location = findLocation(server);
 		if (!_location)
 			continue ;
 		tmpSrcPath = server->getRoot();
