@@ -6,14 +6,14 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 17:59:04 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/19 12:59:52 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "../ConfigFile/Server.hpp"
 #include "AHttp.hpp"
+#include "../ConfigFile/Server.hpp"
 
 class Server;
 class Location;
@@ -49,15 +49,16 @@ class HttpRequest : public AHttp {
 		Location*	findLocation(Server* Server, const str &uri);
 
 		bool		checkAllowMethod();
-		// void		saveUri(Server *server);
 		void		checkIsValidCgi();
 		bool		envPath(Server* server);
 
-		bool		saveUri(strVecIt it, strVecIt end, Server* server);
-		bool		checkValidCgi(str tmp, Location *loc);
+		bool		saveUri();
+		bool		checkValidCgi();
 		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
-		void		addPathInfo(strVecIt it, strVecIt end);
+		str			addPathInfo(str afterSrc);
 		void		autoIndex(Location *loc);
+
+		bool		isRegularFile(Server* server);
 
 
 		//Getters

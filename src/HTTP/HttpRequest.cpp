@@ -6,15 +6,12 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 10:53:51 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/19 13:00:34 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
-#include <string>
-#include <exception>
-#include <iostream>
-#include <fstream>
+#include <sys/stat.h>
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
@@ -98,18 +95,6 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	//_queryString
 }
 
-// bool HttpRequest::checkResource(Server const &server) {
-//   _resourceExists = false;
-//   if (!_location)
-//     return false;
-//   str root = _location->getRoot();
-//   if (root.empty())
-//     root = server.getRoot();
-//   std::ifstream resource((root + _resource).c_str());
-//   _resourceExists = resource.good();
-//   return resource;
-// }
-
 Location*	HttpRequest::findLocation(Server* Server) {
 	Logger::log(str("Looking for Location: ") + _uri, INFO);
 	std::vector<Location*> locations = Server->getLocations();
@@ -168,9 +153,23 @@ bool	HttpRequest::envPath(Server* server) {
 	strVec		locationUris = Utils::split(_uri, '/');
 	strVecIt	it;
 
-	if (!saveUri(locationUris.begin(), locationUris.end(), server))
+	if (!saveUri())
 		return false;
+	isRegularFile(server);
 	return true;
+}
+
+bool HttpRequest::isRegularFile(Server* server) {
+	str				tmp;
+	
+	tmp = server->getRoot();
+	if (!_location->getRoot().empty())
+		tmp.append(_location->getRoot());
+	const char*		path = (tmp.append(_resource)).c_str();
+    struct stat path_stat;
+    if (stat(path, &path_stat) == 0)
+        return S_ISREG(path_stat.st_mode);
+    return false;
 }
 
 HttpRequest::~HttpRequest() {}
