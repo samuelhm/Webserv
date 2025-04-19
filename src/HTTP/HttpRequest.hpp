@@ -33,15 +33,18 @@ class HttpRequest : public AHttp {
 		str			_locationUri;
 		str			_queryString;
 		str			_pathInfo;
-		bool		_headerTooLarge; // Para cabeceras mayores a LIMIT_HEADER_SIZE // Se podria mover a AHttp?
 		str			_redirect;
-		bool		_autoIndex:
+		str			_autoIndex;
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);
 		const str	saveHeader(const str &request);
 		bool		checkResource(Server const &server);
 		bool		appendPath(std::string &tmpPath, std::string const &uri);
+		void		parseResource();
+		bool		checkValidCgi();
+		str			addPathInfo(str afterSrc);
+		bool		checkAllowMethod();
 
 
 	public:
@@ -49,25 +52,9 @@ class HttpRequest : public AHttp {
 		~HttpRequest();
 		Location	*findLocation(Server* Server);
 		Location*	findLocation(Server* Server, const str &uri);
-
-		bool		checkAllowMethod();
-		void		checkIsValidCgi();
-
-		void		parseResource();
-		bool		checkValidCgi();
-		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
-		str			addPathInfo(str afterSrc);
 		void		autoIndex(Location *loc);
-
 		bool		isRegularFile(str fullResource);
-		bool		saveUri(strVecIt it, strVecIt end, Server* server);
-		bool		asignBoolsCgi(str tmp, const strVec vec);
-		void		saveScriptNameAndQueryString(strVecIt it, strVecIt end);
-		void		addPathInfo(strVecIt it, strVecIt end);
-		bool		justABar(Server* server);
-		strVecIt	findFile(Server* server, strVecIt it, strVecIt end);
 		bool		locationHasRedirection(const Location *loc);
-
 
 		//Getters
 		RequestType	getType() const;
@@ -96,6 +83,7 @@ class HttpRequest : public AHttp {
 		void		setIsValidCgi(bool isValidCgi);
 		void		setLocation(Location *location);
 		void		setVarCgi(str varCgi);
+
 		class badHeaderException : public std::exception
 		{
 			private:

@@ -49,11 +49,7 @@ str	HttpRequest::addPathInfo(str afterSrc) {
 	return "";
 }
 
-<<<<<<< HEAD
-bool	HttpRequest::saveUri() {
-=======
 void	HttpRequest::parseResource() {
->>>>>>> 69a27bb ([cgiParser done] correction)
 	str				afterSrc;
 	size_t			breakPoint = _resource.find('?');
 
@@ -67,11 +63,6 @@ void	HttpRequest::parseResource() {
 		return ;
 	str		tmp = addPathInfo(afterSrc);
 	if (!tmp.empty())
-<<<<<<< HEAD
-		_queryString = tmp.substr(1);
-	return true;
-=======
 		_queryString = tmp.substr(1);
 	return ;
->>>>>>> 69a27bb ([cgiParser done] correction)
 }

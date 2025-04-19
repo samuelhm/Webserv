@@ -15,7 +15,7 @@
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_isValidCgi(false), _headerTooLarge(false), _redirect(""), autoIndex(false)
+		_isValidCgi(false), _redirect(""), _autoIndex("")
 {
 	_location = NULL;
 
@@ -34,9 +34,9 @@ HttpRequest::HttpRequest(str request, Server *server)
 		_localPathResource.append(server->getRoot());
 		_localPathResource.append(_location->getRoot());
 		_localPathResource.append(_resource);
-		if (Utils::isDirectory(_localPathResource())) {
+		if (Utils::isDirectory(_localPathResource)) {
 			if (_uri.at(_uri.length() - 1) != '/') {
-				_redirect = _uri.append('/');
+				_redirect = _uri.append("/");
 				return ;
 			}
 			if (!_location->getIndex().empty()) {
@@ -217,7 +217,6 @@ bool		HttpRequest::getResourceExists() const { return _resourceExists; }
 bool		HttpRequest::getValidMethod() const { return _validMethod; }
 bool		HttpRequest::getIsCgi() const { return _isCgi; }
 bool		HttpRequest::getIsValidCgi() const { return _isValidCgi; }
-bool		HttpRequest::getHeaderTooLarge() const { return _headerTooLarge; }
 Location*	HttpRequest::getLocation() const { return _location; }
 str			HttpRequest::getReceivedMethod() const { return _receivedMethod; }
 str			HttpRequest::getResource() const { return _resource; }
