@@ -83,32 +83,53 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 		throw badHeaderException("Bad Protocol version");
 }
 
-Location*	HttpRequest::findLocation(Server* Server) {
-	Logger::log(str("Looking for Location: ") + _uri, INFO);
-	std::vector<Location*> locations = Server->getLocations();
-	for (std::size_t i = 0 ; i < locations.size(); i++) {
-		Logger::log(str("Comparando Location: ") + _locationUri + "con: " + locations[i]->getUrlPath());
-		if (_locationUri == locations[i]->getUrlPath()) {
-			Logger::log("Location Encontrada", USER);
-			return locations[i];
-		}
-	}
-	Logger::log(str("No se encontro location para este recurso: ") + _uri + _resource, USER);
-	return NULL;
+bool HttpRequest::appendPath(std::string &tmpPath, std::string const &uri)
+{
+  if (tmpPath.size() == uri.size())
+    return false;
+  if (tmpPath.empty()) {
+    tmpPath.append("/");
+    return true;
+  }
+
+  size_t end = uri.find('/', tmpPath.size());
+  if (end == std::string::npos)
+    end = uri.size();
+  else
+    end -= tmpPath.size();
+  tmpPath.append(uri, tmpPath.size(), end);
+
+  return true;
 }
 
-Location*	HttpRequest::findLocation(Server* Server, const str &uri) {
-	Logger::log(str("Looking for Location: ") + uri, INFO);
-	std::vector<Location*> locations = Server->getLocations();
-	for (std::size_t i = 0 ; i < locations.size(); i++) {
-		Logger::log(str("Comparando Location: ") + uri + "con: " + locations[i]->getUrlPath());
-		if (uri == locations[i]->getUrlPath()) {
-			Logger::log("Location Encontrada", USER);
-			return locations[i];
-		}
-	}
-	Logger::log(str("No se encontro location para este recurso: ") + _uri + _resource, USER);
-	return NULL;
+Location*	HttpRequest::findLocation(Server* Server)
+{
+  Logger::log(str("Looking for Location: ") + _uri, INFO);
+  std::vector<Location*> locations = Server->getLocations();
+
+  std::string locationPath;
+  Location* location = NULL;
+  for (std::size_t i = 0 ; i < locations.size(); i++) {
+    locationPath = locations[i]->getUrlPath();
+    Logger::log(str("Comparando Location: ") + _uri + " con: " + locationPath);
+
+    bool found = false;
+    std::string tmpPath;
+    while (appendPath(tmpPath, _uri)) {
+      if (locationPath == tmpPath) {
+        found = true;
+        break;
+      }
+    }
+    if ((found && location == NULL) || (found && locationPath.size() > location->getUrlPath().size()))
+      location = locations[i];
+  }
+
+  if (location != NULL)
+    Logger::log("Location Encontrada: " + location->getUrlPath(), USER);
+  else
+    Logger::log("No se encontro location para este recurso: " + _uri, USER);
+  return location;
 }
 
 bool	HttpRequest::checkAllowMethod()

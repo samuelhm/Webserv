@@ -36,10 +36,11 @@ class HttpRequest : public AHttp {
 		bool		_headerTooLarge; // Para cabeceras mayores a LIMIT_HEADER_SIZE // Se podria mover a AHttp?
 		bool		_redirect;
 
-		void		parse();
-		void		checkHeaderMRP(const str &line);
+		void	parse();
+		void	checkHeaderMRP(const str &line);
 		const str	saveHeader(const str &request);
-		bool 		checkResource(Server const &server);
+		bool 	checkResource(Server const &server);
+    bool  appendPath(std::string &tmpPath, std::string const &uri);
 
 
 	public:
