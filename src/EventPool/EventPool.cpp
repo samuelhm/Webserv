@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 23:17:42 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/20 16:09:48 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ EventPool::EventPool(std::vector<Server *> &Servers) {
   struct epoll_event ev;
   for (std::vector<Server *>::iterator it = Servers.begin();
        it != Servers.end(); ++it) {
-    ev.events = EPOLLIN;
+    ev.events = EPOLLIN | EPOLLET;
     struct eventStructTmp *serverStruct =
         createEventStruct((*it)->getServerFd(), *it, true);
     _structs.push_back(serverStruct);
@@ -59,35 +59,26 @@ bool EventPool::headerTooLarge(str const &request) {
 
 str EventPool::getRequest(int socketFd) {
   char buffer[4096];
-  std::memset(buffer, 0, 4096);
   size_t total_bytes = 0;
   ssize_t bytes_read = 0;
 
-  struct pollfd pfd;
-  pfd.fd = socketFd;
-  pfd.events = POLLIN;
-
-  poll(&pfd, 1, 0);
   str request;
-  while (pfd.revents & POLLIN)
+  while (42)
   {
-    bytes_read = recv(socketFd, buffer, sizeof(buffer), MSG_DONTWAIT);
-    if (bytes_read == -1)
-      throw socketReadException(socketFd);
-    total_bytes += bytes_read;
-    request.append(buffer, bytes_read);
-    std::memset(buffer, 0, bytes_read);
-		if (request.size() >= LIMIT_HEADER_SIZE && headerTooLarge(request))
-			throw headerTooLargeException(socketFd);
-    poll(&pfd, 1, 0);
-    if (pfd.revents & (POLLHUP | POLLERR))
-      break;
+	  bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
+	  if (bytes_read > 0)
+	  {
+	  	request.append(buffer, bytes_read);
+	  	total_bytes += bytes_read;
+	  }
+	  else if (bytes_read == 0)
+	  	throw disconnectedException(socketFd);
+	  else
+	  	break;
   }
-
   if (total_bytes == 0)
     throw disconnectedException(socketFd);
-
-  Logger::log(str("HTTP Request Received.") + request, INFO);
+  Logger::log(str("HTTP Request Received.") + request, USER);
   return (request);
 }
 
@@ -144,7 +135,7 @@ void EventPool::acceptConnection(int fdTmp, Server *server) {
                   server->getServerName() + " at port: " + server->getPort(),
               USER);
   struct epoll_event client_ev;
-  client_ev.events = EPOLLIN;
+  client_ev.events = EPOLLIN | EPOLLET;
   struct eventStructTmp *clientStruct =
       createEventStruct(client_fd, server, false);
   client_ev.data.ptr = static_cast<void *>(clientStruct);
