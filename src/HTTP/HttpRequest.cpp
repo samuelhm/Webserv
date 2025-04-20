@@ -48,11 +48,13 @@ HttpRequest::HttpRequest(str request, Server *server)
 			if (!_location->getIndex().empty()) {
 				_resource.append(_location->getIndex());
 				_resourceExists = true;
+				if (_localPathResource[_localPathResource.size() -1] != '/')
+					_localPathResource.append("/");
 				_localPathResource.append(_resource);
 			}
 			else if (_location->getAutoindex())
 				_autoIndex = true;
-			else {
+			else if (_location->getRedirect().empty()){
 				_location = NULL; //para devolver 404
 				return ;
 			}

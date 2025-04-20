@@ -20,7 +20,7 @@
 	location:/redirect
 	[
 		allowed_methods:GET
-		redirect:/images/
+		redirect:/images
 		redirect_code:301
 	]
 	location:/images/perros
