@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 11:28:15 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/20 13:46:23 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,8 +168,26 @@ void  HttpResponse::staticFileExec(const HttpRequest &request, Server *server)
   }
 }
 
+void  HttpResponse::redirecResponse(const HttpRequest &request, Server* server)
+{
+	_status = 301;
+	std::string statusSTR = request.getLocation()->getRedirectCode();
+	if (statusSTR.empty())
+		statusSTR = Utils::intToStr(_status);
+	_line0.append("HTTP/1.1 ");
+	_line0.append(statusSTR + " ");
+	_line0.append(Utils::_statusStr[_status] + "\r\n");
+	_header["Location"] = "http://" + server->getHostName() + ":" + server->getPort() + request.getRedirect() + "\r\n";
+	_header["Content-Length"] = Utils::intToStr(_body.length());
+	_header["Connection"] = "close";
+	_body.clear();
+}
+
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
-	if (!request.getIsCgi())
+	if (!request.getRedirect().empty()) {
+		redirecResponse(request, server);
+	}
+	else if (!request.getIsCgi())
 		staticFileExec(request, server);
 	else {
 		cgiExec(request, server);

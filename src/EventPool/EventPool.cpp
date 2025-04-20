@@ -272,22 +272,22 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 
 HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 {
-	if (request.getBadRequest())
-		return Utils::codeResponse(400, server);
+  if (request.getBadRequest())
+    return Utils::codeResponse(400, server);
   else if (!request.getRedirect().empty())
-    throw std::exception();
+    return HttpResponse(request, server);
   else if (!request.getLocation())
     return Utils::codeResponse(404, server);
-	else if (!request.getValidMethod())
-		return Utils::codeResponse(405, server);
-	else if (!request.getIsCgi() && (request.getReceivedMethod() == "GET" && !request.getResourceExists() && !request.getLocation()->getAutoindex()))
-		return Utils::codeResponse(404, server);
+  else if (!request.getValidMethod())
+    return Utils::codeResponse(405, server);
+  else if (!request.getIsCgi() && (request.getReceivedMethod() == "GET" && !request.getResourceExists() && !request.getLocation()->getAutoindex()))
+    return Utils::codeResponse(404, server);
   else if (request.getIsCgi() && !request.getResourceExists())
     return Utils::codeResponse(404, server);
-	else if (request.getLocation()->getAutoindex())
+  else if (request.getLocation()->getAutoindex())
     throw std::exception();
-	else
-		return HttpResponse(request, server);
+  else
+    return HttpResponse(request, server);
 }
 
 EventPool::disconnectedException::disconnectedException(int fd) {

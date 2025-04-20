@@ -38,6 +38,7 @@ class HttpResponse : public AHttp {
 		void					staticFilePut(const HttpRequest &request, Server* server);
 		void					staticFileOptions(const HttpRequest &request, Server* server);
 		void					staticFileDelete(const HttpRequest &request, Server* server);
+		void					redirecResponse(const HttpRequest &request, Server* server);
 
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);

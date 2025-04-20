@@ -12,6 +12,7 @@
 
 #include "Location.hpp"
 #include "ParseLocation.hpp"
+#include <cctype>
 #include <cstdlib>
 
 Location::Location(const str &serverName, const str &path)
@@ -87,7 +88,13 @@ void	Location::setCgiExtension(str cgiExtension) {
 	this->_cgiExtension = result;
 }
 void	Location::setCgiPath(str cgiPath) {this->_cgiPath = cgiPath;}
-void	Location::setRedirectCode(const str &code) {this->_redirect_code = code; }
+void	Location::setRedirectCode(const str &code) {
+	if (code.empty() || code.size() != 3 || code.at(0) != '3' || code.at(1) != '0')
+		return;
+	if (!std::isdigit(code.at(2)))
+		return;
+	this->_redirect_code = code;
+}
 void	Location::setBodySize(const str &size){
 			this->_bodySize = std::atoi(size.c_str());
 			if (_bodySize == 0)

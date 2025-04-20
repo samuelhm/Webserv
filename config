@@ -17,6 +17,12 @@
 		root:/images
 		upload_enable:on
 	]
+	location:/redirect
+	[
+		allowed_methods:GET
+		redirect:/images/
+		redirect_code:301
+	]
 	location:/images/perros
 	[
 		allowed_methods:GET POST PUT DELETE OPTIONS
