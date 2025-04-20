@@ -247,8 +247,6 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 		str reqStr = getRequest(fd);
 		HttpRequest request(reqStr, eventStrct->server);
 		Utils::printRequest(request);
-    safeCloseAndDelete(fd, eventStrct);
-    return ;
 		HttpResponse response = stablishResponse(request, eventStrct->server);
 		sendResponse(response, fd, response.getHeader());
 	} catch(const disconnectedException& e) {
@@ -276,16 +274,18 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 {
 	if (request.getBadRequest())
 		return Utils::codeResponse(400, server);
+  else if (!request.getRedirect().empty())
+    throw std::exception();
+  else if (!request.getLocation())
+    return Utils::codeResponse(404, server);
 	else if (!request.getValidMethod())
 		return Utils::codeResponse(405, server);
-	else if (!request.getResourceExists() || request.getLocation() == NULL)
+	else if (!request.getIsCgi() && (request.getReceivedMethod() == "GET" && !request.getResourceExists() && !request.getLocation()->getAutoindex()))
 		return Utils::codeResponse(404, server);
-	else if (request.getIsCgi())
-		return Utils::codeResponse(500, server);
-	else if (!request.getRedirect().empty())
-		throw std::exception();
-	else if (request.getLocation() == NULL || (request.getLocation()->getIndex().empty() && request.getLocation()->getAutoindex() == false && request.getResource().empty()))
-		return Utils::codeResponse(403, server);
+  else if (request.getIsCgi() && !request.getResourceExists())
+    return Utils::codeResponse(404, server);
+	else if (request.getLocation()->getAutoindex())
+    throw std::exception();
 	else
 		return HttpResponse(request, server);
 }

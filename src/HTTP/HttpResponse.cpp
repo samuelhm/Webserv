@@ -100,7 +100,7 @@ void HttpResponse::staticFilePut(const HttpRequest &request, Server* server)
 	out << body;
 	out.close();
 	_line0 = "HTTP/1.1 " + Utils::intToStr(_status) + " " + Utils::_statusStr[_status] + "\r\n";
-	_body = "<html><body><h1>File " + (exist ? str("actualizado") : str("Created")) + " correctly.</h1></body></html>";
+	_body = "<html><body><h1>File " + (exist ? str("Updated") : str("Created")) + " correctly.</h1></body></html>";
 	_header["Content-Type"] = "text/html\r\n";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 }
@@ -169,10 +169,12 @@ void  HttpResponse::staticFileExec(const HttpRequest &request, Server *server)
 }
 
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
-	if (request.getIsCgi())
-		cgiExec(request, server);
-	else
+	if (!request.getIsCgi())
 		staticFileExec(request, server);
+	else {
+		cgiExec(request, server);
+		Logger::log(_cgiOutput, USER);
+	}
 }
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) {

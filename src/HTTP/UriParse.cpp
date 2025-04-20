@@ -33,16 +33,6 @@ str	HttpRequest::addPathInfo(str afterSrc) {
 
 void	HttpRequest::parseResource() {
 	str				afterSrc;
-	// size_t			breakPoint = _resource.find('?');
-
-	// if (breakPoint != str::npos)
-	// 	breakPoint = (_resource.substr(0, breakPoint)).find("/");
-	// if (breakPoint == str::npos)
-	// 	breakPoint = _resource.find('/');
-	// if (breakPoint != str::npos) {
-	// 	afterSrc = _resource.substr(breakPoint);
-	// 	_resource = _resource.substr(0, breakPoint);
-	// }
 	strVec		extensions = _location->getCgiExtension();
 	size_t		extStart = str::npos;
 	str			tmp;

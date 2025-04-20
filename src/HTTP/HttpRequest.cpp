@@ -31,19 +31,22 @@ HttpRequest::HttpRequest(str request, Server *server)
 		if (!_location)
 			return ;
 		size_t length = _location->getUrlPath().size();
-		if (length != 1)
-			length++;
+		// if (length != 1)
+		// 	length++;
 		_resource = _uri.substr(length);
 		_localPathResource.append(server->getRoot());
 		_localPathResource.append(_location->getRoot());
-		_localPathResource.append("/" + _resource);
+		if (!_resource.empty() && _resource.at(0) != '/')
+			_localPathResource.append("/" + _resource);
+		else
+			_localPathResource.append(_resource);
 		if (Utils::isDirectory(_localPathResource)) {
 			if (_uri.at(_uri.length() - 1) != '/') {
 				_redirect = _uri.append("/");
 				return ;
 			}
 			if (!_location->getIndex().empty()) {
-				_resource.append("/" + _location->getIndex());
+				_resource.append(_location->getIndex());
 				_resourceExists = true;
 				_localPathResource.append(_resource);
 			}

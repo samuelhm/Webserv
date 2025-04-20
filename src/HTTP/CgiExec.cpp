@@ -27,7 +27,7 @@ void HttpResponse::cgiFree() {
 
 	for (char** p = _argv; *p != NULL; ++p)
 		delete[] *p;
-	delete[] _argv;	
+	delete[] _argv;
 }
 
 void HttpResponse::cgiSaveItems(const HttpRequest &request) {
@@ -40,7 +40,7 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	envp[1] = query.empty() ? NULL : strdup(query.c_str());
 	envp[2] = path.empty() ? NULL : strdup(path.c_str());
 	envp[3] = NULL;
-	
+
 	char** argv = new char*[2];
 	argv[0] = strdup(request.getLocalPathResource().c_str());
 	argv[1] = NULL;
