@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/20 16:09:48 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/20 19:51:51 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ EventPool::EventPool(std::vector<Server *> &Servers) {
        it != Servers.end(); ++it) {
     ev.events = EPOLLIN | EPOLLET;
     struct eventStructTmp *serverStruct =
-        createEventStruct((*it)->getServerFd(), *it, true);
+        createEventStruct((*it)->getServerFd(), *it, NEWCONNECTION);
     _structs.push_back(serverStruct);
     ev.data.ptr = static_cast<void *>(serverStruct);
     if (epoll_ctl(_pollFd, EPOLL_CTL_ADD, (*it)->getServerFd(), &ev) == -1) {
@@ -82,35 +82,39 @@ str EventPool::getRequest(int socketFd) {
   return (request);
 }
 
-void EventPool::sendResponse(HttpResponse &response, int fdTmp,
-                             const strMap &m) {
-  str err;
-  err.append(response._line0);
+void EventPool::saveResponse(HttpResponse &response, eventStructTmp *eventStrct) {
+  str resp;
+  resp.append(response._line0);
   strMap::iterator it;
   for (it = response.getHeader().begin(); it != response.getHeader().end();
        ++it) {
-    err.append(it->first);
-    err.append(": ");
-    err.append(it->second);
-    err.append("\r\n");
+    resp.append(it->first);
+    resp.append(": ");
+    resp.append(it->second);
+    resp.append("\r\n");
   }
-  err.append("\r\n");
-  err.append(response.getBody());
-  ssize_t error = write(fdTmp, err.c_str(), err.size());
-  if (error == -1)
-    Logger::log("Cannot Write on Socket!.", ERROR);
-  Logger::log(str("Sending resource to fd: ") + Utils::intToStr(fdTmp), USER);
-  Logger::log(str("Sending to client the header: \n") + Utils::returnMap(m),
-              INFO);
-  Logger::log(str("Sending to client the body:\n") + response.getBody(), INFO);
+  resp.append("\r\n");
+  resp.append(response.getBody());
+  eventStrct->response = resp;
+  eventStrct->offset = 0;
+  eventStrct->eventType = SENDRESPONSE;
+  struct epoll_event ev;
+	ev.events = EPOLLOUT | EPOLLET;
+	ev.data.ptr = static_cast<void*>(eventStrct);
+  if (epoll_ctl(_pollFd, EPOLL_CTL_MOD, eventStrct->client_fd, &ev) == -1) {
+		Logger::log("Failed to modify event to EPOLLOUT", ERROR);
+		safeCloseAndDelete(eventStrct->client_fd, eventStrct);
+	}
+
 }
 
 struct eventStructTmp *EventPool::createEventStruct(int fd, Server *server,
-                                                    bool serverOrClient) {
+                                                    EventType eventType) {
   struct eventStructTmp *result = new eventStructTmp;
   result->client_fd = fd;
   result->server = server;
-  result->isServer = serverOrClient;
+  result->eventType = eventType;
+  result->offset = 0;
   return result;
 }
 
@@ -137,7 +141,7 @@ void EventPool::acceptConnection(int fdTmp, Server *server) {
   struct epoll_event client_ev;
   client_ev.events = EPOLLIN | EPOLLET;
   struct eventStructTmp *clientStruct =
-      createEventStruct(client_fd, server, false);
+      createEventStruct(client_fd, server, RECIEVEREQUEST);
   client_ev.data.ptr = static_cast<void *>(clientStruct);
   Logger::log(str("Inserting client fd ") + Utils::intToStr(client_fd) +
                   " to pool event.",
@@ -156,7 +160,7 @@ bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp) {
   return false;
 }
 
-void EventPool::poolLoop(std::vector<Server *> &Servers) {
+void EventPool::poolLoop() {
   while (epollRun) {
     _nfds = epoll_wait(_pollFd, events, 1024, -1);
     if (_nfds == -1) {
@@ -170,16 +174,16 @@ void EventPool::poolLoop(std::vector<Server *> &Servers) {
       throw std::exception();
     }
     Logger::log("Worker [" + Utils::intToStr(static_cast<size_t>(getpid())) + "] tooked petition", USER); // We cant use getpid(). DELETE this line
-    processEvents(Servers);
+    processEvents();
   }
 }
 
-void EventPool::processEvents(std::vector<Server *> &Servers) {
+void EventPool::processEvents() {
   for (int i = 0; i < _nfds; ++i) {
     int fd;
     eventStructTmp *eventStrct =
         static_cast<eventStructTmp *>(events[i].data.ptr);
-    if (eventStrct->isServer)
+    if (eventStrct->eventType == NEWCONNECTION)
       fd = eventStrct->server->getServerFd();
     else
       fd = eventStrct->client_fd;
@@ -191,11 +195,13 @@ void EventPool::processEvents(std::vector<Server *> &Servers) {
       safeCloseAndDelete(fd, eventStrct);
       continue;
     }
-    if (isServerFd(Servers, fd)) {
+    if (eventStrct->eventType == NEWCONNECTION) {
       handleClientConnection(fd, eventStrct);
       continue;
-    } else
+    } else if (eventStrct->eventType == RECIEVEREQUEST)
       handleClientRequest(fd, eventStrct);
+    else
+      handleClientWrite(fd, eventStrct);
   }
 }
 
@@ -206,6 +212,22 @@ void EventPool::handleClientConnection(int fd, eventStructTmp *eventStrct) {
     Logger::log(e.what(), WARNING);
   } catch (const std::exception &e) {
     Logger::log(str("FATAL UNKNOWN ERROR: ") + e.what(), ERROR);
+  }
+}
+
+void EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
+{
+  ssize_t bytes_sent = send(fd, eventStruct->response.c_str() + eventStruct->offset,
+						  eventStruct->response.size() - eventStruct->offset, 0);
+  if (bytes_sent > 0) {
+  	eventStruct->offset += bytes_sent;
+  	if (eventStruct->offset >= eventStruct->response.size()) {
+  		Logger::log("Response fully sent", USER);
+  		safeCloseAndDelete(fd, eventStruct);
+  	}
+  } else {
+  	Logger::log("Send failed", ERROR);
+  	safeCloseAndDelete(fd, eventStruct);
   }
 }
 
@@ -238,9 +260,9 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 	try {
 		str reqStr = getRequest(fd);
 		HttpRequest request(reqStr, eventStrct->server);
-		Utils::printRequest(request);
 		HttpResponse response = stablishResponse(request, eventStrct->server);
-		sendResponse(response, fd, response.getHeader());
+		saveResponse(response, eventStrct);
+    return ;
 	} catch(const disconnectedException& e) {
 		Logger::log(str("Disconnection occur: ") + e.what(), WARNING);
 	} catch(const socketReadException& e) {
@@ -254,7 +276,7 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 	if (epoll_ctl(_pollFd, EPOLL_CTL_DEL, fd, NULL) == -1)
 		Logger::log("EPOLL_CTL_DEL Failed", ERROR);
-	if (!eventStruct->isServer) {
+	if (eventStruct->eventType != NEWCONNECTION) {
 		if (close(fd) == -1)
 			Logger::log(str("Failed closing FD: ") + Utils::intToStr(fd), ERROR);
 	}

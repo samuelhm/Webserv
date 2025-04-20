@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/17 15:13:34 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/20 19:49:33 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,11 @@ extern volatile sig_atomic_t epollRun;
 
 struct eventStructTmp
 {
-	Server *server;
-	int		client_fd;
-	bool	isServer;
+	Server 		*server;
+	int			client_fd;
+	EventType	eventType;
+	str			response;
+	size_t		offset;
 };
 
 class EventPool {
@@ -42,12 +44,13 @@ class EventPool {
 		std::vector<struct eventStructTmp *> _structs;
 
 		bool					isServerFd(std::vector<Server *> &Servers, int fdTmp);
-		struct eventStructTmp*	createEventStruct(int fd, Server* server, bool serverOrClient);
-		void					processEvents(std::vector<Server*> &Servers);
-		void					sendResponse(HttpResponse &response, int fdTmp, const strMap& m);
+		struct eventStructTmp*	createEventStruct(int fd, Server* server, EventType eventType);
+		void					processEvents();
+		void					saveResponse(HttpResponse &response, eventStructTmp *eventStrct);
 		str						getRequest(int fdTmp);
 		void					handleClientRequest(int fd, eventStructTmp *eventStrct);
 		void					handleClientConnection(int fd, eventStructTmp *eventStrct);
+		void					handleClientWrite(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
 		bool					checkCGI(str path, Server server);
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
@@ -56,7 +59,7 @@ class EventPool {
 	public:
 		EventPool(std::vector<Server*> &Servers);
 		~EventPool();
-		void	poolLoop(std::vector<Server*> &Servers);
+		void	poolLoop();
 		void	acceptConnection(int fdTmp, Server *server);
 
 

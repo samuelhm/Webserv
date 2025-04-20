@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/19 13:02:40 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/20 19:31:52 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ int main(int ac, char **av) {
         return 1;
       }
       EventPool pool(Servers);
-      pool.poolLoop(Servers);
+      pool.poolLoop();
       Utils::foreach (Servers.begin(), Servers.end(),
                       Utils::deleteItem<Server>);
       Servers.clear();

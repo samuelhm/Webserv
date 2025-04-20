@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebSrv.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:23:53 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/14 12:06:14 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/20 19:19:17 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,3 +44,9 @@ enum OptionType
 	LOCATION
 };
 
+enum EventType
+{
+	NEWCONNECTION,
+	RECIEVEREQUEST,
+	SENDRESPONSE
+};
