@@ -138,7 +138,7 @@ const str &Server::createErrorPage(const str &error, const str &msg)
 bool	Server::locationExist(Location &loc) const
 {
 	for(size_t i = 0; i < _locations.size(); i++)
-		if (_locations[i]->getRoot() == loc.getRoot())
+		if (_locations[i]->getUrlPath() == loc.getUrlPath())
 			return true;
 	return false;
 }

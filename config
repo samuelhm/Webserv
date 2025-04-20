@@ -17,6 +17,13 @@
 		root:/images
 		upload_enable:on
 	]
+	location:/images/perros
+	[
+		allowed_methods:GET POST PUT DELETE OPTIONS
+		autoindex:on
+		root:/images
+		upload_enable:on
+	]
 	location:/cgi-bin
 	[
 		allowed_methods:GET POST
