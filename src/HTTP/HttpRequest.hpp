@@ -33,7 +33,7 @@ class HttpRequest : public AHttp {
 		str			_queryString;
 		str			_pathInfo;
 		str			_redirect;
-		str			_autoIndex;
+		bool		_autoIndex;
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);
@@ -71,6 +71,7 @@ class HttpRequest : public AHttp {
 		str			getQueryString() const;
 		str			getPathInfo() const;
 		str			getRedirect() const;
+		bool		getAutoIndex() const;
 
 		//Setters
 		void		setType(RequestType type);

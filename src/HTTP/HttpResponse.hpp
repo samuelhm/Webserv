@@ -44,5 +44,6 @@ class HttpResponse : public AHttp {
 		HttpResponse(const HttpRequest &request, Server* server);
 		HttpResponse(const HttpResponse &other);
 		HttpResponse(int errorCode, Server *server);
+		HttpResponse(const HttpRequest &request, Server* server, str (*autoIndexFunction)(const str &path));
 		~HttpResponse();
 };

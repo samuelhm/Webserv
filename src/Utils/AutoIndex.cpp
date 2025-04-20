@@ -14,6 +14,7 @@
 #include <iostream>
 #include <dirent.h>
 #include <cstring>
+
 str AutoIndex::getAutoIndex(const str &path)
 {
 	DIR* dir = opendir(path.c_str());

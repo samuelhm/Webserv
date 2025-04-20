@@ -23,7 +23,6 @@ Location::Location(const str &serverName, const str &path)
 	_methods.push_back(DELETE);
 	_methods.push_back(OPTIONS);
 	_methods.push_back(PUT);
-	_index = "index.html";
 	_uploadPath = "./" + serverName + "/";
 	_cgiPath = "/usr/bin/python3";
 	_root = "";

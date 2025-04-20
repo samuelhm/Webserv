@@ -15,7 +15,7 @@
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_redirect(""), _autoIndex("")
+		_redirect(""), _autoIndex(false)
 {
 	_location = NULL;
 
@@ -235,6 +235,7 @@ str			HttpRequest::getLocationUri() const { return _locationUri; }
 str			HttpRequest::getQueryString() const { return _queryString; }
 str			HttpRequest::getPathInfo() const { return _pathInfo; }
 str			HttpRequest::getRedirect() const { return _redirect; }
+bool		HttpRequest::getAutoIndex() const { return _autoIndex; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }

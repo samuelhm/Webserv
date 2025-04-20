@@ -103,6 +103,7 @@ void EventPool::sendResponse(HttpResponse &response, int fdTmp,
     err.append(it->second);
     err.append("\r\n");
   }
+  err.append("\r\n");
   err.append(response.getBody());
   ssize_t error = write(fdTmp, err.c_str(), err.size());
   if (error == -1)
@@ -284,10 +285,10 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
     return Utils::codeResponse(404, server);
   else if (request.getIsCgi() && !request.getResourceExists())
     return Utils::codeResponse(404, server);
-  else if (request.getLocation()->getAutoindex())
-    throw std::exception();
-  else
-    return HttpResponse(request, server);
+	else if (request.getLocation()->getAutoindex())
+    return HttpResponse(request, server, &AutoIndex::getAutoIndex);
+	else
+		return HttpResponse(request, server);
 }
 
 EventPool::disconnectedException::disconnectedException(int fd) {

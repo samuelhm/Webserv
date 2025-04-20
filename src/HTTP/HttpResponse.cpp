@@ -13,6 +13,7 @@
 #include "HttpResponse.hpp"
 #include "../Utils/Utils.hpp"
 #include <cstdlib>
+#include "../Utils/AutoIndex.hpp"
 
 HttpResponse::HttpResponse(int errorCode, Server *server) : AHttp()
 {
@@ -28,7 +29,7 @@ void  HttpResponse::staticFileGet(const HttpRequest &request, Server* server)
 		_line0.append("HTTP/1.1 ");
 		_line0.append(Utils::intToStr(_status) + " ");
 		_line0.append(Utils::_statusStr[_status] + "\r\n");
-		_header["Content-Type"] = Utils::getMimeType(filepath) + "\r\n";
+		_header["Content-Type"] = Utils::getMimeType(filepath);
 		_header["Content-Length"] = Utils::intToStr(_body.length());
 	}
 	catch (const std::exception &e) {
@@ -68,7 +69,7 @@ void HttpResponse::staticFilePost(const HttpRequest &request, Server* server)
 	_status = 201;
 	_line0 = "HTTP/1.1 201 Created\r\n";
 	_body = "<html><body><h1>File upload Success: " + request.getResource() + "</h1></body></html>";
-	_header["Content-Type"] = "text/html\r\n";
+	_header["Content-Type"] = "text/html";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 }
 
@@ -101,7 +102,7 @@ void HttpResponse::staticFilePut(const HttpRequest &request, Server* server)
 	out.close();
 	_line0 = "HTTP/1.1 " + Utils::intToStr(_status) + " " + Utils::_statusStr[_status] + "\r\n";
 	_body = "<html><body><h1>File " + (exist ? str("Updated") : str("Created")) + " correctly.</h1></body></html>";
-	_header["Content-Type"] = "text/html\r\n";
+	_header["Content-Type"] = "text/html";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 }
 
@@ -121,10 +122,10 @@ void HttpResponse::staticFileOptions(const HttpRequest &request, Server* server)
 		allowed += Utils::requestTypeToStr(methods[i]);
 	}
 	_status = 204;
-	_line0 = "HTTP/1.1 204 No Content\r\n";
-	_header["Allow"] = allowed + "\r\n";
+	_line0 = "HTTP/1.1 204 No Content";
+	_header["Allow"] = allowed;
 	_header["Content-Length"] = "0";
-	_header["Content-Type"] = "text/plain\r\n";
+	_header["Content-Type"] = "text/plain";
 	_body.clear();
 }
 
@@ -223,6 +224,21 @@ void HttpResponse::setErrorCode(int errorCode, Server* server)
 		Logger::log("Fallo al obtener página de error personalizada. Usando default.", WARNING);
 		_body = "<html><body><h1>" + Utils::intToStr(errorCode) + " " + it->second + "</h1></body></html>";
 	}
-	_header["Content-Type"] = "text/html\r\n";
+	_header["Content-Type"] = "text/html";
 	_header["Content-Length"] = Utils::intToStr(_body.length());
+}
+
+HttpResponse::HttpResponse(const HttpRequest &request, Server* server, str (*autoIndexFunction)(const str &path))
+{
+	const str directory = request.getLocalPathResource();
+	try {
+		_status = 200;
+		_line0 = "HTTP/1.1 200 OK\r\n";
+		_body = autoIndexFunction(directory);
+		_header["Content-Type"] = "text/html";
+		_header["Content-Length"] = Utils::intToStr(_body.length());
+	} catch (AutoIndex::DirectoryNotAccesible &e) {
+		Logger::log("No se puedo acceder al directorio: " + directory + " para generar Autoindex.", WARNING);
+		setErrorCode(403, server);
+	}
 }
