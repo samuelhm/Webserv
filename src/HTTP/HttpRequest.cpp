@@ -18,8 +18,6 @@ HttpRequest::HttpRequest(str request, Server *server)
 		_redirect(""), _autoIndex(false), _canAccess(true)
 {
 	_location = NULL;
-	if (request.find("/directory/nop/") != str::npos)
-		std::cout << ""; // DELETE THIS
 	str::size_type end = request.find("\r\n");
 	if (end == str::npos) {
 		Logger::log("no \\r\\n found!!!", USER);
