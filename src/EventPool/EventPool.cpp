@@ -57,29 +57,28 @@ bool EventPool::headerTooLarge(str const &request) {
 	return (end > LIMIT_HEADER_SIZE);
 }
 
-str EventPool::getRequest(int socketFd) {
+bool EventPool::getRequest(int socketFd, eventStructTmp *eventstrct) {
   char buffer[4096];
   size_t total_bytes = 0;
   ssize_t bytes_read = 0;
 
-  str request;
-  while (42)
-  {
+  while (42) {
 	  bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
-	  if (bytes_read > 0)
-	  {
-	  	request.append(buffer, bytes_read);
+	  if (bytes_read > 0) {
+	  	eventstrct->content.append(buffer, bytes_read);
 	  	total_bytes += bytes_read;
-	  }
-	  else if (bytes_read == 0)
-	  	throw disconnectedException(socketFd);
-	  else
-	  	break;
-  }
+      if (eventstrct->content.find("\r\n\r\n") == str::npos)
+        return false;
+      }
+      else if (bytes_read == 0)
+	  	  throw disconnectedException(socketFd);
+      else
+	  	  break;
+    }
   if (total_bytes == 0)
     throw disconnectedException(socketFd);
-  Logger::log(str("HTTP Request Received.") + request, USER);
-  return (request);
+  Logger::log(str("HTTP Request Received.") + eventstrct->content, USER);
+  return true;
 }
 
 void EventPool::saveResponse(HttpResponse &response, eventStructTmp *eventStrct) {
@@ -95,7 +94,7 @@ void EventPool::saveResponse(HttpResponse &response, eventStructTmp *eventStrct)
   }
   resp.append("\r\n");
   resp.append(response.getBody());
-  eventStrct->response = resp;
+  eventStrct->content = resp;
   eventStrct->offset = 0;
   eventStrct->eventType = SENDRESPONSE;
   struct epoll_event ev;
@@ -193,15 +192,15 @@ void EventPool::processEvents() {
                       " Because EPOLLERR or EPOLLHUP",
                   ERROR);
       safeCloseAndDelete(fd, eventStrct);
-      continue;
+      continue ;
     }
     if (eventStrct->eventType == NEWCONNECTION) {
       handleClientConnection(fd, eventStrct);
-      continue;
+      continue ;
     } else if (eventStrct->eventType == RECIEVEREQUEST)
       handleClientRequest(fd, eventStrct);
-    else
-      handleClientWrite(fd, eventStrct);
+    else if (!handleClientWrite(fd, eventStrct))
+        continue ;
   }
 }
 
@@ -215,21 +214,21 @@ void EventPool::handleClientConnection(int fd, eventStructTmp *eventStrct) {
   }
 }
 
-void EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
+bool EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
 {
-  Logger::log(str("Sending response: ") + eventStruct->response, INFO);
-  ssize_t bytes_sent = send(fd, eventStruct->response.c_str() + eventStruct->offset,
-						  eventStruct->response.size() - eventStruct->offset, 0);
+  Logger::log(str("Sending response: ") + eventStruct->content, INFO);
+  ssize_t bytes_sent = send(fd, eventStruct->content.c_str() + eventStruct->offset,
+						  eventStruct->content.size() - eventStruct->offset, 0);
   if (bytes_sent > 0) {
   	eventStruct->offset += bytes_sent;
-  	if (eventStruct->offset >= eventStruct->response.size()) {
+  	if (eventStruct->offset >= eventStruct->content.size()) {
   		Logger::log("Response fully sent", USER);
-  		safeCloseAndDelete(fd, eventStruct);
   	}
   } else {
-  	Logger::log("Send failed", ERROR);
-  	safeCloseAndDelete(fd, eventStruct);
+  	return false;
   }
+  safeCloseAndDelete(fd, eventStruct);
+  return true;
 }
 
 bool EventPool::checkCGI(str path, Server server) {
@@ -257,9 +256,10 @@ bool EventPool::checkCGI(str path, Server server) {
 void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
 	try {
-    str reqStr = getRequest(fd);
-    Logger::log(str("Received request: ") + reqStr, INFO);
-		HttpRequest request(reqStr, eventStrct->server);
+    if (!getRequest(fd, eventStrct))
+      return ;
+    Logger::log(str("Received request: ") + eventStrct->content, INFO);
+		HttpRequest request(eventStrct->content, eventStrct->server);
 		HttpResponse response = stablishResponse(request, eventStrct->server);
 		saveResponse(response, eventStrct);
     return ;

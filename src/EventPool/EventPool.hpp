@@ -31,7 +31,7 @@ struct eventStructTmp
 	Server 		*server;
 	int			client_fd;
 	EventType	eventType;
-	str			response;
+	str			content;
 	size_t		offset;
 };
 
@@ -47,10 +47,10 @@ class EventPool {
 		struct eventStructTmp*	createEventStruct(int fd, Server* server, EventType eventType);
 		void					processEvents();
 		void					saveResponse(HttpResponse &response, eventStructTmp *eventStrct);
-		str						getRequest(int fdTmp);
+		bool					getRequest(int socketFd, eventStructTmp *eventstrct);
 		void					handleClientRequest(int fd, eventStructTmp *eventStrct);
 		void					handleClientConnection(int fd, eventStructTmp *eventStrct);
-		void					handleClientWrite(int fd, eventStructTmp *eventStrct);
+		bool					handleClientWrite(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
 		bool					checkCGI(str path, Server server);
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
