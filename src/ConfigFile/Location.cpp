@@ -15,7 +15,7 @@
 #include <cctype>
 #include <cstdlib>
 
-Location::Location(const str &serverName, const str &path)
+Location::Location(const str &path)
   : _uploadEnable(false), _root(path), _autoIndex(false), _cgiEnable(false)
 {
 	_methods.push_back(GET);
@@ -23,7 +23,7 @@ Location::Location(const str &serverName, const str &path)
 	_methods.push_back(DELETE);
 	_methods.push_back(OPTIONS);
 	_methods.push_back(PUT);
-	_uploadPath = "./" + serverName + "/";
+	_uploadPath = "";
 	_cgiPath = "/usr/bin/python3";
 	_root = "";
 	_urlPath = path;

@@ -70,7 +70,7 @@ HttpRequest::HttpRequest(str request, Server *server)
 		_localPathResource = _localPathResource.substr(0, _localPathResource.find(_resource) + _resource.size());
 		_resourceExists = checkFileExists(_localPathResource);
 
-		_body = saveHeader(request.substr(end));
+		_body = saveHeader(request.substr(end + 2));
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
 		Logger::log(e.what(), USER);
@@ -96,7 +96,7 @@ const str HttpRequest::saveHeader(const str &request) {
     }
     if (end + 2 < request.length())
         return saveHeader(request.substr(end + 2));
-    return "";
+    return request;
 }
 
 #define DEFAULT_ERROR "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"

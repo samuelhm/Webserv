@@ -17,7 +17,7 @@
 
 class Location {
 	public:
-		Location(const str &serverName, const str &path);
+		Location(const str &path);
 		~Location();
 
 		//Getters

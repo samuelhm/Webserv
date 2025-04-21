@@ -150,7 +150,7 @@ bool parseLocationBlock(str &line, std::istringstream &ss, Server *server)
 	}
     Location *location = NULL;
     try {
-    	location = getLocation(locationBlock, server->getServerName());
+    	location = getLocation(locationBlock);
     } catch (BadSyntaxLocationBlockException const &e) {
     	Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
 		if (location != NULL)
@@ -238,7 +238,7 @@ Server*	getServer(const str &serverString)
 			continue;
 	}
 	if (server->getLocations().empty())
-		server->getLocations().push_back(new Location(server->getServerName(), "/")); //IMPORTANT ¿ Aceptamos config file sin locations ?
+		server->getLocations().push_back(new Location("/")); //IMPORTANT ¿ Aceptamos config file sin locations ?
 	return (server);
 }
 

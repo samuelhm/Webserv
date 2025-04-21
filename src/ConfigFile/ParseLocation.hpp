@@ -20,7 +20,7 @@
 void		setLocationParams(Location *location, strMap const &options);
 bool 		isValidPath(str const &path);
 str getlocationUri(str const &locationString);
-Location	*getLocation(const str &locationString, const str &serverName);
+Location	*getLocation(const str &locationString);
 RequestType strToRequest(const str &method);
 
 class BadOptionLocationException : public std::exception

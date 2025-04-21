@@ -13,7 +13,7 @@
 #include "ParseConfig.hpp"
 #include "ParseLocation.hpp"
 
-Location *getLocation(const str &locationString, const str &serverName) {
+Location *getLocation(const str &locationString) {
   std::istringstream locationBlock(locationString);
   str line;
 
@@ -38,7 +38,7 @@ Location *getLocation(const str &locationString, const str &serverName) {
     else { throw BadSyntaxLocationBlockException("Failed to insert in key: " + key + " With Value: " + value + "."); }
   }
 
-  Location* location = new Location(serverName, location_path);
+  Location* location = new Location(location_path);
   try {
     setLocationParams(location, options);
   } catch (BadOptionLocationException const &e) {
