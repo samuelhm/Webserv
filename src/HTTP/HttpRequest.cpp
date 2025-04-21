@@ -86,6 +86,8 @@ const str HttpRequest::saveHeader(const str &request) {
     if (end == str::npos)
 		throw badHeaderException("No \\r\\n found at header");
     str line = request.substr(0, end);
+	if (line.empty())
+        return request.substr(end + 2);
     str::size_type separator = line.find(": ");
     if (separator != str::npos) {
         str key = line.substr(0, separator);
@@ -94,7 +96,7 @@ const str HttpRequest::saveHeader(const str &request) {
     }
     if (end + 2 < request.length())
         return saveHeader(request.substr(end + 2));
-    return request;
+    return "";
 }
 
 #define DEFAULT_ERROR "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"
