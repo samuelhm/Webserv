@@ -217,6 +217,7 @@ void EventPool::handleClientConnection(int fd, eventStructTmp *eventStrct) {
 
 void EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
 {
+  Logger::log(str("Sending response: ") + eventStruct->response, INFO);
   ssize_t bytes_sent = send(fd, eventStruct->response.c_str() + eventStruct->offset,
 						  eventStruct->response.size() - eventStruct->offset, 0);
   if (bytes_sent > 0) {
@@ -256,7 +257,8 @@ bool EventPool::checkCGI(str path, Server server) {
 void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
 	try {
-		str reqStr = getRequest(fd);
+    str reqStr = getRequest(fd);
+    Logger::log(str("Received request: ") + reqStr, INFO);
 		HttpRequest request(reqStr, eventStrct->server);
 		HttpResponse response = stablishResponse(request, eventStrct->server);
 		saveResponse(response, eventStrct);
@@ -288,6 +290,8 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
     return Utils::codeResponse(400, server);
   else if (!request.getRedirect().empty())
     return HttpResponse(request, server);
+  else if(!request.getCanAccess())
+    return Utils::codeResponse(403, server);
   else if (!request.getLocation())
     return Utils::codeResponse(404, server);
   else if (!request.getValidMethod())

@@ -30,7 +30,10 @@ enum	RequestType
 	POST,
 	DELETE,
 	OPTIONS,
-	PUT
+	PUT,
+	HEAD,
+	TRACE,
+	CONNECT
 };
 
 enum OptionType

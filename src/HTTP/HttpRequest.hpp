@@ -34,6 +34,7 @@ class HttpRequest : public AHttp {
 		str			_pathInfo;
 		str			_redirect;
 		bool		_autoIndex;
+		bool		_canAccess;
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);
@@ -72,6 +73,7 @@ class HttpRequest : public AHttp {
 		str			getPathInfo() const;
 		str			getRedirect() const;
 		bool		getAutoIndex() const;
+		bool		getCanAccess() const;
 
 		//Setters
 		void		setType(RequestType type);
@@ -82,7 +84,7 @@ class HttpRequest : public AHttp {
 		void		setIsValidCgi(bool isValidCgi);
 		void		setLocation(Location *location);
 		void		setVarCgi(str varCgi);
-		
+
 
 		class badHeaderException : public std::exception
 		{

@@ -15,7 +15,7 @@
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_redirect(""), _autoIndex(false)
+		_redirect(""), _autoIndex(false), _canAccess(true)
 {
 	_location = NULL;
 
@@ -55,7 +55,7 @@ HttpRequest::HttpRequest(str request, Server *server)
 			else if (_location->getAutoindex())
 				_autoIndex = true;
 			else if (_location->getRedirect().empty()){
-				_location = NULL; //para devolver 404
+				_canAccess = false;
 				return ;
 			}
 		}
@@ -115,6 +115,9 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 	else if (method == "OPTIONS") _type = OPTIONS;
 	else if (method == "DELETE") _type = DELETE;
 	else if (method == "PUT") _type = PUT;
+	else if (method == "HEAD") _type = HEAD;
+	else if (method == "TRACE") _type = TRACE;
+	else if (method == "CONNECT") _type = CONNECT;
 	else
 		throw badHeaderException("Bad Method.");
 	if (line.at(++end) != '/') // IMPORTANT probar si hay mas espacios
@@ -155,8 +158,6 @@ Location*	HttpRequest::findLocation(Server* Server)
   Location* location = NULL;
   for (std::size_t i = 0 ; i < locations.size(); i++) {
     locationPath = locations[i]->getUrlPath();
-    Logger::log(str("Comparando Location: ") + _uri + " con: " + locationPath);
-
     bool found = false;
     std::string tmpPath;
     while (appendPath(tmpPath, _uri)) {
@@ -240,6 +241,7 @@ str			HttpRequest::getQueryString() const { return _queryString; }
 str			HttpRequest::getPathInfo() const { return _pathInfo; }
 str			HttpRequest::getRedirect() const { return _redirect; }
 bool		HttpRequest::getAutoIndex() const { return _autoIndex; }
+bool		HttpRequest::getCanAccess() const { return _canAccess; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }
