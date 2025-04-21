@@ -28,6 +28,7 @@ class HttpResponse : public AHttp {
 		char				**_envp;
 		char				**_argv;
 		str					_cgiOutput;
+		bool				_cgiSaveErr;
 		void					setErrorCode(int ErrorCode, Server* server);
 		void					cgiExec(const HttpRequest &request, Server *server);
 		void					cgiSaveItems(const HttpRequest &request);
@@ -39,6 +40,9 @@ class HttpResponse : public AHttp {
 		void					staticFileOptions(const HttpRequest &request, Server* server);
 		void					staticFileDelete(const HttpRequest &request, Server* server);
 		void					redirecResponse(const HttpRequest &request, Server* server);
+		str						saveCgiHeader(const str cgiOutput);
+		void					replaceNewlines();
+
 
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);

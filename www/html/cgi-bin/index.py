@@ -9,7 +9,7 @@ params = cgi.FieldStorage()
 nombre = params.getfirst("nombre", "Mundo")
 nombre = html.escape(nombre)  # Sanitiza para evitar inyección de HTML
 
-print("Content-Type: text/html\n")
+print("Content-Type: text/html")
 print(f"""
 <!DOCTYPE html>
 <html lang="es">

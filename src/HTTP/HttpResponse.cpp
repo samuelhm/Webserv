@@ -185,6 +185,7 @@ void  HttpResponse::redirecResponse(const HttpRequest &request, Server* server)
 }
 
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
+	_cgiSaveErr = false;
 	if (!request.getRedirect().empty()) {
 		redirecResponse(request, server);
 	}

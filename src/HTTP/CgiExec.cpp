@@ -48,6 +48,35 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	_argv = argv;
 }
 
+str	HttpResponse::saveCgiHeader(const str	cgiOutput) {
+	size_t end = cgiOutput.find("\r\n");
+
+    if (end == str::npos) {
+		_cgiSaveErr = true;
+		return "";
+	}
+    str line = cgiOutput.substr(0, end);
+	if (line.empty())
+        return cgiOutput.substr(end + 2);
+    size_t separator = line.find(": ");
+    if (separator != str::npos) {
+        str key = line.substr(0, separator);
+        str value = line.substr(separator + 2);
+        _header[key] = value;
+    }
+	if (end + 2 < cgiOutput.length())
+		return saveCgiHeader(cgiOutput.substr(end + 2));
+	return cgiOutput;
+}
+
+void HttpResponse::replaceNewlines() {
+	size_t		pos = 0;
+	while ((pos = _cgiOutput.find('\n', pos)) != str::npos) {
+		_cgiOutput.replace(pos, 1, "\r\n");
+		pos += 2;
+	}
+}
+
 void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 	cgiSaveItems(request);
 
@@ -84,8 +113,14 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 			_cgiOutput.append(buffer, bytes);
 		close(pipe_fd[0]);
 		int status;
-		waitpid(pid, &status, 0); // IMPORTANT: check status here and read cgi properly
-		// std::cout << _cgiOutput << std::endl;
+		waitpid(pid, &status, 0);
 		cgiFree();
+		if ((WIFEXITED(status) && WEXITSTATUS(status)) || _cgiOutput.empty())
+			return setErrorCode(500, server);
+		replaceNewlines();
+		_body = saveCgiHeader(_cgiOutput);
+		_line0 = "HTTP/1.1 200 OK/r/n";
+		if (_cgiSaveErr)
+			setErrorCode(500, server);
 	}
 }

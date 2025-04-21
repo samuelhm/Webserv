@@ -82,6 +82,7 @@ class HttpRequest : public AHttp {
 		void		setIsValidCgi(bool isValidCgi);
 		void		setLocation(Location *location);
 		void		setVarCgi(str varCgi);
+		
 
 		class badHeaderException : public std::exception
 		{

@@ -81,14 +81,14 @@ HttpRequest::HttpRequest(str request, Server *server)
 }
 
 const str HttpRequest::saveHeader(const str &request) {
-    str::size_type end = request.find("\r\n");
+    size_t end = request.find("\r\n");
 
     if (end == str::npos)
 		throw badHeaderException("No \\r\\n found at header");
     str line = request.substr(0, end);
 	if (line.empty())
         return request.substr(end + 2);
-    str::size_type separator = line.find(": ");
+    size_t separator = line.find(": ");
     if (separator != str::npos) {
         str key = line.substr(0, separator);
         str value = line.substr(separator + 2);

@@ -232,8 +232,6 @@ void EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
 }
 
 bool EventPool::checkCGI(str path, Server server) {
-  // if (!isCgi(path))
-  // return false;
   str Path = path;
   str ext = path.substr(path.find_last_of('.'));
   Path.append("/");
