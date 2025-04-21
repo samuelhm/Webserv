@@ -47,7 +47,7 @@ HttpRequest::HttpRequest(str request, Server *server)
 				return ;
 			}
 			else if (!_location->getIndex().empty()) {
-				_resource.append(_location->getIndex());
+				_resource = _location->getIndex();
 				_resourceExists = true;
 				if (_localPathResource[_localPathResource.size() -1] != '/')
 					_localPathResource.append("/");
