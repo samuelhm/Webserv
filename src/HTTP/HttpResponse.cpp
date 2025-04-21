@@ -122,7 +122,7 @@ void HttpResponse::staticFileOptions(const HttpRequest &request, Server* server)
 		allowed += Utils::requestTypeToStr(methods[i]);
 	}
 	_status = 204;
-	_line0 = "HTTP/1.1 204 No Content";
+	_line0 = "HTTP/1.1 204 No Content\r\n";
 	_header["Allow"] = allowed;
 	_header["Content-Length"] = "0";
 	_header["Content-Type"] = "text/plain";
