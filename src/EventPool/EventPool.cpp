@@ -231,28 +231,6 @@ bool EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
   return true;
 }
 
-bool EventPool::checkCGI(str path, Server server) {
-  str Path = path;
-  str ext = path.substr(path.find_last_of('.'));
-  Path.append("/");
-  Path = AutoIndex::getPrevPath(Path);
-  Path.erase(Path.size() - 1);
-  std::vector<Location *> locations = server.getLocations();
-  for (std::size_t i = 0; i < locations.size(); i++) {
-    if (Path == locations[i]->getRoot()) {
-      if (!locations[i]->getCgiEnable())
-        return false;
-      strVec extensions = locations[i]->getCgiExtension();
-      for (std::size_t j = 0; j < extensions.size(); j++) {
-        if (ext == extensions[j])
-          return true;
-      }
-      return false;
-    }
-  }
-  return false;
-}
-
 void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
 	try {
