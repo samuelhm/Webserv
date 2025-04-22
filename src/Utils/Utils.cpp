@@ -262,3 +262,68 @@ bool Utils::isDirectory(const std::string &path) {
 	}
 	return false;
 }
+
+Location*	Utils::findLocation(Server* Server, const str &uri)
+{
+  Logger::log(str("Looking for Location: ") + uri, INFO);
+  std::vector<Location*> locations = Server->getLocations();
+
+  std::string locationPath;
+  Location* location = NULL;
+  for (std::size_t i = 0 ; i < locations.size(); i++) {
+    locationPath = locations[i]->getUrlPath();
+    bool found = false;
+    std::string tmpPath;
+    while (appendPath(tmpPath, uri)) {
+      if (locationPath == tmpPath) {
+        found = true;
+        break;
+      }
+    }
+    if ((found && location == NULL) || (found && locationPath.size() > location->getUrlPath().size()))
+      location = locations[i];
+  }
+
+  if (location != NULL)
+    Logger::log("Location Encontrada: " + location->getUrlPath(), USER);
+  else
+    Logger::log("No se encontro location para este recurso: " + uri, USER);
+  return location;
+}
+
+bool Utils::appendPath(std::string &tmpPath, std::string const &uri)
+{
+  if (tmpPath.size() == uri.size())
+    return false;
+  if (tmpPath.empty()) {
+    tmpPath.append("/");
+    return true;
+  }
+// /images/algomas
+  size_t end = uri.find('/', tmpPath.size() + 1);
+  if (end == std::string::npos)
+    end = uri.size();
+  else
+    end -= tmpPath.size();
+  tmpPath.append(uri, tmpPath.size(), end);
+
+  return true;
+}
+
+bool Utils::atoi(const char *str, int &out)
+{
+	errno = 0;
+	char *end;
+	long val = std::strtol(str, &end, 10);
+
+	if (end == str) {
+		Logger::log("Error: no se encontró ningún número válido", WARNING);
+		return false;
+	}
+	if (errno == ERANGE || val > INT_MAX || val < INT_MIN) {
+		Logger::log("Error: no se encontró ningún número válido", WARNING);
+		return false;
+	}
+	out = static_cast<int>(val);
+	return true;
+}
