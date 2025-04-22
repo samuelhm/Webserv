@@ -52,7 +52,6 @@ class EventPool {
 		void					handleClientConnection(int fd, eventStructTmp *eventStrct);
 		bool					handleClientWrite(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
-		bool					checkCGI(str path, Server server);
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
 		bool					headerTooLarge(str const &request);
 

@@ -50,7 +50,6 @@ class HttpRequest : public AHttp {
 		HttpRequest(str request, Server * server);
 		~HttpRequest();
 		Location	*findLocation(Server* Server);
-		Location*	findLocation(Server* Server, const str &uri);
 		void		autoIndex(Location *loc);
 		bool		checkFileExists(str fullResource);
 		bool		locationHasRedirection(const Location *loc);
