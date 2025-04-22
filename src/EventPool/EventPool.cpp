@@ -62,30 +62,34 @@ bool EventPool::headerTooLarge(str const &request, int &errorCode) {
   return !result;
 }
 
+bool  EventPool::checkBodySize(eventStructTmp* eventstrct, int &errorCode) {
+  size_t first_space = eventstrct->content.find(' ');
+	size_t second_space = eventstrct->content.find(' ', first_space + 1);
+	const str uri = eventstrct->content.substr(first_space + 1, second_space - first_space - 1);
+  Location *loc = Utils::findLocation(eventstrct->server, uri);
+  const str endhd = "\r\n\r\n";
+  const size_t endpos = eventstrct->content.find(endhd);
+  const str body = eventstrct->content.substr(endpos + endhd.size());
+  const str clfind = "Content-Length: ";
+  const str header = eventstrct->content.substr(0, endpos + endhd.size());
+  const size_t clfindEnd = header.find(clfind) + clfind.size();
 
-bool  EventPool::setContentLength(eventStructTmp* eventstrct, int &content_lenght) {
-  bool    out = false;
-  size_t pos = eventstrct->content.find("Content-Length: ");
-  str strLocatoinCL = eventstrct->content.substr(pos);
-
-  size_t posServer = eventstrct->server->getBodySize.find("Content-Length: ");
-  str strServerCL = eventstrct->server->getBodySize.substr(posServer);
-  if (Utils::atoi(strServerCL.c_str(), content_lenght))
-    out = true;
-  if (Utils::atoi(strLocatoinCL.c_str(), content_lenght))
-    out = true;
-  return out;
-}
-
-bool  EventPool::checkBodySize(eventStructTmp* eventstrct, size_t &body_read) {
-
-  return true;
+  str contentLength = header.substr(clfindEnd, header.find("\r\n", clfindEnd) - clfindEnd);
+  int length;
+  Utils::atoi(contentLength.c_str(), length);
+  size_t clength = static_cast<size_t>(length);
+  if (clength > body.size() || length > loc->getBodySize())
+  {
+    if (length > loc->getBodySize())
+      errorCode = 413;
+    return true;
+  }
+  return false;
 }
 
 bool EventPool::getRequest(int socketFd, eventStructTmp* eventstrct) {
   char buffer[4096];
   ssize_t   bytes_read = 0;
-  size_t    body_read = 0;
 
   while (42) {
 	  bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
@@ -195,7 +199,7 @@ void EventPool::poolLoop() {
       perror("epoll_wait");
       throw std::exception();
     }
-    Logger::log("Worker [" + Utils::intToStr(static_cast<size_t>(getpid())) + "] tooked petition", USER); // We cant use getpid(). DELETE this line
+    Logger::log("Worker [" + Utils::intToStr(static_cast<size_t>(getpid())) + "] tooked petition", USER); // Important We cant use getpid(). DELETE this line
     processEvents();
   }
 }
@@ -260,15 +264,10 @@ void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 	try {
     if (!getRequest(fd, eventStrct))
     {
-      if (headerTooLarge(eventStrct->content, errorCode))
+      if (headerTooLarge(eventStrct->content, errorCode) || checkBodySize(eventStrct, errorCode))
         return ;
       else
         saveResponse(Utils::codeResponse(errorCode, eventStrct->server), eventStrct);
-    }
-    if (checkBodySize())
-    {
-
-      return ;
     }
     else {
       Logger::log(str("Received request: ") + eventStrct->content, INFO);

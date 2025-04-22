@@ -164,7 +164,11 @@ bool parseLocationBlock(str &line, std::istringstream &ss, Server *server)
 		throw ConfigFileException("You cannot duplicate locations.");
 	}
 	if (location != NULL)
+	{
+		if (location->getBodySize() < 1)
+			location->setBodySize(Utils::intToStr(server->getBodySize()));
 		server->getLocations().push_back(location);
+	}
 	return false;
 }
 

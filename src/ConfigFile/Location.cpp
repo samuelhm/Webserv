@@ -16,7 +16,7 @@
 #include <cstdlib>
 
 Location::Location(const str &path)
-  : _uploadEnable(false), _root(path), _autoIndex(false), _cgiEnable(false)
+  : _uploadEnable(false), _root(path), _autoIndex(false), _cgiEnable(false), _bodySize(0)
 {
 	_methods.push_back(GET);
 	_methods.push_back(POST);

@@ -53,9 +53,9 @@ class EventPool {
 		bool					handleClientWrite(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
-		bool					headerTooLarge(str const &request);
+		bool					headerTooLarge(str const &request, int &errorCode);
 		bool					setContentLength(eventStructTmp* eventstrct, int &content_lenght);
-		bool					checkBodySize(eventStructTmp* eventstrct, size_t &body_read);
+		bool					checkBodySize(eventStructTmp* eventstrct, int &errorCode);
 
 
 
