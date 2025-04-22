@@ -40,7 +40,6 @@ class HttpRequest : public AHttp {
 		void		checkHeaderMRP(const str &line);
 		const str	saveHeader(const str &request);
 		bool		checkResource(Server const &server);
-		bool		appendPath(std::string &tmpPath, std::string const &uri);
 		void		parseResource();
 		str			addPathInfo(str afterSrc);
 		bool		checkAllowMethod();

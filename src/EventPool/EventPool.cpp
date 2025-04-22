@@ -50,32 +50,57 @@ EventPool::~EventPool() {
                     Utils::deleteItem<struct eventStructTmp>);
 }
 
-bool EventPool::headerTooLarge(str const &request) {
+bool EventPool::headerTooLarge(str const &request, int &errorCode) {
+  bool result = false;
 	size_t end = request.find("\r\n\r\n");
 	if (end == std::string::npos)
-		return (request.size() > LIMIT_HEADER_SIZE);
-	return (end > LIMIT_HEADER_SIZE);
+		result = (request.size() > LIMIT_HEADER_SIZE);
+	else
+    result = (end > LIMIT_HEADER_SIZE);
+  if (result)
+    errorCode = 431;
+  return !result;
 }
 
-bool EventPool::getRequest(int socketFd, eventStructTmp *eventstrct) {
+
+bool  EventPool::setContentLength(eventStructTmp* eventstrct, int &content_lenght) {
+  bool    out = false;
+  size_t pos = eventstrct->content.find("Content-Length: ");
+  str strLocatoinCL = eventstrct->content.substr(pos);
+
+  size_t posServer = eventstrct->server->getBodySize.find("Content-Length: ");
+  str strServerCL = eventstrct->server->getBodySize.substr(posServer);
+  if (Utils::atoi(strServerCL.c_str(), content_lenght))
+    out = true;
+  if (Utils::atoi(strLocatoinCL.c_str(), content_lenght))
+    out = true;
+  return out;
+}
+
+bool  EventPool::checkBodySize(eventStructTmp* eventstrct, size_t &body_read) {
+
+  return true;
+}
+
+bool EventPool::getRequest(int socketFd, eventStructTmp* eventstrct) {
   char buffer[4096];
-  size_t total_bytes = 0;
-  ssize_t bytes_read = 0;
+  ssize_t   bytes_read = 0;
+  size_t    body_read = 0;
 
   while (42) {
 	  bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
 	  if (bytes_read > 0) {
 	  	eventstrct->content.append(buffer, bytes_read);
-	  	total_bytes += bytes_read;
+	  	eventstrct->offset += bytes_read;
       if (eventstrct->content.find("\r\n\r\n") == str::npos)
         return false;
-      }
-      else if (bytes_read == 0)
-	  	  throw disconnectedException(socketFd);
-      else
-	  	  break;
     }
-  if (total_bytes == 0)
+    else if (bytes_read == 0)
+      throw disconnectedException(socketFd);
+    else
+      break;
+  }
+  if (eventstrct->offset == 0)
     throw disconnectedException(socketFd);
   Logger::log(str("HTTP Request Received.") + eventstrct->content, USER);
   return true;
@@ -102,9 +127,7 @@ void EventPool::saveResponse(HttpResponse &response, eventStructTmp *eventStrct)
 	ev.data.ptr = static_cast<void*>(eventStrct);
   if (epoll_ctl(_pollFd, EPOLL_CTL_MOD, eventStrct->client_fd, &ev) == -1) {
 		Logger::log("Failed to modify event to EPOLLOUT", ERROR);
-		safeCloseAndDelete(eventStrct->client_fd, eventStrct);
 	}
-
 }
 
 struct eventStructTmp *EventPool::createEventStruct(int fd, Server *server,
@@ -233,14 +256,26 @@ bool EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
 
 void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
+  int errorCode = 400;
 	try {
     if (!getRequest(fd, eventStrct))
+    {
+      if (headerTooLarge(eventStrct->content, errorCode))
+        return ;
+      else
+        saveResponse(Utils::codeResponse(errorCode, eventStrct->server), eventStrct);
+    }
+    if (checkBodySize())
+    {
+
       return ;
-    Logger::log(str("Received request: ") + eventStrct->content, INFO);
-		HttpRequest request(eventStrct->content, eventStrct->server);
-		HttpResponse response = stablishResponse(request, eventStrct->server);
-		saveResponse(response, eventStrct);
-    return ;
+    }
+    else {
+      Logger::log(str("Received request: ") + eventStrct->content, INFO);
+		  HttpRequest request(eventStrct->content, eventStrct->server);
+		  HttpResponse response = stablishResponse(request, eventStrct->server);
+		  saveResponse(response, eventStrct);
+    }
 	} catch(const disconnectedException& e) {
 		Logger::log(str("Disconnection occur: ") + e.what(), WARNING);
 	} catch(const socketReadException& e) {
@@ -297,7 +332,7 @@ EventPool::socketReadException::socketReadException(int fd) {
 }
 const char *EventPool::socketReadException::what() const throw() {
   return this->message.c_str();
-}
+}        // checkUriSize();
 
 EventPool::AcceptConnectionException::AcceptConnectionException(const str &msg)
     : message(msg) {}

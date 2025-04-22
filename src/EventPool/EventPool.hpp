@@ -54,6 +54,10 @@ class EventPool {
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
 		bool					headerTooLarge(str const &request);
+		bool					setContentLength(eventStructTmp* eventstrct, int &content_lenght);
+		bool					checkBodySize(eventStructTmp* eventstrct, size_t &body_read);
+
+
 
 	public:
 		EventPool(std::vector<Server*> &Servers);

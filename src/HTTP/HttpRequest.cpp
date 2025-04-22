@@ -129,24 +129,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
 		throw badHeaderException("Bad Protocol version");
 }
 
-bool HttpRequest::appendPath(std::string &tmpPath, std::string const &uri)
-{
-  if (tmpPath.size() == uri.size())
-    return false;
-  if (tmpPath.empty()) {
-    tmpPath.append("/");
-    return true;
-  }
-// /images/algomas
-  size_t end = uri.find('/', tmpPath.size() + 1);
-  if (end == std::string::npos)
-    end = uri.size();
-  else
-    end -= tmpPath.size();
-  tmpPath.append(uri, tmpPath.size(), end);
 
-  return true;
-}
 
 Location*	HttpRequest::findLocation(Server* Server)
 {
@@ -159,7 +142,7 @@ Location*	HttpRequest::findLocation(Server* Server)
     locationPath = locations[i]->getUrlPath();
     bool found = false;
     std::string tmpPath;
-    while (appendPath(tmpPath, _uri)) {
+    while (Utils::appendPath(tmpPath, _uri)) {
       if (locationPath == tmpPath) {
         found = true;
         break;
