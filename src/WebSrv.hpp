@@ -12,12 +12,12 @@
 
 #pragma once
 
-#include "Utils/Logger.hpp"
 #include <string>
 #include <map>
 #include <vector>
 #define LIMIT_HEADER_SIZE 1024
 #define NUMBER_OF_WORKERS 0
+#define TIMEOUT_CGI 3
 
 typedef std::string str;
 typedef std::vector<str> strVec;

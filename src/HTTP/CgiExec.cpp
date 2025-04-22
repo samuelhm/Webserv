@@ -12,12 +12,13 @@
 
 #include "HttpResponse.hpp"
 #include "../Utils/Utils.hpp"
+#include <csignal>
 #include <cstring>
+#include <sys/select.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <vector>
 #include <stdio.h>
 
 void HttpResponse::cgiFree() {
@@ -87,6 +88,15 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 		setErrorCode(500, server);
 		return;
 	}
+	
+	fd_set	readFds;
+	FD_ZERO(&readFds);
+	FD_SET(pipe_fd[0], &readFds);
+
+	timeval time_out;
+	time_out.tv_sec = TIMEOUT_CGI;
+	time_out.tv_usec = 0;
+
 	pid_t pid = fork();
 	if (pid < 0) {
 		Logger::log("Failed to fork", ERROR);
@@ -106,11 +116,22 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 	}
 	else {
 		close(pipe_fd[1]);
-		char buffer[1024];
-		ssize_t bytes;
 
-		while ((bytes = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
-			_cgiOutput.append(buffer, bytes);
+		int control = select(pipe_fd[0] + 1, &readFds, NULL, NULL, &time_out);
+		if (control == 0) {
+			Logger::log("CGI timeout. Kill process", ERROR);
+			kill(pid, SIGQUIT);
+		}
+		if (control > 0) {
+
+			char buffer[1024];
+			ssize_t bytes;
+
+			while ((bytes = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
+				_cgiOutput.append(buffer, bytes);
+		}
+		// if (control == -1) { } // Que hacemos si falla select()?
+
 		close(pipe_fd[0]);
 		int status;
 		waitpid(pid, &status, 0);
