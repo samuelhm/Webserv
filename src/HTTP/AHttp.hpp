@@ -19,7 +19,7 @@
 class AHttp {
 	protected:
 		str							_uri;
-		strMap			_header;
+		strMap						_header;
 		str							_body;
 	public:
 		AHttp();
@@ -27,9 +27,9 @@ class AHttp {
 		AHttp(const AHttp &other);
 		AHttp& operator=(const AHttp &other);
 		virtual ~AHttp() = 0;
-
+		
 		const str&		getUri() const;
-		strMap&			getHeader();
+		const strMap&			getHeader() const;
 		const str&		getBody() const;
 };
 

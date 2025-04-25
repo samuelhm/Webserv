@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiExec.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/23 14:58:41 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/25 19:16:54 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,16 +34,19 @@ void HttpResponse::cgiFree() {
 void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	strVec env_vec;
 	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
+	strMap	header = request.getHeader();
 	
 	if (!request.getQueryString().empty())
-		env_vec.push_back("QUERY_STRING=" + request.getQueryString());	
+		env_vec.push_back("QUERY_STRING=" + request.getQueryString());
 	if (!request.getPathInfo().empty())
 		env_vec.push_back("PATH_INFO=" + request.getPathInfo() + "/" + request.getResource());
-	if (!_header["Cookie"].empty())
-		env_vec.push_back("HTTP_COOKIE=" + _header["Cookie"]);
+	if (!header["Cookie"].empty())
+		env_vec.push_back("HTTP_COOKIE=" + header["Cookie"]);
 	char** envp = new char*[env_vec.size() + 1];
-	for (size_t i = 0; i < env_vec.size(); ++i)
+	for (size_t i = 0; i < env_vec.size(); i++) {
 		envp[i] = strdup(env_vec[i].c_str());
+		std::cout << envp[i] << std::endl;
+	}
 	envp[env_vec.size()] = NULL;
 
 	char** argv = new char*[2];
@@ -144,6 +147,7 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 			return setErrorCode(500, server);
 		replaceNewlines();
 		_body = saveCgiHeader(_cgiOutput);
+		std::cout << _cgiOutput << std::endl;
 		_line0 = "HTTP/1.1 200 OK/r/n";
 		if (_cgiSaveErr)
 			setErrorCode(500, server);
