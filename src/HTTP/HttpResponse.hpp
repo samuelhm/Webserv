@@ -44,7 +44,7 @@ class HttpResponse : public AHttp {
 		str						saveCgiHeader(const str cgiOutput);
 		void					replaceNewlines();
 
-		void					addUser(strMap &header);
+		str					addUser(strMap &header);
 
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);
