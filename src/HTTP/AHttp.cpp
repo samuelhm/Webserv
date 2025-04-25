@@ -32,7 +32,7 @@ AHttp& AHttp::operator=(const AHttp &other) {
 
 AHttp::~AHttp() {}
 
-strMap& AHttp::getHeader() { return _header; }
+const strMap& AHttp::getHeader() const { return _header; }
 const str& AHttp::getBody() const { return _body; }
 const str& AHttp::getUri() const { return _uri; }
 

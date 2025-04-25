@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/20 19:51:51 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/25 19:05:04 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ bool EventPool::getRequest(int socketFd, eventStructTmp *eventstrct) {
 void EventPool::saveResponse(HttpResponse &response, eventStructTmp *eventStrct) {
   str resp;
   resp.append(response._line0);
-  strMap::iterator it;
+  strMap::const_iterator it;
   for (it = response.getHeader().begin(); it != response.getHeader().end();
        ++it) {
     resp.append(it->first);
