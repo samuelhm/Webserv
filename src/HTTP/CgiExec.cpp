@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/18 13:04:31 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/23 14:58:41 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,19 @@ void HttpResponse::cgiFree() {
 }
 
 void HttpResponse::cgiSaveItems(const HttpRequest &request) {
-	str			method = "REQUEST_METHOD=" + request.getReceivedMethod();
-	str			query = "QUERY_STRING=" + request.getQueryString();
-	str			path   = "PATH_INFO=" + request.getPathInfo() + "/" + request.getResource();
-
-	char** envp = new char*[4];
-	envp[0] = strdup(method.c_str());
-	envp[1] = query.empty() ? NULL : strdup(query.c_str());
-	envp[2] = path.empty() ? NULL : strdup(path.c_str());
-	envp[3] = NULL;
+	strVec env_vec;
+	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
+	
+	if (!request.getQueryString().empty())
+		env_vec.push_back("QUERY_STRING=" + request.getQueryString());	
+	if (!request.getPathInfo().empty())
+		env_vec.push_back("PATH_INFO=" + request.getPathInfo() + "/" + request.getResource());
+	if (!_header["Cookie"].empty())
+		env_vec.push_back("HTTP_COOKIE=" + _header["Cookie"]);
+	char** envp = new char*[env_vec.size() + 1];
+	for (size_t i = 0; i < env_vec.size(); ++i)
+		envp[i] = strdup(env_vec[i].c_str());
+	envp[env_vec.size()] = NULL;
 
 	char** argv = new char*[2];
 	argv[0] = strdup(request.getLocalPathResource().c_str());
@@ -49,7 +53,7 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	_argv = argv;
 }
 
-str	HttpResponse::saveCgiHeader(const str	cgiOutput) {
+str	HttpResponse::saveCgiHeader(const str cgiOutput) {
 	size_t end = cgiOutput.find("\r\n");
 
     if (end == str::npos) {
