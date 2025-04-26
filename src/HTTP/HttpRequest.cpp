@@ -6,12 +6,13 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/19 13:16:54 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/26 12:33:58 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 #include <sys/stat.h>
+#include <unistd.h>     // for getpid()
 
 HttpRequest::HttpRequest(str request, Server *server)
 	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
@@ -70,12 +71,51 @@ HttpRequest::HttpRequest(str request, Server *server)
 		_resourceExists = checkFileExists(_localPathResource);
 
 		_body = saveHeader(request.substr(end + 2));
+		addUser(_header);
+		
 	} catch(const badHeaderException &e) {
 		_badRequest = true;
 		Logger::log(e.what(), USER);
 	} catch(...) {
 		_badRequest = true;
 		Logger::log("UNKNOWN FATAL ERROR AT HTTPREQUEST HEADER", ERROR);
+	}
+}
+
+void	HttpRequest::addUser(strMap &header) {
+	static strVec	_users;
+	bool			createUser = false;
+	str				cookie = header["Cookie"];
+
+	if (cookie.empty())
+		createUser = true;
+	for (size_t i = 0; i < _users.size(); i++) {
+		if (_users[i] == cookie) {
+			_sessionUser = cookie;
+			return ;
+		}
+	}
+	if (!createUser) {
+		_users.push_back(cookie);
+		_sessionUser = cookie;
+	}
+	else {
+		static int				userID;
+		std::stringstream		ss;
+		ss << "sessionId=" << _header["Host"].substr(_header["Host"].find(":") + 1) << "; " << "userId=" << userID;
+		str						SessionID = ss.str();
+		for (size_t i = 0; i < _users.size(); i++) {
+			if (_users[i] == SessionID) {
+				ss.str("");
+				userID++;
+				ss << "sessionId=" << _header["Host"].substr(_header["Host"].find(":") + 1) << "; " << "userId=" << userID;
+				SessionID = ss.str();		
+				i = 0;
+			}
+		}
+		_users.push_back(SessionID);
+		_sessionUser = SessionID;
+		userID++;
 	}
 }
 
@@ -241,6 +281,7 @@ str			HttpRequest::getPathInfo() const { return _pathInfo; }
 str			HttpRequest::getRedirect() const { return _redirect; }
 bool		HttpRequest::getAutoIndex() const { return _autoIndex; }
 bool		HttpRequest::getCanAccess() const { return _canAccess; }
+str			HttpRequest::getSessionUser() const { return _sessionUser; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }
