@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/20 19:51:51 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/26 21:35:29 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,64 +50,96 @@ EventPool::~EventPool() {
                     Utils::deleteItem<struct eventStructTmp>);
 }
 
-bool EventPool::headerTooLarge(str const &request, int &errorCode) {
-  bool result = false;
-	size_t end = request.find("\r\n\r\n");
-	if (end == std::string::npos)
-		result = (request.size() > LIMIT_HEADER_SIZE);
-	else
-    result = (end > LIMIT_HEADER_SIZE);
-  if (result)
-    errorCode = 431;
-  return !result;
-}
-
-bool  EventPool::checkBodySize(eventStructTmp* eventstrct, int &errorCode) {
-  size_t first_space = eventstrct->content.find(' ');
-	size_t second_space = eventstrct->content.find(' ', first_space + 1);
-	const str uri = eventstrct->content.substr(first_space + 1, second_space - first_space - 1);
-  Location *loc = Utils::findLocation(eventstrct->server, uri);
-  const str endhd = "\r\n\r\n";
-  const size_t endpos = eventstrct->content.find(endhd);
-  const str body = eventstrct->content.substr(endpos + endhd.size());
-  const str clfind = "Content-Length: ";
-  const str header = eventstrct->content.substr(0, endpos + endhd.size());
-  const size_t clfindEnd = header.find(clfind) + clfind.size();
-
-  str contentLength = header.substr(clfindEnd, header.find("\r\n", clfindEnd) - clfindEnd);
-  int length;
-  Utils::atoi(contentLength.c_str(), length);
-  size_t clength = static_cast<size_t>(length);
-  if (clength > body.size() || length > loc->getBodySize())
-  {
-    if (length > loc->getBodySize())
-      errorCode = 413;
-    return true;
-  }
-  return false;
-}
-
 bool EventPool::getRequest(int socketFd, eventStructTmp* eventstrct) {
-  char buffer[4096];
-  ssize_t   bytes_read = 0;
+	char buffer[4096];
+	ssize_t bytes_read = 0;
+	static size_t contentLength = 0;
+	static bool headerParsed = false;
 
-  while (42) {
-	  bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
-	  if (bytes_read > 0) {
-	  	eventstrct->content.append(buffer, bytes_read);
-	  	eventstrct->offset += bytes_read;
-      if (eventstrct->content.find("\r\n\r\n") == str::npos)
-        return false;
-    }
-    else if (bytes_read == 0)
-      throw disconnectedException(socketFd);
-    else
-      break;
-  }
-  if (eventstrct->offset == 0)
-    throw disconnectedException(socketFd);
-  Logger::log(str("HTTP Request Received.") + eventstrct->content, USER);
-  return true;
+	while (42) {
+		bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
+		if (bytes_read > 0) {
+			eventstrct->content.append(buffer, bytes_read);
+			eventstrct->offset += bytes_read;
+
+			// Comprobamos si el header se vuelve demasiado grande ANTES de encontrar \r\n\r\n
+			if (!headerParsed && eventstrct->content.size() > LIMIT_HEADER_SIZE)
+				throw HttpException(431, "Header too large");
+
+			if (!headerParsed) {
+				size_t headerEnd = eventstrct->content.find("\r\n\r\n");
+				if (headerEnd != str::npos) {
+					// Ya tenemos todo el header
+					headerParsed = true;
+					str header = eventstrct->content.substr(0, headerEnd + 4);
+
+					// Buscamos Content-Length
+					size_t clPos = header.find("Content-Length: ");
+					if (clPos != str::npos) {
+						clPos += 16;
+						size_t clEnd = header.find("\r\n", clPos);
+						str clStr = header.substr(clPos, clEnd - clPos);
+						Utils::atoi(clStr.c_str(), (int&)contentLength);
+
+						// Comprobamos que no sea demasiado grande
+						Location *loc = Utils::findLocation(eventstrct->server, "/");
+						if (loc && contentLength > static_cast<size_t>(loc->getBodySize()))
+							throw HttpException(413, "Payload too large (Location limit)");
+						if (contentLength > eventstrct->server->getBodySize())
+							throw HttpException(413, "Payload too large (Server limit)");
+					}
+				}
+			}
+
+			// Si ya tenemos el header y hemos leído suficiente body
+			if (headerParsed) {
+				size_t headerEnd = eventstrct->content.find("\r\n\r\n");
+				str body = eventstrct->content.substr(headerEnd + 4);
+
+				if (contentLength == 0 || body.size() >= contentLength) {
+					headerParsed = false;
+					contentLength = 0;
+					return true;
+				}
+			}
+		} else if (bytes_read == 0) {
+			throw disconnectedException(socketFd);
+		} else {
+			break;
+		}
+	}
+	if (eventstrct->offset == 0)
+		throw disconnectedException(socketFd);
+
+	return false; // No hemos leído todo todavía
+}
+
+void EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
+{
+	try {
+		if (!getRequest(fd, eventStrct))
+			return;
+		Logger::log(str("Received request: ") + eventStrct->content, INFO);
+		HttpRequest request(eventStrct->content, eventStrct->server);
+		HttpResponse response = stablishResponse(request, eventStrct->server);
+		saveResponse(response, eventStrct);
+	}
+	catch (const HttpException& e) {
+		Logger::log(e.what(), WARNING);
+		saveResponse(Utils::codeResponse(e.getErrorCode(), eventStrct->server), eventStrct);
+	}
+	catch (const disconnectedException& e) {
+		Logger::log(str("Disconnection occurred: ") + e.what(), WARNING);
+		safeCloseAndDelete(fd, eventStrct);
+	}
+	catch (const socketReadException& e) {
+		Logger::log(str("Socket Read Error: ") + e.what(), WARNING);
+		saveResponse(Utils::codeResponse(400, eventStrct->server), eventStrct);
+	}
+	catch (...) {
+		Logger::log("UNKNOWN FATAL ERROR ON handleClientRequest", ERROR);
+		saveResponse(Utils::codeResponse(400, eventStrct->server), eventStrct);
+	}
 }
 
 void EventPool::saveResponse(HttpResponse &response, eventStructTmp *eventStrct) {
@@ -176,14 +208,6 @@ void EventPool::acceptConnection(int fdTmp, Server *server) {
     close(client_fd);
     throw AcceptConnectionException("Failed to add event inside epoll()!.");
   }
-}
-
-bool EventPool::isServerFd(std::vector<Server *> &Servers, int fdTmp) {
-  for (size_t s = 0; s < Servers.size(); ++s) {
-    if (fdTmp == Servers[s]->getServerFd())
-      return true;
-  }
-  return false;
 }
 
 void EventPool::poolLoop() {
@@ -258,33 +282,6 @@ bool EventPool::handleClientWrite(int fd, eventStructTmp *eventStruct)
   return true;
 }
 
-void	EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
-{
-  int errorCode = 400;
-	try {
-    if (!getRequest(fd, eventStrct))
-    {
-      if (headerTooLarge(eventStrct->content, errorCode) || checkBodySize(eventStrct, errorCode))
-        return ;
-      else
-        saveResponse(Utils::codeResponse(errorCode, eventStrct->server), eventStrct);
-    }
-    else {
-      Logger::log(str("Received request: ") + eventStrct->content, INFO);
-		  HttpRequest request(eventStrct->content, eventStrct->server);
-		  HttpResponse response = stablishResponse(request, eventStrct->server);
-		  saveResponse(response, eventStrct);
-    }
-	} catch(const disconnectedException& e) {
-		Logger::log(str("Disconnection occur: ") + e.what(), WARNING);
-	} catch(const socketReadException& e) {
-		Logger::log(str("Socket Read Error: ") + e.what(), WARNING);
-	} catch(...) {
-		Logger::log("UNKNOWN FATAL ERROR ON handleClientRequest", ERROR);
-	}
-	safeCloseAndDelete(fd, eventStrct);
-}
-
 void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 	if (epoll_ctl(_pollFd, EPOLL_CTL_DEL, fd, NULL) == -1)
 		Logger::log("EPOLL_CTL_DEL Failed", ERROR);
@@ -339,10 +336,15 @@ const char *EventPool::AcceptConnectionException::what() const throw() {
   return this->message.c_str();
 }
 
-EventPool::headerTooLargeException::headerTooLargeException(int fd)
-	: message(str("Header too large at socket: ") + Utils::intToStr(fd))
-{}
+EventPool::HttpException::HttpException(int errorCode, const str& extra)
+	: _errorCode(errorCode), _message(str("HTTP Exception: ") + Utils::intToStr(errorCode) + " " + extra) {}
 
-const char *EventPool::headerTooLargeException::what() const throw() {
-  return message.c_str();
+const char* EventPool::HttpException::what() const throw() {
+	return _message.c_str();
 }
+
+int EventPool::HttpException::getErrorCode() const throw() {
+	return _errorCode;
+}
+
+EventPool::HttpException::~HttpException() throw() {}
