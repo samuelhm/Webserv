@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/20 19:49:33 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/26 21:33:48 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ class EventPool {
 		struct epoll_event events[1024];
 		std::vector<struct eventStructTmp *> _structs;
 
-		bool					isServerFd(std::vector<Server *> &Servers, int fdTmp);
 		struct eventStructTmp*	createEventStruct(int fd, Server* server, EventType eventType);
 		void					processEvents();
 		void					saveResponse(HttpResponse &response, eventStructTmp *eventStrct);
@@ -55,9 +54,6 @@ class EventPool {
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
 		bool					headerTooLarge(str const &request, int &errorCode);
 		bool					setContentLength(eventStructTmp* eventstrct, int &content_lenght);
-		bool					checkBodySize(eventStructTmp* eventstrct, int &errorCode);
-
-
 
 	public:
 		EventPool(std::vector<Server*> &Servers);
@@ -93,13 +89,15 @@ class EventPool {
 				const char *what() const throw();
 				virtual ~AcceptConnectionException() throw() {}
 		};
-		class headerTooLargeException : public std::exception
+		class HttpException : public std::exception
 		{
-			private:
-				const str message;
-			public:
-				headerTooLargeException(int fd);
-				const char *what() const throw();
-				virtual ~headerTooLargeException() throw() {}
+		private:
+			int _errorCode;
+			str _message;
+		public:
+			HttpException(int errorCode, const str& extra = "");
+			virtual const char *what() const throw();
+			int getErrorCode() const throw();
+			virtual ~HttpException() throw();
 		};
 };

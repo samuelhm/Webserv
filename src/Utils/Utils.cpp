@@ -134,6 +134,7 @@ void Utils::fillStatusStr() {
 	_statusStr[421] = "Misdirected Request";
 	_statusStr[422] = "Unproce_statusStrable Content";
 	_statusStr[426] = "Upgrade Required";
+	_statusStr[431] = "Request Header Fields Too Large";
 	_statusStr[500] = "Internal Server Error";
 	_statusStr[501] = "Not Implemented";
 	_statusStr[502] = "Bad Gateway";
@@ -204,6 +205,7 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 	static HttpResponse resp411(411, server);
 	static HttpResponse resp413(413, server);
 	static HttpResponse resp414(414, server);
+	static HttpResponse resp431(431, server);
 	static HttpResponse resp500(500, server);
 
 	switch (errorCode)
@@ -215,6 +217,7 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 		case 411: return resp411;
 		case 413: return resp413;
 		case 414: return resp414;
+		case 431: return resp431;
 		case 500: return resp500;
 		default:
 			Logger::log("getStaticErrorResponse: código no soportado: " + intToStr(errorCode), WARNING);
@@ -312,13 +315,13 @@ bool Utils::appendPath(std::string &tmpPath, std::string const &uri)
   return true;
 }
 
-bool Utils::atoi(const char *str, int &out)
+bool Utils::atoi(const char *strmsg, int &out)
 {
 	errno = 0;
 	char *end;
-	long val = std::strtol(str, &end, 10);
+	long val = std::strtol(strmsg, &end, 10);
 
-	if (end == str) {
+	if (end == strmsg) {
 		Logger::log("Error: no se encontró ningún número válido", WARNING);
 		return false;
 	}
