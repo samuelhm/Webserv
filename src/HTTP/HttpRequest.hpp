@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 23:18:22 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/26 11:55:42 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ class HttpRequest : public AHttp {
 		str			_redirect;
 		bool		_autoIndex;
 		bool		_canAccess;
+		str			_sessionUser;
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);
@@ -44,6 +45,8 @@ class HttpRequest : public AHttp {
 		void		parseResource();
 		str			addPathInfo(str afterSrc);
 		bool		checkAllowMethod();
+		
+		void		addUser(strMap &header);
 
 
 	public:
@@ -74,6 +77,7 @@ class HttpRequest : public AHttp {
 		str			getRedirect() const;
 		bool		getAutoIndex() const;
 		bool		getCanAccess() const;
+		str			getSessionUser() const;
 
 		//Setters
 		void		setType(RequestType type);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiExec.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/25 19:16:54 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/26 11:59:59 by erigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,35 +31,6 @@ void HttpResponse::cgiFree() {
 	delete[] _argv;
 }
 
-#include <iostream>
-#include <unistd.h>     // for getpid()
-#include <sstream>      // for stringstream
-#include <string>       // for std::string
-
-str	HttpResponse::addUser(strMap &header) {
-	static strVec	_users;
-	bool			createUser = false;
-	str				cookie = header["Cookie"];
-	if (cookie.empty())
-		createUser = true;
-	for (size_t i = 0; i < _users.size(); i++) {
-		if (_users[i] == cookie)
-			return cookie;
-	}
-	if (!createUser) {
-		_users.push_back(cookie);
-		return cookie;
-	}
-	else {
-		pid_t pid = getpid();
-		std::stringstream ss;
-		ss << pid;
-		std::string SessionID = ss.str(); 
-		_users.push_back(SessionID);
-		return SessionID;
-	}
-}
-
 void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	strVec env_vec;
 	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
@@ -68,14 +39,12 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	if (!request.getQueryString().empty())
 		env_vec.push_back("QUERY_STRING=" + request.getQueryString());
 	if (!request.getPathInfo().empty())
-		env_vec.push_back("PATH_INFO=" + request.getPathInfo() + "/" + request.getResource());
-	if (!header["Cookie"].empty())
-	env_vec.push_back("HTTP_COOKIE=" + addUser(header));	// IMPORTANT ADD THIS SOMEWHERE ELSE
+		env_vec.push_back("PATH_INFO=" + request.getPathInfo());
+	// if (!header["Cookie"].empty())
+	env_vec.push_back("HTTP_COOKIE=" + request.getSessionUser());
 	char** envp = new char*[env_vec.size() + 1];
-	for (size_t i = 0; i < env_vec.size(); i++) {
+	for (size_t i = 0; i < env_vec.size(); i++)
 		envp[i] = strdup(env_vec[i].c_str());
-		std::cout << envp[i] << std::endl;
-	}
 	envp[env_vec.size()] = NULL;
 
 	char** argv = new char*[2];
@@ -176,7 +145,6 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 			return setErrorCode(500, server);
 		replaceNewlines();
 		_body = saveCgiHeader(_cgiOutput);
-		std::cout << _cgiOutput << std::endl;
 		_line0 = "HTTP/1.1 200 OK/r/n";
 		if (_cgiSaveErr)
 			setErrorCode(500, server);
