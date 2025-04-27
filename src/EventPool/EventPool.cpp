@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   EventPool.cpp                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/26 21:35:29 by shurtado         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "EventPool.hpp"
 #include "../Utils/AutoIndex.hpp"
 #include "../Utils/Utils.hpp"
@@ -51,76 +39,119 @@ EventPool::~EventPool() {
 }
 
 bool EventPool::getRequest(int socketFd, eventStructTmp* eventstrct) {
-	char buffer[4096];
-	ssize_t bytes_read = 0;
-	static size_t contentLength = 0;
-	static bool headerParsed = false;
+    char buffer[4096];
+    ssize_t bytes_read = 0;
+    bool readSome = false;
+    bool done = false;
 
-	while (42) {
-		bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
-		if (bytes_read > 0) {
-			eventstrct->content.append(buffer, bytes_read);
-			eventstrct->offset += bytes_read;
+    while (42) {
+        bytes_read = recv(socketFd, buffer, sizeof(buffer), 0);
 
-			// Comprobamos si el header se vuelve demasiado grande ANTES de encontrar \r\n\r\n
-			if (!headerParsed && eventstrct->content.size() > LIMIT_HEADER_SIZE)
-				throw HttpException(431, "Header too large");
+        if (bytes_read > 0) {
+            readSome = true;
+            eventstrct->content.append(buffer, bytes_read);
+            eventstrct->offset += bytes_read;
 
-			if (!headerParsed) {
-				size_t headerEnd = eventstrct->content.find("\r\n\r\n");
-				if (headerEnd != str::npos) {
-					// Ya tenemos todo el header
-					headerParsed = true;
-					str header = eventstrct->content.substr(0, headerEnd + 4);
+            // Comprobación de Payload Too Large para Content-Length
+            if (eventstrct->headerParsed && !eventstrct->isChunked) {
+                size_t headerEnd = eventstrct->content.find("\r\n\r\n");
+                std::string body = eventstrct->content.substr(headerEnd + 4);
+                if (body.size() > eventstrct->server->getBodySize()) {
+                    Logger::log("Payload too large (Content-Length body)", WARNING);
+                    throw HttpException(413, "Payload Too Large");
+                }
+            }
 
-					// Buscamos Content-Length
-					size_t clPos = header.find("Content-Length: ");
-					if (clPos != str::npos) {
-						clPos += 16;
-						size_t clEnd = header.find("\r\n", clPos);
-						str clStr = header.substr(clPos, clEnd - clPos);
-						Utils::atoi(clStr.c_str(), (int&)contentLength);
+            // Procesar header si no estaba parseado
+            if (!eventstrct->headerParsed) {
+                size_t headerEnd = eventstrct->content.find("\r\n\r\n");
+                if (headerEnd != std::string::npos) {
+                    eventstrct->headerParsed = true;
+                    std::string header = eventstrct->content.substr(0, headerEnd + 4);
 
-						// Comprobamos que no sea demasiado grande
-						Location *loc = Utils::findLocation(eventstrct->server, "/");
-						if (loc && contentLength > static_cast<size_t>(loc->getBodySize()))
-							throw HttpException(413, "Payload too large (Location limit)");
-						if (contentLength > eventstrct->server->getBodySize())
-							throw HttpException(413, "Payload too large (Server limit)");
-					}
-				}
-			}
+                    if (header.find("Transfer-Encoding: chunked") != std::string::npos) {
+                        eventstrct->isChunked = true;
+                    } else {
+                        size_t clPos = header.find("Content-Length: ");
+                        if (clPos != std::string::npos) {
+                            clPos += 16;
+                            size_t clEnd = header.find("\r\n", clPos);
+                            std::string clStr = header.substr(clPos, clEnd - clPos);
+                            Utils::atoi(clStr.c_str(), (int&)eventstrct->contentLength);
+                        } else {
+                            size_t methodEnd = header.find(' ');
+                            std::string method = header.substr(0, methodEnd);
+                            if (method == "POST" || method == "PUT" || method == "PATCH")
+                                throw HttpException(411, "Length Required");
+                        }
+                    }
+                } else if (eventstrct->content.size() > LIMIT_HEADER_SIZE) {
+                    throw HttpException(431, "Header too large");
+                }
+            }
 
-			// Si ya tenemos el header y hemos leído suficiente body
-			if (headerParsed) {
-				size_t headerEnd = eventstrct->content.find("\r\n\r\n");
-				str body = eventstrct->content.substr(headerEnd + 4);
+            // Procesar body
+            if (eventstrct->headerParsed) {
+                size_t headerEnd = eventstrct->content.find("\r\n\r\n");
 
-				if (contentLength == 0 || body.size() >= contentLength) {
-					headerParsed = false;
-					contentLength = 0;
-					return true;
-				}
-			}
-		} else if (bytes_read == 0) {
-			throw disconnectedException(socketFd);
-		} else {
-			break;
-		}
-	}
-	if (eventstrct->offset == 0)
-		throw disconnectedException(socketFd);
+                if (eventstrct->isChunked) {
+                    std::string body = eventstrct->content.substr(headerEnd + 4);
+                    while (true) {
+                        size_t pos = body.find("\r\n");
+                        if (pos == std::string::npos)
+                            break; // aún no tenemos tamaño de chunk
 
-	return false; // No hemos leído todo todavía
+                        std::string chunkSizeStr = body.substr(0, pos);
+                        int chunkSize;
+                        std::stringstream ss;
+                        ss << std::hex << chunkSizeStr;
+                        ss >> chunkSize;
+
+                        if (chunkSize == 0) {
+                            done = true;
+                            break;
+                        }
+
+                        if (body.size() < pos + 2 + chunkSize + 2)
+                            break; // falta parte del chunk
+
+                        std::string chunkData = body.substr(pos + 2, chunkSize);
+                        eventstrct->bodyDecoded.append(chunkData);
+                        body = body.substr(pos + 2 + chunkSize + 2);
+                        eventstrct->content = eventstrct->content.substr(0, headerEnd + 4) + body;
+                    }
+                } else {
+                    std::string body = eventstrct->content.substr(headerEnd + 4);
+                    if (body.size() >= eventstrct->contentLength)
+                        done = true;
+                }
+            }
+        }
+        else if (bytes_read == 0) {
+            throw disconnectedException(socketFd);
+        }
+        else { // bytes_read < 0
+            if (readSome)
+                break; // hemos leído algo antes: salida normal
+            else
+                throw socketReadException(socketFd); // error real
+        }
+    }
+
+    return done;
 }
+
+
+
 
 void EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
 	try {
+
 		if (!getRequest(fd, eventStrct))
 			return;
 		Logger::log(str("Received request: ") + eventStrct->content, INFO);
-		HttpRequest request(eventStrct->content, eventStrct->server);
+		HttpRequest request(eventStrct);
 		HttpResponse response = stablishResponse(request, eventStrct->server);
 		saveResponse(response, eventStrct);
 	}
@@ -173,6 +204,10 @@ struct eventStructTmp *EventPool::createEventStruct(int fd, Server *server,
   result->server = server;
   result->eventType = eventType;
   result->offset = 0;
+  result->headerParsed = false;
+	result->isChunked = false;
+	result->contentLength = 0;
+	result->bodyDecoded = "";
   return result;
 }
 
@@ -223,7 +258,6 @@ void EventPool::poolLoop() {
       perror("epoll_wait");
       throw std::exception();
     }
-    Logger::log("Worker [" + Utils::intToStr(static_cast<size_t>(getpid())) + "] tooked petition", USER); // Important We cant use getpid(). DELETE this line
     processEvents();
   }
 }
@@ -295,6 +329,8 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 
 HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
 {
+  if (request.getPayLoad())
+    return Utils::codeResponse(502, server);
   if (request.getBadRequest())
     return Utils::codeResponse(400, server);
   else if (!request.getRedirect().empty())
@@ -303,7 +339,7 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
     return Utils::codeResponse(403, server);
   else if (!request.getLocation())
     return Utils::codeResponse(404, server);
-  else if (!request.getValidMethod())
+  else if (!request.getIsCgi() && !request.getValidMethod())
     return Utils::codeResponse(405, server);
   else if (!request.getIsCgi() && (request.getReceivedMethod() == "GET" && !request.getResourceExists() && !request.getLocation()->getAutoindex()))
     return Utils::codeResponse(404, server);

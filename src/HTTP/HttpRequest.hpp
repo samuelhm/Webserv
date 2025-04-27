@@ -1,22 +1,12 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpRequest.hpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 13:12:09 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/18 23:18:22 by shurtado         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
 #include "AHttp.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "../EventPool/EventPool.hpp"
 
 class Server;
 class Location;
+struct eventStructTmp;
 
 class HttpRequest : public AHttp {
 	private:
@@ -35,6 +25,7 @@ class HttpRequest : public AHttp {
 		str			_redirect;
 		bool		_autoIndex;
 		bool		_canAccess;
+		bool		_payLoad;
 
 		void		parse();
 		void		checkHeaderMRP(const str &line);
@@ -46,7 +37,7 @@ class HttpRequest : public AHttp {
 
 
 	public:
-		HttpRequest(str request, Server * server);
+		HttpRequest(eventStructTmp* eventstrct);
 		~HttpRequest();
 		Location	*findLocation(Server* Server);
 		void		autoIndex(Location *loc);
@@ -72,6 +63,7 @@ class HttpRequest : public AHttp {
 		str			getRedirect() const;
 		bool		getAutoIndex() const;
 		bool		getCanAccess() const;
+		bool		getPayLoad() const;
 
 		//Setters
 		void		setType(RequestType type);
