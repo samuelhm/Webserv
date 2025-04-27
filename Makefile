@@ -15,12 +15,13 @@ CC			=	c++
 CPPFLAGS	=	-std=c++98 -g -MMD -MP -Wshadow
 CPPFLAGS	+=	-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
 
-SRC			=	src/main.cpp \
-				src/EventPool/EventPool.cpp \
-				src/ConfigFile/Location.cpp src/ConfigFile/Server.cpp \
-				src/HTTP/HttpRequest.cpp src/HTTP/UriParse.cpp src/HTTP/HttpResponse.cpp src/HTTP/CgiExec.cpp\
-				src/HTTP/AHttp.cpp src/ConfigFile/ParseConfig.cpp src/ConfigFile/ParseLocation.cpp \
-				src/Utils/Utils.cpp src/Utils/AutoIndex.cpp src/Utils/Logger.cpp
+SRC			=	src/main.cpp src/EventPool/EventPool.cpp \
+					src/ConfigFile/Location.cpp src/ConfigFile/Server.cpp \
+					src/HTTP/HttpRequest.cpp src/HTTP/UriParse.cpp \
+					src/HTTP/HttpResponse.cpp src/HTTP/CgiExec.cpp\
+					src/HTTP/AHttp.cpp src/ConfigFile/ParseConfig.cpp \
+					src/ConfigFile/ParseLocation.cpp src/Utils/AutoIndexTable.cpp \
+					src/Utils/Utils.cpp src/Utils/AutoIndex.cpp src/Utils/Logger.cpp
 
 OBJS		=	$(SRC:%.cpp=obj/%.o)
 DEPS		=	$(OBJS:.o=.d)

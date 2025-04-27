@@ -67,8 +67,8 @@ HttpRequest::HttpRequest(str request, Server *server)
 			return ;
 		}
 		parseResource();
-		_localPathResource = _localPathResource.substr(0, _localPathResource.find(_resource) + _resource.size());
-		_resourceExists = checkFileExists(_localPathResource);
+		str checkFile = _localPathResource.substr(0, _localPathResource.find(_resource) + _resource.size());
+		_resourceExists = checkFileExists(checkFile);
 
 		_body = saveHeader(request.substr(end + 2));
 		addUser(_header);

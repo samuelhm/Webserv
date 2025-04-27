@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/20 13:46:23 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/25 21:52:15 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,13 +229,13 @@ void HttpResponse::setErrorCode(int errorCode, Server* server)
 	_header["Content-Length"] = Utils::intToStr(_body.length());
 }
 
-HttpResponse::HttpResponse(const HttpRequest &request, Server* server, str (*autoIndexFunction)(const str &path))
+HttpResponse::HttpResponse(const HttpRequest &request, Server* server, str autoIndexHTML)
 {
 	const str directory = request.getLocalPathResource();
 	try {
 		_status = 200;
 		_line0 = "HTTP/1.1 200 OK\r\n";
-		_body = autoIndexFunction(directory);
+		_body = autoIndexHTML;
 		_header["Content-Type"] = "text/html";
 		_header["Content-Length"] = Utils::intToStr(_body.length());
 	} catch (AutoIndex::DirectoryNotAccesible &e) {
