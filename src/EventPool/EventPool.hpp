@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/26 21:33:48 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/26 22:06:07 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,12 @@ struct eventStructTmp
 	EventType	eventType;
 	str			content;
 	size_t		offset;
+
+	//chunks
+	bool		headerParsed;
+	bool		isChunked;
+	size_t		contentLength;
+	str			bodyDecoded;
 };
 
 class EventPool {

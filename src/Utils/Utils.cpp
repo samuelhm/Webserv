@@ -207,6 +207,7 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 	static HttpResponse resp414(414, server);
 	static HttpResponse resp431(431, server);
 	static HttpResponse resp500(500, server);
+	static HttpResponse resp502(502, server);
 
 	switch (errorCode)
 	{
@@ -219,6 +220,7 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 		case 414: return resp414;
 		case 431: return resp431;
 		case 500: return resp500;
+		case 502: return resp502;
 		default:
 			Logger::log("getStaticErrorResponse: código no soportado: " + intToStr(errorCode), WARNING);
 			return resp500; // fallback

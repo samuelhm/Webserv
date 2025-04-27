@@ -1,82 +1,85 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/26 12:33:58 by erigonza         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "HttpRequest.hpp"
 #include <sys/stat.h>
 #include <unistd.h>     // for getpid()
 
-HttpRequest::HttpRequest(str request, Server *server)
-	: AHttp(request), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
-		_redirect(""), _autoIndex(false), _canAccess(true)
+HttpRequest::HttpRequest(eventStructTmp* eventstrct)
+	: AHttp(eventstrct->content), _badRequest(false), _resourceExists(false), _validMethod(false), _isCgi(false),
+		_redirect(""), _autoIndex(false), _canAccess(true), _payLoad(false)
 {
 	_location = NULL;
-	str::size_type end = request.find("\r\n");
+	str::size_type end = eventstrct->content.find("\r\n");
 	if (end == str::npos) {
 		Logger::log("no \\r\\n found!!!", USER);
-		_badRequest = true; return ;
+		_badRequest = true;
+		return;
 	}
-	const str line = request.substr(0, end + 2);
+	const str line = eventstrct->content.substr(0, end + 2);
 	try {
 		checkHeaderMRP(line);
-		_location = findLocation(server);
+		_location = findLocation(eventstrct->server);
 		if (!_location)
-			return ;
+			return;
+
 		size_t length = _location->getUrlPath().size();
-		// if (length != 1)
-		// 	length++;
 		_resource = _uri.substr(length);
-		_localPathResource.append(server->getRoot());
+		_localPathResource.append(eventstrct->server->getRoot());
 		_localPathResource.append(_location->getRoot());
+
 		if (!_resource.empty() && _resource.at(0) != '/')
 			_localPathResource.append("/" + _resource);
 		else
 			_localPathResource.append(_resource);
+
 		if (Utils::isDirectory(_localPathResource)) {
 			if (_uri.at(_uri.length() - 1) != '/') {
 				_redirect = _uri.append("/");
-				return ;
+				return;
 			}
 			else if (!_location->getIndex().empty()) {
 				_resource = _location->getIndex();
 				_resourceExists = true;
-				if (_localPathResource[_localPathResource.size() -1] != '/')
+				if (_localPathResource[_localPathResource.size() - 1] != '/')
 					_localPathResource.append("/");
 				_localPathResource.append(_resource);
 			}
 			else if (_location->getAutoindex())
 				_autoIndex = true;
-			else if (_location->getRedirect().empty()){
+			else if (_location->getRedirect().empty()) {
 				_canAccess = false;
-				return ;
+				return;
 			}
 		}
-		if(!checkAllowMethod())
-			return ;
+
 		if (locationHasRedirection(_location)) {
 			_redirect = _location->getRedirect();
 			_redirect.append(_resource);
-			return ;
+			return;
 		}
+
 		parseResource();
+		if (!checkAllowMethod() && !_isCgi)
+			return;
 		_localPathResource = _localPathResource.substr(0, _localPathResource.find(_resource) + _resource.size());
 		_resourceExists = checkFileExists(_localPathResource);
 
-		_body = saveHeader(request.substr(end + 2));
-		addUser(_header);
-		
-	} catch(const badHeaderException &e) {
+		str afterHeader = saveHeader(eventstrct->content.substr(end + 2));
+		if (eventstrct->isChunked) {
+			_body = eventstrct->bodyDecoded;
+			addUser(_header);
+			if (!_isCgi && _body.size() > static_cast<size_t>(_location->getBodySize())){
+				_payLoad = true;
+				return ;
+			}
+		}
+		else {
+			_body = afterHeader;
+			addUser(_header);
+		}
+
+	} catch (const badHeaderException &e) {
 		_badRequest = true;
 		Logger::log(e.what(), USER);
-	} catch(...) {
+	} catch (...) {
 		_badRequest = true;
 		Logger::log("UNKNOWN FATAL ERROR AT HTTPREQUEST HEADER", ERROR);
 	}
@@ -109,7 +112,7 @@ void	HttpRequest::addUser(strMap &header) {
 				ss.str("");
 				userID++;
 				ss << "sessionId=" << _header["Host"].substr(_header["Host"].find(":") + 1) << "; " << "userId=" << userID;
-				SessionID = ss.str();		
+				SessionID = ss.str();
 				i = 0;
 			}
 		}
@@ -265,6 +268,7 @@ str			HttpRequest::getRedirect() const { return _redirect; }
 bool		HttpRequest::getAutoIndex() const { return _autoIndex; }
 bool		HttpRequest::getCanAccess() const { return _canAccess; }
 str			HttpRequest::getSessionUser() const { return _sessionUser; }
+bool		HttpRequest::getPayLoad() const { return _payLoad; }
 
 //Setters
 void		HttpRequest::setType(RequestType type) { _type = type; }
