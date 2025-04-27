@@ -6,45 +6,38 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/12 00:19:03 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/27 12:34:31 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/27 14:44:27 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
+
+#include "DirectoryEntry.hpp"
+#include "../WebSrv.hpp"
 #include <string>
-#include <vector>
 #include <sys/time.h>
 #include <sys/types.h>
-
-struct dirItemInfo {
-  std::string d_name;
-  std::string href;
-  unsigned char d_type;
-  off_t st_size;
-  struct timespec st_mtim;
-
-  void clear();
-};
+#include <vector>
 
 class AutoIndexTable {
 
-typedef std::vector<std::string> vStr;
-
 public:
-  AutoIndexTable(vStr const &th);
+  AutoIndexTable(strVec const &th);
+  ~AutoIndexTable(void);
 
-	~AutoIndexTable(void);
-
-	const std::string getAutoIndexTable(void);
-	void addDataRow(dirItemInfo const &dataRowInfo);
+  const std::string getAutoIndexTable(void);
+  void addDataRow(DirectoryEntry const &dataRowInfo);
 
 private:
-	vStr _headerRow;
-	std::vector<vStr> _dataRow;
+  strVec _headerRow;
+  std::vector<DirectoryEntry> _dataRow;
 
-  std::string getHtmlLink(dirItemInfo const &dataRowInfo);
+  std::string getHtmlLink(DirectoryEntry const &dataRowInfo);
   std::string getTimeString(struct timespec const &time);
+  const std::string getTableHeader(void);
+  const std::string getTableRows(void);
 
-	AutoIndexTable(void);
-	AutoIndexTable(AutoIndexTable const &other);
-	AutoIndexTable &operator=(AutoIndexTable const &other);
+  AutoIndexTable(void);
+  AutoIndexTable(AutoIndexTable const &other);
+  AutoIndexTable &operator=(AutoIndexTable const &other);
 };
