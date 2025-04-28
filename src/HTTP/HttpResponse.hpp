@@ -41,12 +41,10 @@ class HttpResponse : public AHttp {
 		void					staticFileDelete(const HttpRequest &request, Server* server);
 		void					redirecResponse(const HttpRequest &request, Server* server);
 		str						saveCgiHeader(const str cgiOutput);
-		void					replaceNewlines();
-
+		void					safeCloseCgiExec(Server *server, const str &msg);
 
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);
-		HttpResponse(const HttpResponse &other);
 		HttpResponse(int errorCode, Server *server);
 		HttpResponse(const HttpRequest &request, Server* server, str (*autoIndexFunction)(const str &path));
 		~HttpResponse();

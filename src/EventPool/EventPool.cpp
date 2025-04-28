@@ -38,6 +38,68 @@ EventPool::~EventPool() {
                     Utils::deleteItem<struct eventStructTmp>);
 }
 
+void  EventPool::checkBodySize(eventStructTmp* eventstrct)
+{
+  size_t headerEnd = eventstrct->content.find("\r\n\r\n");
+  std::string body = eventstrct->content.substr(headerEnd + 4);
+  if (body.size() > eventstrct->server->getBodySize()) {
+      Logger::log("Payload too large (Content-Length body)", WARNING);
+      throw HttpException(413, "Payload Too Large");
+  }
+}
+
+void	EventPool::parseHeader(eventStructTmp* eventstrct)
+{
+    size_t headerEnd = eventstrct->content.find("\r\n\r\n");
+    if (headerEnd != std::string::npos) {
+        eventstrct->headerParsed = true;
+        std::string header = eventstrct->content.substr(0, headerEnd + 4);
+        if (header.find("Transfer-Encoding: chunked") != std::string::npos) {
+            eventstrct->isChunked = true;
+        } else {
+            size_t clPos = header.find("Content-Length: ");
+            if (clPos != std::string::npos) {
+                clPos += 16;
+                size_t clEnd = header.find("\r\n", clPos);
+                std::string clStr = header.substr(clPos, clEnd - clPos);
+                Utils::atoi(clStr.c_str(), (int&)eventstrct->contentLength);
+            } else {
+                size_t methodEnd = header.find(' ');
+                std::string method = header.substr(0, methodEnd);
+                if (method == "POST" || method == "PUT" || method == "PATCH")
+                    throw HttpException(411, "Length Required");
+            }
+        }
+    } else if (eventstrct->content.size() > LIMIT_HEADER_SIZE) {
+        throw HttpException(431, "Header too large");
+    }
+}
+
+bool	EventPool::processChunk(eventStructTmp* eventstrct, size_t &headerEnd)
+{
+	std::string body = eventstrct->content.substr(headerEnd + 4);
+    while (true) {
+        size_t pos = body.find("\r\n");
+        if (pos == std::string::npos)
+            break; // aún no tenemos tamaño de chunk
+        std::string chunkSizeStr = body.substr(0, pos);
+        int chunkSize;
+        std::stringstream ss;
+        ss << std::hex << chunkSizeStr;
+        ss >> chunkSize;
+        if (chunkSize == 0) {
+            return true;
+        }
+        if (body.size() < pos + 2 + chunkSize + 2)
+            return false; // falta parte del chunk
+        std::string chunkData = body.substr(pos + 2, chunkSize);
+        eventstrct->bodyDecoded.append(chunkData);
+        body = body.substr(pos + 2 + chunkSize + 2);
+        eventstrct->content = eventstrct->content.substr(0, headerEnd + 4) + body;
+    }
+	return false;
+}
+
 bool EventPool::getRequest(int socketFd, eventStructTmp* eventstrct) {
     char buffer[4096];
     ssize_t bytes_read = 0;
@@ -51,75 +113,16 @@ bool EventPool::getRequest(int socketFd, eventStructTmp* eventstrct) {
             readSome = true;
             eventstrct->content.append(buffer, bytes_read);
             eventstrct->offset += bytes_read;
-
-            // Comprobación de Payload Too Large para Content-Length
             if (eventstrct->headerParsed && !eventstrct->isChunked) {
-                size_t headerEnd = eventstrct->content.find("\r\n\r\n");
-                std::string body = eventstrct->content.substr(headerEnd + 4);
-                if (body.size() > eventstrct->server->getBodySize()) {
-                    Logger::log("Payload too large (Content-Length body)", WARNING);
-                    throw HttpException(413, "Payload Too Large");
-                }
+              checkBodySize(eventstrct);
             }
-
-            // Procesar header si no estaba parseado
             if (!eventstrct->headerParsed) {
-                size_t headerEnd = eventstrct->content.find("\r\n\r\n");
-                if (headerEnd != std::string::npos) {
-                    eventstrct->headerParsed = true;
-                    std::string header = eventstrct->content.substr(0, headerEnd + 4);
-
-                    if (header.find("Transfer-Encoding: chunked") != std::string::npos) {
-                        eventstrct->isChunked = true;
-                    } else {
-                        size_t clPos = header.find("Content-Length: ");
-                        if (clPos != std::string::npos) {
-                            clPos += 16;
-                            size_t clEnd = header.find("\r\n", clPos);
-                            std::string clStr = header.substr(clPos, clEnd - clPos);
-                            Utils::atoi(clStr.c_str(), (int&)eventstrct->contentLength);
-                        } else {
-                            size_t methodEnd = header.find(' ');
-                            std::string method = header.substr(0, methodEnd);
-                            if (method == "POST" || method == "PUT" || method == "PATCH")
-                                throw HttpException(411, "Length Required");
-                        }
-                    }
-                } else if (eventstrct->content.size() > LIMIT_HEADER_SIZE) {
-                    throw HttpException(431, "Header too large");
-                }
+				parseHeader(eventstrct);
             }
-
-            // Procesar body
-            if (eventstrct->headerParsed) {
-                size_t headerEnd = eventstrct->content.find("\r\n\r\n");
-
+            if (eventstrct->headerParsed) { //No else ya que parseHeader puede cambiar el estado.
+				size_t headerEnd = eventstrct->content.find("\r\n\r\n");
                 if (eventstrct->isChunked) {
-                    std::string body = eventstrct->content.substr(headerEnd + 4);
-                    while (true) {
-                        size_t pos = body.find("\r\n");
-                        if (pos == std::string::npos)
-                            break; // aún no tenemos tamaño de chunk
-
-                        std::string chunkSizeStr = body.substr(0, pos);
-                        int chunkSize;
-                        std::stringstream ss;
-                        ss << std::hex << chunkSizeStr;
-                        ss >> chunkSize;
-
-                        if (chunkSize == 0) {
-                            done = true;
-                            break;
-                        }
-
-                        if (body.size() < pos + 2 + chunkSize + 2)
-                            break; // falta parte del chunk
-
-                        std::string chunkData = body.substr(pos + 2, chunkSize);
-                        eventstrct->bodyDecoded.append(chunkData);
-                        body = body.substr(pos + 2 + chunkSize + 2);
-                        eventstrct->content = eventstrct->content.substr(0, headerEnd + 4) + body;
-                    }
+					done = processChunk(eventstrct, headerEnd);
                 } else {
                     std::string body = eventstrct->content.substr(headerEnd + 4);
                     if (body.size() >= eventstrct->contentLength)
@@ -130,19 +133,15 @@ bool EventPool::getRequest(int socketFd, eventStructTmp* eventstrct) {
         else if (bytes_read == 0) {
             throw disconnectedException(socketFd);
         }
-        else { // bytes_read < 0
+        else {
             if (readSome)
-                break; // hemos leído algo antes: salida normal
+                break;
             else
-                throw socketReadException(socketFd); // error real
+                throw socketReadException(socketFd);
         }
     }
-
     return done;
 }
-
-
-
 
 void EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 {
@@ -323,8 +322,8 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 		if (close(fd) == -1)
 			Logger::log(str("Failed closing FD: ") + Utils::intToStr(fd), ERROR);
 	}
-	delete eventStruct; //Jamas deberia ser nulo llegado a este punto.
-	eventStruct = NULL; //Protección para errores en destructor.
+	delete eventStruct;
+	eventStruct = NULL;
 }
 
 HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
