@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/26 22:06:07 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/28 10:50:31 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,9 @@ class EventPool {
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
 		bool					headerTooLarge(str const &request, int &errorCode);
 		bool					setContentLength(eventStructTmp* eventstrct, int &content_lenght);
+		void					checkBodySize(eventStructTmp* eventstrct);
+		void					parseHeader(eventStructTmp* eventstrct);
+		bool					processChunk(eventStructTmp* eventstrct, size_t &headerEnd);
 
 	public:
 		EventPool(std::vector<Server*> &Servers);
