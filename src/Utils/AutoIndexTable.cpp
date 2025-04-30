@@ -6,13 +6,14 @@
 /*   By: fcarranz <fcarranz@student.42barcelona..>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/27 12:23:53 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/27 14:45:08 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/04/30 22:33:53 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "AutoIndexTable.hpp"
 #include "DirectoryEntry.hpp"
 #include "../WebSrv.hpp"
+#include <cstddef>
 #include <cstring>
 #include <sstream>
 #include <sys/types.h>
@@ -83,5 +84,14 @@ std::string AutoIndexTable::getTimeString(struct timespec const &time) {
 }
 
 void AutoIndexTable::addDataRow(DirectoryEntry const &dEntry) {
-  _dataRow.push_back(dEntry);
+  std::size_t index = 0;
+
+  while (index < _dataRow.size()) {
+    if (dEntry.d_type == DT_DIR && _dataRow[index].d_type != DT_DIR)
+      break;
+    if (dEntry.d_name.compare(_dataRow[index].d_name) < 0)
+      break;
+    ++index;
+  }
+  _dataRow.insert(_dataRow.begin() + index, dEntry);
 }
