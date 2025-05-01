@@ -46,6 +46,6 @@ class HttpResponse : public AHttp {
 		public:
 		HttpResponse(const HttpRequest &request, Server* server);
 		HttpResponse(int errorCode, Server *server);
-		HttpResponse(const HttpRequest &request, Server* server, str (*autoIndexFunction)(const str &path));
+		HttpResponse(const HttpRequest &request, Server* server, str autoIndexHTML);
 		~HttpResponse();
 };
