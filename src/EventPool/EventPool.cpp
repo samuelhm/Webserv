@@ -360,7 +360,7 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
     std::string uri("http://");
     uri.append(request.getHeader().find("Host")->second);
     uri.append(request.getUri());
-    return HttpResponse(request, server, AutoIndex::getAutoIndex(request.getLocation()->getUrlPath(), uri, request.getLocalPathResource()));
+    return HttpResponse(request, server, AutoIndex::getAutoIndex(request.getLocation()->getUrlPath(), uri, server->getRoot() + request.getLocation()->getRoot()));
   }
 	else
 		return HttpResponse(request, server);
