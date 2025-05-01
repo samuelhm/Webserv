@@ -94,14 +94,6 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
 		return safeCloseCgiExec(server, "Failed to create pipes");
 
-	fd_set	readFds;
-	FD_ZERO(&readFds);
-	FD_SET(pipe_fd[0], &readFds);
-
-	timeval time_out;
-	time_out.tv_sec = TIMEOUT_CGI;
-	time_out.tv_usec = 0;
-
 	pid_t pid = fork();
 	if (pid < 0)
 		return safeCloseCgiExec(server, "Failed to fork"); //Important, no estamos cerrando pipes aqui.
@@ -112,6 +104,7 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 		close(pipe_out[0]);
 		dup2(pipe_out[1], STDOUT_FILENO);
 		close(pipe_out[1]);
+		Logger::log(str(_argv[0]) + " " + _argv[1], WARNING);
 		execve(_argv[0], _argv, _envp);
 		perror("execve");
 		exit(1);
