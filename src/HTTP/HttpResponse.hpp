@@ -16,10 +16,12 @@
 #include "HttpRequest.hpp"
 #include "../ConfigFile/Server.hpp"
 #include <fstream>
+#include "../EventPool/EventPool.hpp"
 
 
 class Server;
 class HttpRequest;
+struct eventStructTmp;
 
 class HttpResponse : public AHttp {
 	public:
@@ -29,8 +31,9 @@ class HttpResponse : public AHttp {
 		char				**_argv;
 		str					_cgiOutput;
 		bool				_cgiSaveErr;
+		bool				_cgiNonBlock;
 		void					setErrorCode(int ErrorCode, Server* server);
-		void					cgiExec(const HttpRequest &request, Server *server);
+		void					cgiExec(const HttpRequest &request, eventStructTmp *eventStrct, int pollFd);
 		void					cgiSaveItems(const HttpRequest &request);
 		void					cgiFree();
 		void					staticFileExec(const HttpRequest &request, Server* server);
@@ -44,7 +47,9 @@ class HttpResponse : public AHttp {
 		void					safeCloseCgiExec(Server *server, const str &msg);
 
 		public:
+		HttpResponse();
 		HttpResponse(const HttpRequest &request, Server* server);
+		HttpResponse(const HttpRequest &request, eventStructTmp *eventStrct, int pollFd);
 		HttpResponse(int errorCode, Server *server);
 		HttpResponse(const HttpRequest &request, Server* server, str autoIndexHTML);
 		~HttpResponse();

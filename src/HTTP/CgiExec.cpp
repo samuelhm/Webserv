@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/28 11:25:46 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/02 20:19:48 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,74 +83,56 @@ str HttpResponse::saveCgiHeader(const str cgiOutput) {
 void	 HttpResponse::safeCloseCgiExec(Server *server, const str &msg) {
 	Logger::log(msg, ERROR);
 	cgiFree();
+	_cgiNonBlock = false;
 	setErrorCode(500, server);
 }
 
-void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
+void HttpResponse::cgiExec(const HttpRequest &request, eventStructTmp *eventStrct, int pollFd) {
 	cgiSaveItems(request);
-	int pipe_in[2];
-	int pipe_out[2];
+	int pipeIn[2];
+	int pipeOut[2];
 
-	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
-		return safeCloseCgiExec(server, "Failed to create pipes");
+	if (pipe(pipeIn) < 0 || pipe(pipeOut) < 0)
+		return safeCloseCgiExec(eventStrct->server, "Failed to create pipes");
+
+	fcntl(pipeIn[1],  F_SETFL, O_NONBLOCK);
+  	fcntl(pipeIn[1],  F_SETFD, FD_CLOEXEC);
+  	fcntl(pipeOut[0], F_SETFL, O_NONBLOCK);
+  	fcntl(pipeOut[0], F_SETFD, FD_CLOEXEC);
 
 	pid_t pid = fork();
 	if (pid < 0)
-		return safeCloseCgiExec(server, "Failed to fork"); //Important, no estamos cerrando pipes aqui.
+		return safeCloseCgiExec(eventStrct->server, "Failed to fork"); //Important, no estamos cerrando pipes aqui.
 	else if (pid == 0) {
-		close(pipe_in[1]);
-		dup2(pipe_in[0], STDIN_FILENO);
-		close(pipe_in[0]);
-		close(pipe_out[0]);
-		dup2(pipe_out[1], STDOUT_FILENO);
-		close(pipe_out[1]);
-		Logger::log(str(_argv[0]) + " " + _argv[1], WARNING);
+		dup2(pipeIn[0], STDIN_FILENO);
+		dup2(pipeOut[1], STDOUT_FILENO);
+		close(pipeIn[0]);
+		close(pipeIn[1]);
+		close(pipeOut[0]);
+		close(pipeOut[1]);
+
 		execve(_argv[0], _argv, _envp);
 		perror("execve");
 		exit(1);
 	}
 	else {
-		close(pipe_in[0]);
-		close(pipe_out[1]);
-		if (!request.getBody().empty()) {
-		    const char* body_ptr = request.getBody().c_str();
-		    size_t body_size = request.getBody().size();
-		    size_t total_written = 0;
-		    while (total_written < body_size) {
-		        ssize_t written = write(pipe_in[1], body_ptr + total_written, std::min<size_t>(8192, body_size - total_written));
-		        if (written == -1) {
-		            kill(pid, SIGKILL);
-					waitpid(pid, NULL, 0);
-					close(pipe_out[0]);
-					return safeCloseCgiExec(server, "Fail to write pipe.");
-		        }
-		        total_written += written;
-		    }
-		}
-		close(pipe_in[1]);
-		char buffer[8192];
-		ssize_t bytes;
-		while (true) {
-		    bytes = read(pipe_out[0], buffer, sizeof(buffer));
-		    if (bytes > 0)
-		        _cgiOutput.append(buffer, bytes);
-		    else if (bytes == 0)
-		        break;
-		    else {
-		        Logger::log("Error reading CGI output", WARNING);
-		        break;
-		    }
-		}
-		close(pipe_out[0]);
-		int status;
-		waitpid(pid, &status, 0);
-		cgiFree();
-		if ((WIFEXITED(status) && WEXITSTATUS(status)) || _cgiOutput.empty())
-			return setErrorCode(500, server);
-		_body = saveCgiHeader(_cgiOutput);
-		if (_line0.empty())
-			_line0 = "HTTP/1.1 200 OK\r\n";
-		if (_cgiSaveErr)
-			setErrorCode(500, server);
+		close(pipeIn[0]);
+		close(pipeOut[1]);
+
+		eventStrct->cgiData.pipeIn = pipeIn[1];
+		eventStrct->cgiData.pipeOut       = pipeOut[0];
+  		eventStrct->cgiData.cgiPid        = pid;
+  		eventStrct->cgiData.cgiWrite      = request.getBody();
+  		eventStrct->cgiData.writeOffset   = 0;
+  		eventStrct->cgiData.cgiRead.clear();
+  		eventStrct->cgiData.HeadersParsed = false;
+
+		struct epoll_event ev;
+  		ev.data.ptr = eventStrct;
+  		ev.events   = EPOLLOUT | EPOLLET;
+  		epoll_ctl(pollFd, EPOLL_CTL_ADD, pipeIn[1],  &ev);
+  		ev.events   = EPOLLIN  | EPOLLET;
+  		epoll_ctl(pollFd, EPOLL_CTL_ADD, pipeOut[0], &ev);
+		eventStrct->eventType = CGISENDING;
 	}
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/26 15:02:55 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/02 20:20:22 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,7 +163,9 @@ void EventPool::handleClientRequest(int fd, eventStructTmp *eventStrct)
 			return;
 		Logger::log(str("Received request: ") + eventStrct->content, INFO);
 		HttpRequest request(eventStrct);
-		HttpResponse response = stablishResponse(request, eventStrct->server);
+		HttpResponse response = stablishResponse(request, eventStrct->server, eventStrct);
+    if (response._cgiNonBlock)
+      return ;
 		saveResponse(response, eventStrct);
 	}
 	catch (const HttpException& e) {
@@ -273,15 +275,37 @@ void EventPool::poolLoop() {
   }
 }
 
+int EventPool::setFd(eventStructTmp *eventStrct)
+{
+    switch (eventStrct->eventType)
+    {
+    case NEWCONNECTION:
+      return  eventStrct->server->getServerFd();
+      break;
+    case RECIEVEREQUEST:
+      return  eventStrct->client_fd;
+      break;
+    case SENDRESPONSE:
+      return  eventStrct->client_fd;
+      break;
+    case CGISENDING:
+      return  eventStrct->cgiData.pipeIn;
+      break;
+    case CGIREADING:
+      return  eventStrct->cgiData.pipeOut;
+      break;
+    default:
+    return 0;
+      break;
+    }
+}
+
 void EventPool::processEvents() {
   for (int i = 0; i < _nfds; ++i) {
     int fd;
     eventStructTmp *eventStrct =
         static_cast<eventStructTmp *>(events[i].data.ptr);
-    if (eventStrct->eventType == NEWCONNECTION)
-      fd = eventStrct->server->getServerFd();
-    else
-      fd = eventStrct->client_fd;
+    fd = setFd(eventStrct);
     uint32_t flags = events[i].events;
     if (flags & (EPOLLHUP | EPOLLERR)) {
       Logger::log(str("Closing fd: ") + Utils::intToStr(fd) +
@@ -290,13 +314,24 @@ void EventPool::processEvents() {
       safeCloseAndDelete(fd, eventStrct);
       continue ;
     }
-    if (eventStrct->eventType == NEWCONNECTION) {
-      handleClientConnection(fd, eventStrct);
-      continue ;
-    } else if (eventStrct->eventType == RECIEVEREQUEST)
-      handleClientRequest(fd, eventStrct);
-    else if (!handleClientWrite(fd, eventStrct))
-        continue ;
+    switch (eventStrct->eventType)
+    {
+      case NEWCONNECTION:
+        handleClientConnection(fd, eventStrct);
+        break;
+      case RECIEVEREQUEST:
+        handleClientRequest(fd, eventStrct);
+        break;
+      case SENDRESPONSE:
+        handleClientWrite(fd, eventStrct);
+        break;
+      case CGISENDING:
+        handleCgiWrite(fd, eventStrct);
+        break;
+      case CGIREADING:
+        handleCgiRead(fd, eventStrct);
+        break;
+    }
   }
 }
 
@@ -338,7 +373,7 @@ void EventPool::safeCloseAndDelete(int fd, eventStructTmp* eventStruct) {
 	eventStruct = NULL;
 }
 
-HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
+HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server, eventStructTmp *eventStrct)
 {
   if (request.getPayLoad())
     return Utils::codeResponse(502, server);
@@ -362,9 +397,102 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
     uri.append(request.getUri());
     return HttpResponse(request, server, AutoIndex::getAutoIndex(request.getLocation()->getUrlPath(), uri, server->getRoot() + request.getLocation()->getRoot()));
   }
-	else
-		return HttpResponse(request, server);
+	else if (request.getIsCgi())
+		return HttpResponse(request, eventStrct, _pollFd);
+  else
+    return HttpResponse(request, server);
 }
+
+#include <sys/wait.h>  // para waitpid
+
+void EventPool::handleCgiRead(int fd, eventStructTmp* eventStrct) {
+    char buf[8192];
+    for (;;) {
+        ssize_t n = read(fd, buf, sizeof(buf));
+        if (n > 0) {
+            eventStrct->cgiData.cgiRead.append(buf, n);
+        }
+        else if (n == 0) {
+            // EOF: CGI terminó. Preparamos la respuesta HTTP
+            close(fd);
+            int status;
+            waitpid(eventStrct->cgiData.cgiPid, &status, 0);
+
+            HttpResponse resp;
+            std::string body = resp.saveCgiHeader(eventStrct->cgiData.cgiRead);
+            if (resp._line0.empty()) {
+                resp._line0 = "HTTP/1.1 200 OK\r\n";
+            }
+            // montar headers + body en eventStrct->content
+            std::string out = resp._line0;
+            std::map<std::string,std::string> hdrs = resp.getHeader();
+            for (std::map<std::string,std::string>::const_iterator it = hdrs.begin(); it != hdrs.end(); ++it) {
+                out += it->first;
+                out += ": ";
+                out += it->second;
+                out += "\r\n";
+            }
+            out += "\r\n";
+            out += body;
+
+            eventStrct->content   = out;
+            eventStrct->offset    = 0;
+            eventStrct->eventType = SENDRESPONSE;
+
+            // pasar el client_fd a EPOLLOUT
+            struct epoll_event ev;
+            ev.events   = EPOLLOUT | EPOLLET;
+            ev.data.ptr = static_cast<void*>(eventStrct);
+            if (epoll_ctl(_pollFd, EPOLL_CTL_MOD, eventStrct->client_fd, &ev) == -1) {
+                Logger::log("Failed to modify event to EPOLLOUT", ERROR);
+            }
+            return;
+        }
+        else if (errno == EAGAIN) {
+            // sin más datos ahora, espera próximo EPOLLIN
+            return;
+        }
+        else {
+            // error: abortar CGI
+            kill(eventStrct->cgiData.cgiPid, SIGKILL);
+            safeCloseAndDelete(fd, eventStrct);
+            return;
+        }
+    }
+}
+
+void EventPool::handleCgiWrite(int fd, eventStructTmp* eventStrct) {
+    const char* ptr = eventStrct->cgiData.cgiWrite.data() + eventStrct->cgiData.writeOffset;
+    size_t rem = eventStrct->cgiData.cgiWrite.size() - eventStrct->cgiData.writeOffset;
+
+    while (rem > 0) {
+        ssize_t n = write(fd, ptr, rem);
+        if (n > 0) {
+            eventStrct->cgiData.writeOffset += n;
+            ptr  += n;
+            rem  -= n;
+        }
+        else if (errno == EAGAIN) {
+            // pipe lleno, espera próximo EPOLLOUT
+            return;
+        }
+        else {
+            // error grave: abortar CGI
+            kill(eventStrct->cgiData.cgiPid, SIGKILL);
+            safeCloseAndDelete(fd, eventStrct);
+            return;
+        }
+    }
+
+    // todo escrito: desuscribir EPOLLOUT y pasar a lectura
+    if (epoll_ctl(_pollFd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+        Logger::log("Failed to remove pipeIn from epoll", ERROR);
+    }
+    close(fd);
+    eventStrct->eventType = CGIREADING;
+}
+
+int EventPool::getPollFd() {return _pollFd;}
 
 EventPool::disconnectedException::disconnectedException(int fd) {
   this->message = str("Client Disconnected: Server = ") + Utils::intToStr(fd);

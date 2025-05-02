@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebSrv.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:23:53 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/25 21:31:53 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/02 19:00:02 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,5 +51,7 @@ enum EventType
 {
 	NEWCONNECTION,
 	RECIEVEREQUEST,
-	SENDRESPONSE
+	SENDRESPONSE,
+	CGISENDING,
+	CGIREADING
 };

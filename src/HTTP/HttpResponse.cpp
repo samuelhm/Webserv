@@ -173,16 +173,22 @@ void  HttpResponse::redirecResponse(const HttpRequest &request, Server* server)
 }
 
 HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp() {
+	_cgiNonBlock = false;
 	_cgiSaveErr = false;
 	if (!request.getRedirect().empty()) {
 		redirecResponse(request, server);
 	}
-	else if (!request.getIsCgi())
-		staticFileExec(request, server);
-	else {
-		cgiExec(request, server);
-		Logger::log(_cgiOutput, USER);
-	}
+	staticFileExec(request, server);
+}
+
+HttpResponse::HttpResponse() : AHttp() {
+	_envp = NULL;
+	_argv = NULL;
+}
+
+HttpResponse::HttpResponse(const HttpRequest &request, eventStructTmp *eventStrct, int pollFd) : AHttp() {
+	_cgiNonBlock = true;
+	cgiExec(request, eventStrct, pollFd);
 }
 
 HttpResponse::~HttpResponse() {}
