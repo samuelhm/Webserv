@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:44 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/02 19:43:35 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/02 20:11:59 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,7 @@ public:
   };
 
 private:
-  static DirectoryEntry getDirectoryEntry(dirent *entry, const str &locationUrlPath,
-                                     const str &localPathResource);
+  static DirectoryEntry getDirectoryEntry(dirent *entry, const Location &location, const str &resourceDirectory);
   AutoIndex();
   ~AutoIndex();
 };
