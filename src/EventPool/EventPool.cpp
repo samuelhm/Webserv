@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/26 15:02:55 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/02 20:03:49 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -356,12 +356,8 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
     return Utils::codeResponse(404, server);
   else if (request.getIsCgi() && !request.getResourceExists())
     return Utils::codeResponse(404, server);
-	else if (request.getLocation()->getAutoindex() && request.getReceivedMethod() == "GET" && !request.getResourceExists()) {
-    std::string uri("http://");
-    uri.append(request.getHeader().find("Host")->second);
-    uri.append(request.getUri());
-    return HttpResponse(request, server, AutoIndex::getAutoIndex(request.getLocation()->getUrlPath(), uri, server->getRoot() + request.getLocation()->getRoot()));
-  }
+	else if (request.getLocation()->getAutoindex() && request.getReceivedMethod() == "GET" && !request.getResourceExists())
+    return HttpResponse(request, server, AutoIndex::getAutoIndex(request.getLocation(), request.getUri()));
 	else
 		return HttpResponse(request, server);
 }

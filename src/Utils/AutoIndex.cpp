@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:21:03 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/02 18:31:29 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/02 20:01:45 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,9 @@ str AutoIndex::getPrevPath(const str &path)
 	return ruta.substr(0, pos + 1);
 }
 
-std::string getDirectoryToOpen(const str &locationUrlPath, const str &uri, const str &localPathResource) {
-  std::size_t start;
+str AutoIndex::getAutoIndex(const Location &location, const str &uri) {
 
-  start = uri.find(locationUrlPath);
-  start += locationUrlPath.size();
-
-  return std::string(localPathResource + uri.substr(start));
-}
-
-str AutoIndex::getAutoIndex(const str &locationUrlPath, const str &uri, const str &localPathResource) {
-
-  std::string dirToOpen = getDirectoryToOpen(locationUrlPath, uri, localPathResource);
+  std::string dirToOpen = location.getLocalPathFromUri(uri);
   DIR *dir = opendir(dirToOpen.c_str());
   if (!dir)
     throw DirectoryNotAccesible();
