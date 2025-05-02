@@ -15,14 +15,15 @@
 #include "../WebSrv.hpp"
 #include "../ConfigFile/Server.hpp"
 #include "../ConfigFile/Location.hpp"
+#include "../HTTP/HttpRequest.hpp"
+#include "../HTTP/HttpResponse.hpp"
 #include <string>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include "../HTTP/HttpRequest.hpp"
-#include "../HTTP/HttpResponse.hpp"
 #include "Logger.hpp"
 #include <dirent.h>
+#include <climits>
 
 class Server;
 class Location;
@@ -44,6 +45,9 @@ namespace Utils {
 	HttpResponse 		&codeResponse(int errorCode, Server *server);
 	str 				getMimeType(const str &filename);
 	bool				isDirectory(const std::string &path);
+	Location*			findLocation(Server* Server, const str &uri);
+	bool				appendPath(std::string &tmpPath, std::string const &uri);
+	bool				atoi(const char *str, int &out);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {

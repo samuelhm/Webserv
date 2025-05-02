@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:11 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/20 19:49:33 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/04/28 10:50:31 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,12 @@ struct eventStructTmp
 	EventType	eventType;
 	str			content;
 	size_t		offset;
+
+	//chunks
+	bool		headerParsed;
+	bool		isChunked;
+	size_t		contentLength;
+	str			bodyDecoded;
 };
 
 class EventPool {
@@ -43,7 +49,6 @@ class EventPool {
 		struct epoll_event events[1024];
 		std::vector<struct eventStructTmp *> _structs;
 
-		bool					isServerFd(std::vector<Server *> &Servers, int fdTmp);
 		struct eventStructTmp*	createEventStruct(int fd, Server* server, EventType eventType);
 		void					processEvents();
 		void					saveResponse(HttpResponse &response, eventStructTmp *eventStrct);
@@ -52,9 +57,12 @@ class EventPool {
 		void					handleClientConnection(int fd, eventStructTmp *eventStrct);
 		bool					handleClientWrite(int fd, eventStructTmp *eventStrct);
 		void					safeCloseAndDelete(int fd, eventStructTmp* eventStruct);
-		bool					checkCGI(str path, Server server);
 		HttpResponse			stablishResponse(HttpRequest &request, Server *server);
-		bool					headerTooLarge(str const &request);
+		bool					headerTooLarge(str const &request, int &errorCode);
+		bool					setContentLength(eventStructTmp* eventstrct, int &content_lenght);
+		void					checkBodySize(eventStructTmp* eventstrct);
+		void					parseHeader(eventStructTmp* eventstrct);
+		bool					processChunk(eventStructTmp* eventstrct, size_t &headerEnd);
 
 	public:
 		EventPool(std::vector<Server*> &Servers);
@@ -90,13 +98,15 @@ class EventPool {
 				const char *what() const throw();
 				virtual ~AcceptConnectionException() throw() {}
 		};
-		class headerTooLargeException : public std::exception
+		class HttpException : public std::exception
 		{
-			private:
-				const str message;
-			public:
-				headerTooLargeException(int fd);
-				const char *what() const throw();
-				virtual ~headerTooLargeException() throw() {}
+		private:
+			int _errorCode;
+			str _message;
+		public:
+			HttpException(int errorCode, const str& extra = "");
+			virtual const char *what() const throw();
+			int getErrorCode() const throw();
+			virtual ~HttpException() throw();
 		};
 };

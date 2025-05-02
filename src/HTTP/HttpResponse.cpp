@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   HttpResponse.cpp                                   :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 13:11:54 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/25 21:52:15 by fcarranz         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "HttpResponse.hpp"
 #include "../Utils/Utils.hpp"
 #include <cstdlib>
@@ -195,10 +183,6 @@ HttpResponse::HttpResponse(const HttpRequest &request, Server* server) : AHttp()
 		cgiExec(request, server);
 		Logger::log(_cgiOutput, USER);
 	}
-}
-
-HttpResponse::HttpResponse(const HttpResponse &other) : AHttp(other) {
-  *this = other;
 }
 
 HttpResponse::~HttpResponse() {}

@@ -38,7 +38,7 @@ std::string getDirectoryToOpen(const str &locationUrlPath, const str &uri, const
   start = uri.find(locationUrlPath);
   start += locationUrlPath.size() + 1;
 
-  return std::string(localPathResourceconst + uri.substr(start));
+  return std::string(localPathResourceconst + "/" + uri.substr(start));
 }
 
 str AutoIndex::getAutoIndex(const str &locationUrlPath, const str &uri, const str &localPathResource) {
@@ -59,11 +59,11 @@ str AutoIndex::getAutoIndex(const str &locationUrlPath, const str &uri, const st
     table.addDataRow(getDirectoryEntry(entry, locationUrlPath, localPathResource));
 
   closedir(dir);
-  
+
   str body(AUTOINDEXHEADER);
   body.append(table.getAutoIndexTable());
   body.append(AUTOINDEXFOOTER);
-  
+
   return body;
 }
 

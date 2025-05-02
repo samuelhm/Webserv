@@ -134,6 +134,7 @@ void Utils::fillStatusStr() {
 	_statusStr[421] = "Misdirected Request";
 	_statusStr[422] = "Unproce_statusStrable Content";
 	_statusStr[426] = "Upgrade Required";
+	_statusStr[431] = "Request Header Fields Too Large";
 	_statusStr[500] = "Internal Server Error";
 	_statusStr[501] = "Not Implemented";
 	_statusStr[502] = "Bad Gateway";
@@ -201,9 +202,12 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 	static HttpResponse resp403(403, server);
 	static HttpResponse resp404(404, server);
 	static HttpResponse resp405(405, server);
+	static HttpResponse resp411(411, server);
 	static HttpResponse resp413(413, server);
 	static HttpResponse resp414(414, server);
+	static HttpResponse resp431(431, server);
 	static HttpResponse resp500(500, server);
+	static HttpResponse resp502(502, server);
 
 	switch (errorCode)
 	{
@@ -211,9 +215,12 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server)
 		case 403: return resp403;
 		case 404: return resp404;
 		case 405: return resp405;
+		case 411: return resp411;
 		case 413: return resp413;
 		case 414: return resp414;
+		case 431: return resp431;
 		case 500: return resp500;
+		case 502: return resp502;
 		default:
 			Logger::log("getStaticErrorResponse: código no soportado: " + intToStr(errorCode), WARNING);
 			return resp500; // fallback
@@ -261,4 +268,69 @@ bool Utils::isDirectory(const std::string &path) {
 		return true;
 	}
 	return false;
+}
+
+Location*	Utils::findLocation(Server* Server, const str &uri)
+{
+  Logger::log(str("Looking for Location: ") + uri, INFO);
+  std::vector<Location*> locations = Server->getLocations();
+
+  std::string locationPath;
+  Location* location = NULL;
+  for (std::size_t i = 0 ; i < locations.size(); i++) {
+    locationPath = locations[i]->getUrlPath();
+    bool found = false;
+    std::string tmpPath;
+    while (appendPath(tmpPath, uri)) {
+      if (locationPath == tmpPath) {
+        found = true;
+        break;
+      }
+    }
+    if ((found && location == NULL) || (found && locationPath.size() > location->getUrlPath().size()))
+      location = locations[i];
+  }
+
+  if (location != NULL)
+    Logger::log("Location Encontrada: " + location->getUrlPath(), USER);
+  else
+    Logger::log("No se encontro location para este recurso: " + uri, USER);
+  return location;
+}
+
+bool Utils::appendPath(std::string &tmpPath, std::string const &uri)
+{
+  if (tmpPath.size() == uri.size())
+    return false;
+  if (tmpPath.empty()) {
+    tmpPath.append("/");
+    return true;
+  }
+// /images/algomas
+  size_t end = uri.find('/', tmpPath.size() + 1);
+  if (end == std::string::npos)
+    end = uri.size();
+  else
+    end -= tmpPath.size();
+  tmpPath.append(uri, tmpPath.size(), end);
+
+  return true;
+}
+
+bool Utils::atoi(const char *strmsg, int &out)
+{
+	errno = 0;
+	char *end;
+	long val = std::strtol(strmsg, &end, 10);
+
+	if (end == strmsg) {
+		Logger::log("Error: no se encontró ningún número válido", WARNING);
+		return false;
+	}
+	if (errno == ERANGE || val > INT_MAX || val < INT_MIN) {
+		Logger::log("Error: no se encontró ningún número válido", WARNING);
+		return false;
+	}
+	out = static_cast<int>(val);
+	return true;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiExec.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/26 11:59:59 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/04/28 11:25:46 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	strVec env_vec;
 	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
 	strMap	header = request.getHeader();
-	
+
 	if (!request.getQueryString().empty())
 		env_vec.push_back("QUERY_STRING=" + request.getQueryString());
 	if (!request.getPathInfo().empty())
@@ -47,105 +47,109 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 		envp[i] = strdup(env_vec[i].c_str());
 	envp[env_vec.size()] = NULL;
 
-	char** argv = new char*[2];
-	argv[0] = strdup(request.getLocalPathResource().c_str());
-	argv[1] = NULL;
+	char** argv = new char*[3];
+	argv[0] = strdup(request.getLocation()->getCgiPath().c_str());
+	argv[1] = strdup(request.getLocalPathResource().c_str());
+	argv[2] = NULL;
 	_envp = envp;
 	_argv = argv;
 }
 
-str	HttpResponse::saveCgiHeader(const str cgiOutput) {
-	size_t end = cgiOutput.find("\r\n");
-
-    if (end == str::npos) {
-		_cgiSaveErr = true;
-		return "";
-	}
-    str line = cgiOutput.substr(0, end);
-	if (line.empty())
-        return cgiOutput.substr(end + 2);
-    size_t separator = line.find(": ");
-    if (separator != str::npos) {
-        str key = line.substr(0, separator);
-        str value = line.substr(separator + 2);
-        _header[key] = value;
+str HttpResponse::saveCgiHeader(const str cgiOutput) {
+    size_t pos = 0;
+    size_t end;
+    bool headersDone = false;
+    while (!headersDone && (end = cgiOutput.find("\r\n", pos)) != str::npos) {
+        str line = cgiOutput.substr(pos, end - pos);
+        if (line.empty()) {
+            headersDone = true;
+            pos = end + 2;
+            break;
+        }
+        size_t separator = line.find(": ");
+        if (separator != str::npos) {
+            str key = line.substr(0, separator);
+            str value = line.substr(separator + 2);
+            if (key == "Status")
+                _line0 = "HTTP/1.1 " + value + "\r\n";
+            else
+                _header[key] = value;
+        }
+        pos = end + 2;
     }
-	if (end + 2 < cgiOutput.length())
-		return saveCgiHeader(cgiOutput.substr(end + 2));
-	return cgiOutput;
+    return cgiOutput.substr(pos);
 }
 
-void HttpResponse::replaceNewlines() {
-	size_t		pos = 0;
-	while ((pos = _cgiOutput.find('\n', pos)) != str::npos) {
-		_cgiOutput.replace(pos, 1, "\r\n");
-		pos += 2;
-	}
+void	 HttpResponse::safeCloseCgiExec(Server *server, const str &msg) {
+	Logger::log(msg, ERROR);
+	cgiFree();
+	setErrorCode(500, server);
 }
 
 void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 	cgiSaveItems(request);
+	int pipe_in[2];
+	int pipe_out[2];
 
-	int pipe_fd[2];
-	if (pipe(pipe_fd) == -1) {
-		Logger::log("Failed to create pipe", ERROR);
-		cgiFree();
-		setErrorCode(500, server);
-		return;
-	}
-	
-	fd_set	readFds;
-	FD_ZERO(&readFds);
-	FD_SET(pipe_fd[0], &readFds);
-
-	timeval time_out;
-	time_out.tv_sec = TIMEOUT_CGI;
-	time_out.tv_usec = 0;
+	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
+		return safeCloseCgiExec(server, "Failed to create pipes");
 
 	pid_t pid = fork();
-	if (pid < 0) {
-		Logger::log("Failed to fork", ERROR);
-		cgiFree();
-		setErrorCode(500, server);
-		return ;
-	}
+	if (pid < 0)
+		return safeCloseCgiExec(server, "Failed to fork"); //Important, no estamos cerrando pipes aqui.
 	else if (pid == 0) {
-		close(pipe_fd[0]);
-		dup2(pipe_fd[1], STDOUT_FILENO);
-		close(pipe_fd[1]);
-
-		if (execve(_argv[0], _argv, _envp) == -1) {
-			perror("execve");
-			exit(1);
-		}
+		close(pipe_in[1]);
+		dup2(pipe_in[0], STDIN_FILENO);
+		close(pipe_in[0]);
+		close(pipe_out[0]);
+		dup2(pipe_out[1], STDOUT_FILENO);
+		close(pipe_out[1]);
+		Logger::log(str(_argv[0]) + " " + _argv[1], WARNING);
+		execve(_argv[0], _argv, _envp);
+		perror("execve");
+		exit(1);
 	}
 	else {
-		close(pipe_fd[1]);
-
-		int control = select(pipe_fd[0] + 1, &readFds, NULL, NULL, &time_out);
-		if (control == 0) {
-			Logger::log("CGI timeout. Kill process", ERROR);
-			kill(pid, SIGQUIT);
+		close(pipe_in[0]);
+		close(pipe_out[1]);
+		if (!request.getBody().empty()) {
+		    const char* body_ptr = request.getBody().c_str();
+		    size_t body_size = request.getBody().size();
+		    size_t total_written = 0;
+		    while (total_written < body_size) {
+		        ssize_t written = write(pipe_in[1], body_ptr + total_written, std::min<size_t>(8192, body_size - total_written));
+		        if (written == -1) {
+		            kill(pid, SIGKILL);
+					waitpid(pid, NULL, 0);
+					close(pipe_out[0]);
+					return safeCloseCgiExec(server, "Fail to write pipe.");
+		        }
+		        total_written += written;
+		    }
 		}
-		if (control > 0) {
-
-			char buffer[1024];
-			ssize_t bytes;
-
-			while ((bytes = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
-				_cgiOutput.append(buffer, bytes);
+		close(pipe_in[1]);
+		char buffer[8192];
+		ssize_t bytes;
+		while (true) {
+		    bytes = read(pipe_out[0], buffer, sizeof(buffer));
+		    if (bytes > 0)
+		        _cgiOutput.append(buffer, bytes);
+		    else if (bytes == 0)
+		        break;
+		    else {
+		        Logger::log("Error reading CGI output", WARNING);
+		        break;
+		    }
 		}
-		// if (control == -1) { } // Que hacemos si falla select()?
-
-		close(pipe_fd[0]);
+		close(pipe_out[0]);
 		int status;
 		waitpid(pid, &status, 0);
 		cgiFree();
 		if ((WIFEXITED(status) && WEXITSTATUS(status)) || _cgiOutput.empty())
 			return setErrorCode(500, server);
-		replaceNewlines();
 		_body = saveCgiHeader(_cgiOutput);
-		_line0 = "HTTP/1.1 200 OK/r/n";
+		if (_line0.empty())
+			_line0 = "HTTP/1.1 200 OK\r\n";
 		if (_cgiSaveErr)
 			setErrorCode(500, server);
 	}
