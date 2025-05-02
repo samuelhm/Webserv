@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/02 22:54:40 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/02 23:24:45 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	const strMap &header = request.getHeader();
 
 	// Obligatorios
+
 	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
 	env_vec.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	env_vec.push_back("GATEWAY_INTERFACE=CGI/1.1");
@@ -44,8 +45,6 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	env_vec.push_back("QUERY_STRING=" + request.getQueryString());
 	if (!request.getPathInfo().empty())
 		env_vec.push_back("PATH_INFO=" + request.getPathInfo());
-	else
-		env_vec.push_back("PATH_INFO=");
 	env_vec.push_back("SCRIPT_NAME=" + request.getResource());
 
 	// Cuerpo
@@ -191,6 +190,14 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 						if (written == -1) {
 							if (errno == EAGAIN || errno == EWOULDBLOCK)
 								break;
+							if (errno == EPIPE) {
+								// El CGI ya no quiere más datos, cerramos escritura con gracia
+								Logger::log("CGI cerró stdin prematuramente (EPIPE)", WARNING);
+								epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_in[1], NULL);
+								close(pipe_in[1]);
+								pipe_in_open = false;
+								break; // seguir leyendo pipe_out
+							}
 							kill(pid, SIGKILL);
 							close(pipe_in[1]);
 							close(pipe_out[0]);
@@ -241,10 +248,9 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 			return setErrorCode(500, server);
 
 		_body = saveCgiHeader(_cgiOutput);
-		if (_line0.empty())
+		// if (_line0.empty())
 			_line0 = "HTTP/1.1 200 OK\r\n";
 		if (_cgiSaveErr)
 			setErrorCode(500, server);
 	}
 }
-
