@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:44 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/27 14:46:26 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/02 18:09:12 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,9 @@
 
 #include "../WebSrv.hpp"
 #include "DirectoryEntry.hpp"
-#include <string>
 #include <dirent.h>
 
-#define AUTOINDEXHEADER "<!DOCTYPE html>\n<html lang=\"es\">\n<head><title>AutoIndex</title></head>\n<body>\n"
+#define AUTOINDEXHEADER "<!DOCTYPE html>\n<html lang=\"es\">\n<head><title>AutoIndex</title><link rel=\"stylesheet\" href=\"http://localhost:8080/css/style.css\"></head>\n<body>\n"
 #define AUTOINDEXFOOTER "</body>\n</html>"
 
 class AutoIndex {
