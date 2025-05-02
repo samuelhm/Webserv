@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/02 23:24:45 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/03 00:09:52 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ void HttpResponse::cgiFree() {
 	for (char** p = _envp; *p != NULL; ++p)
 		delete[] *p;
 	delete[] _envp;
-
 	for (char** p = _argv; *p != NULL; ++p)
 		delete[] *p;
 	delete[] _argv;
@@ -34,46 +33,34 @@ void HttpResponse::cgiFree() {
 void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	strVec env_vec;
 	const strMap &header = request.getHeader();
-
-	// Obligatorios
-
 	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
 	env_vec.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	env_vec.push_back("GATEWAY_INTERFACE=CGI/1.1");
-
-	// Info del recurso
-	env_vec.push_back("QUERY_STRING=" + request.getQueryString());
+	if(!request.getQueryString().empty())
+		env_vec.push_back("QUERY_STRING=" + request.getQueryString());
 	if (!request.getPathInfo().empty())
 		env_vec.push_back("PATH_INFO=" + request.getPathInfo());
+	else
+		env_vec.push_back("PATH_INFO=" + request.getUri());
 	env_vec.push_back("SCRIPT_NAME=" + request.getResource());
-
-	// Cuerpo
 	env_vec.push_back("CONTENT_LENGTH=" + Utils::intToStr(request.getBody().length()));
 	if (header.count("Content-Type"))
 		env_vec.push_back("CONTENT_TYPE=" + header.at("Content-Type"));
-
-	// Cookies
 	env_vec.push_back("HTTP_COOKIE=" + request.getSessionUser());
-
-	// Exportar todos los headers como HTTP_*
 	for (strMap::const_iterator it = header.begin(); it != header.end(); ++it) {
 		std::string key = it->first;
 		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
 		std::replace(key.begin(), key.end(), '-', '_');
 		env_vec.push_back("HTTP_" + key + "=" + it->second);
 	}
-
-	// Construcción final del entorno
 	char** envp = new char*[env_vec.size() + 1];
 	for (size_t i = 0; i < env_vec.size(); i++)
 		envp[i] = strdup(env_vec[i].c_str());
 	envp[env_vec.size()] = NULL;
-
 	char** argv = new char*[3];
 	argv[0] = strdup(request.getLocation()->getCgiPath().c_str());
 	argv[1] = strdup(request.getLocalPathResource().c_str());
 	argv[2] = NULL;
-
 	_envp = envp;
 	_argv = argv;
 }
@@ -150,14 +137,14 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 		size_t total_written = 0;
 
 		bool pipe_out_open = true;
-		bool pipe_in_open = (body_size > 0); // << Solo abrimos si hay algo que enviar
+		bool pipe_in_open = (body_size > 0);
 
 		if (pipe_in_open) {
 			ev_in.events = EPOLLOUT | EPOLLET;
 			ev_in.data.fd = pipe_in[1];
 			epoll_ctl(epoll_fd, EPOLL_CTL_ADD, pipe_in[1], &ev_in);
 		} else {
-			close(pipe_in[1]); // << Aquí el fix importante
+			close(pipe_in[1]);
 		}
 
 		ev_out.events = EPOLLIN | EPOLLET;
@@ -191,12 +178,11 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 							if (errno == EAGAIN || errno == EWOULDBLOCK)
 								break;
 							if (errno == EPIPE) {
-								// El CGI ya no quiere más datos, cerramos escritura con gracia
 								Logger::log("CGI cerró stdin prematuramente (EPIPE)", WARNING);
 								epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_in[1], NULL);
 								close(pipe_in[1]);
 								pipe_in_open = false;
-								break; // seguir leyendo pipe_out
+								break;
 							}
 							kill(pid, SIGKILL);
 							close(pipe_in[1]);
@@ -248,7 +234,7 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 			return setErrorCode(500, server);
 
 		_body = saveCgiHeader(_cgiOutput);
-		// if (_line0.empty())
+		if (_line0.empty())
 			_line0 = "HTTP/1.1 200 OK\r\n";
 		if (_cgiSaveErr)
 			setErrorCode(500, server);
