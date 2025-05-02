@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Logger.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:21:18 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/05/02 22:21:55 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ void Logger::log(const str& msg, DebugType type) {
 	if (type < currentLevel)
 		return;
 
-	std::cout << getColor(type) << getIcon(type) << msg << RESET << std::endl;
+	std::cerr << getColor(type) << getIcon(type) << msg << RESET << std::endl;
 }
 
 const char* Logger::getIcon(DebugType type) {

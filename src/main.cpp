@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:44:20 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/20 19:31:52 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/02 22:11:03 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ int main(int ac, char **av) {
     Logger::log("Error en señal", ERROR);
     return (1);
   }
+  signal(SIGPIPE, SIG_IGN);
   Logger::log("Trying to get DebugLever form Env..", INFO);
   Logger::initFromEnv();
   if (ac != 2) {

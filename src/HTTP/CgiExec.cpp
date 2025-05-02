@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/28 11:25:46 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/02 22:54:40 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,15 +33,38 @@ void HttpResponse::cgiFree() {
 
 void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	strVec env_vec;
-	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
-	strMap	header = request.getHeader();
+	const strMap &header = request.getHeader();
 
-	if (!request.getQueryString().empty())
-		env_vec.push_back("QUERY_STRING=" + request.getQueryString());
+	// Obligatorios
+	env_vec.push_back("REQUEST_METHOD=" + request.getReceivedMethod());
+	env_vec.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	env_vec.push_back("GATEWAY_INTERFACE=CGI/1.1");
+
+	// Info del recurso
+	env_vec.push_back("QUERY_STRING=" + request.getQueryString());
 	if (!request.getPathInfo().empty())
 		env_vec.push_back("PATH_INFO=" + request.getPathInfo());
-	// if (!header["Cookie"].empty())
+	else
+		env_vec.push_back("PATH_INFO=");
+	env_vec.push_back("SCRIPT_NAME=" + request.getResource());
+
+	// Cuerpo
+	env_vec.push_back("CONTENT_LENGTH=" + Utils::intToStr(request.getBody().length()));
+	if (header.count("Content-Type"))
+		env_vec.push_back("CONTENT_TYPE=" + header.at("Content-Type"));
+
+	// Cookies
 	env_vec.push_back("HTTP_COOKIE=" + request.getSessionUser());
+
+	// Exportar todos los headers como HTTP_*
+	for (strMap::const_iterator it = header.begin(); it != header.end(); ++it) {
+		std::string key = it->first;
+		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+		std::replace(key.begin(), key.end(), '-', '_');
+		env_vec.push_back("HTTP_" + key + "=" + it->second);
+	}
+
+	// Construcción final del entorno
 	char** envp = new char*[env_vec.size() + 1];
 	for (size_t i = 0; i < env_vec.size(); i++)
 		envp[i] = strdup(env_vec[i].c_str());
@@ -51,9 +74,11 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
 	argv[0] = strdup(request.getLocation()->getCgiPath().c_str());
 	argv[1] = strdup(request.getLocalPathResource().c_str());
 	argv[2] = NULL;
+
 	_envp = envp;
 	_argv = argv;
 }
+
 
 str HttpResponse::saveCgiHeader(const str cgiOutput) {
     size_t pos = 0;
@@ -94,9 +119,12 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
 		return safeCloseCgiExec(server, "Failed to create pipes");
 
+	fcntl(pipe_in[1], F_SETFL, O_NONBLOCK);
+	fcntl(pipe_out[0], F_SETFL, O_NONBLOCK);
+
 	pid_t pid = fork();
 	if (pid < 0)
-		return safeCloseCgiExec(server, "Failed to fork"); //Important, no estamos cerrando pipes aqui.
+		return safeCloseCgiExec(server, "Failed to fork");
 	else if (pid == 0) {
 		close(pipe_in[1]);
 		dup2(pipe_in[0], STDIN_FILENO);
@@ -104,7 +132,7 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 		close(pipe_out[0]);
 		dup2(pipe_out[1], STDOUT_FILENO);
 		close(pipe_out[1]);
-		Logger::log(str(_argv[0]) + " " + _argv[1], WARNING);
+
 		execve(_argv[0], _argv, _envp);
 		perror("execve");
 		exit(1);
@@ -112,41 +140,106 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 	else {
 		close(pipe_in[0]);
 		close(pipe_out[1]);
-		if (!request.getBody().empty()) {
-		    const char* body_ptr = request.getBody().c_str();
-		    size_t body_size = request.getBody().size();
-		    size_t total_written = 0;
-		    while (total_written < body_size) {
-		        ssize_t written = write(pipe_in[1], body_ptr + total_written, std::min<size_t>(8192, body_size - total_written));
-		        if (written == -1) {
-		            kill(pid, SIGKILL);
-					waitpid(pid, NULL, 0);
-					close(pipe_out[0]);
-					return safeCloseCgiExec(server, "Fail to write pipe.");
-		        }
-		        total_written += written;
-		    }
+
+		int epoll_fd = epoll_create1(0);
+		if (epoll_fd == -1)
+			return safeCloseCgiExec(server, "Failed to create epoll");
+
+		struct epoll_event ev_in, ev_out;
+		const char* body_ptr = request.getBody().c_str();
+		size_t body_size = request.getBody().size();
+		size_t total_written = 0;
+
+		bool pipe_out_open = true;
+		bool pipe_in_open = (body_size > 0); // << Solo abrimos si hay algo que enviar
+
+		if (pipe_in_open) {
+			ev_in.events = EPOLLOUT | EPOLLET;
+			ev_in.data.fd = pipe_in[1];
+			epoll_ctl(epoll_fd, EPOLL_CTL_ADD, pipe_in[1], &ev_in);
+		} else {
+			close(pipe_in[1]); // << Aquí el fix importante
 		}
-		close(pipe_in[1]);
+
+		ev_out.events = EPOLLIN | EPOLLET;
+		ev_out.data.fd = pipe_out[0];
+		epoll_ctl(epoll_fd, EPOLL_CTL_ADD, pipe_out[0], &ev_out);
+
 		char buffer[8192];
-		ssize_t bytes;
-		while (true) {
-		    bytes = read(pipe_out[0], buffer, sizeof(buffer));
-		    if (bytes > 0)
-		        _cgiOutput.append(buffer, bytes);
-		    else if (bytes == 0)
-		        break;
-		    else {
-		        Logger::log("Error reading CGI output", WARNING);
-		        break;
-		    }
+
+		while (pipe_in_open || pipe_out_open) {
+			struct epoll_event events[2];
+			int n = epoll_wait(epoll_fd, events, 2, 5000); // 5 sec timeout
+			if (n == -1) {
+				kill(pid, SIGKILL);
+				if (pipe_in_open) close(pipe_in[1]);
+				if (pipe_out_open) close(pipe_out[0]);
+				waitpid(pid, NULL, 0);
+				return safeCloseCgiExec(server, "epoll_wait error");
+			}
+			if (n == 0) {
+				kill(pid, SIGKILL);
+				if (pipe_in_open) close(pipe_in[1]);
+				if (pipe_out_open) close(pipe_out[0]);
+				waitpid(pid, NULL, 0);
+				return safeCloseCgiExec(server, "Timeout in CGI execution");
+			}
+			for (int i = 0; i < n; ++i) {
+				if (pipe_in_open && events[i].data.fd == pipe_in[1]) {
+					while (total_written < body_size) {
+						ssize_t written = write(pipe_in[1], body_ptr + total_written, body_size - total_written);
+						if (written == -1) {
+							if (errno == EAGAIN || errno == EWOULDBLOCK)
+								break;
+							kill(pid, SIGKILL);
+							close(pipe_in[1]);
+							close(pipe_out[0]);
+							waitpid(pid, NULL, 0);
+							return safeCloseCgiExec(server, "Write to pipe_in failed");
+						}
+						total_written += written;
+					}
+					if (total_written == body_size) {
+						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_in[1], NULL);
+						close(pipe_in[1]);
+						pipe_in_open = false;
+					}
+				}
+				if (pipe_out_open && events[i].data.fd == pipe_out[0]) {
+					while (true) {
+						ssize_t bytes = read(pipe_out[0], buffer, sizeof(buffer));
+						if (bytes > 0)
+							_cgiOutput.append(buffer, bytes);
+						else if (bytes == 0) {
+							epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_out[0], NULL);
+							close(pipe_out[0]);
+							pipe_out_open = false;
+							break;
+						}
+						else if (errno == EAGAIN || errno == EWOULDBLOCK)
+							break;
+						else {
+							epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_out[0], NULL);
+							close(pipe_out[0]);
+							pipe_out_open = false;
+							Logger::log("Error reading CGI output", WARNING);
+							break;
+						}
+					}
+				}
+			}
 		}
-		close(pipe_out[0]);
+		close(epoll_fd);
+
 		int status;
 		waitpid(pid, &status, 0);
 		cgiFree();
+
+		Logger::log("CGI raw output: \n" + _cgiOutput, INFO);
+
 		if ((WIFEXITED(status) && WEXITSTATUS(status)) || _cgiOutput.empty())
 			return setErrorCode(500, server);
+
 		_body = saveCgiHeader(_cgiOutput);
 		if (_line0.empty())
 			_line0 = "HTTP/1.1 200 OK\r\n";
@@ -154,3 +247,4 @@ void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
 			setErrorCode(500, server);
 	}
 }
+
