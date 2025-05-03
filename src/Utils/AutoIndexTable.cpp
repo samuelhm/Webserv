@@ -11,20 +11,21 @@
 /* ************************************************************************** */
 
 #include "AutoIndexTable.hpp"
-#include "DirectoryEntry.hpp"
 #include "../WebSrv.hpp"
+#include "DirectoryEntry.hpp"
 #include <cstddef>
 #include <cstring>
+#include <dirent.h>
 #include <sstream>
 #include <sys/types.h>
-#include <dirent.h>
 
 AutoIndexTable::AutoIndexTable(void) {}
 AutoIndexTable::AutoIndexTable(AutoIndexTable const &other) { (void)other; }
 AutoIndexTable &AutoIndexTable::operator=(AutoIndexTable const &other) {
-  (void)other; return *this; }
+  (void)other;
+  return *this;
+}
 AutoIndexTable::~AutoIndexTable(void) {}
-
 
 AutoIndexTable::AutoIndexTable(strVec const &th) : _headerRow(th.size()) {
   for (std::size_t i = 0; i < th.size(); i++) {
@@ -47,7 +48,8 @@ const std::string AutoIndexTable::getTableRows(void) {
   std::ostringstream oss;
 
   oss << "<tbody>\n";
-  for (std::vector<DirectoryEntry>::const_iterator it = _dataRow.begin(); it != _dataRow.end(); it++) {
+  for (std::vector<DirectoryEntry>::const_iterator it = _dataRow.begin();
+       it != _dataRow.end(); it++) {
     oss << "<tr>\n"
         << "<td>" << getHtmlLink(*it) << "</td>\n"
         << "<td>" << getTimeString(it->st_mtim) << "</td>\n"
@@ -69,17 +71,18 @@ const std::string AutoIndexTable::getAutoIndexTable(void) {
   return table;
 }
 
-
 std::string AutoIndexTable::getHtmlLink(DirectoryEntry const &dataRowInfo) {
   std::ostringstream oss;
-  oss << "<a href=\"" << dataRowInfo.href << "\">" << dataRowInfo.d_name << "</a>";
+  oss << "<a href=\"" << dataRowInfo.href << "\">" << dataRowInfo.d_name
+      << "</a>";
   return oss.str();
 }
 
 std::string AutoIndexTable::getTimeString(struct timespec const &time) {
   char buffer[30];
   memset(&buffer, 0, sizeof(buffer));
-  strftime(buffer, sizeof(buffer), "%b %d %Y %H:%M:%S", localtime(&time.tv_sec));
+  strftime(buffer, sizeof(buffer), "%b %d %Y %H:%M:%S",
+           localtime(&time.tv_sec));
   return std::string(buffer);
 }
 
@@ -89,7 +92,8 @@ void AutoIndexTable::addDataRow(DirectoryEntry const &dEntry) {
   while (index < _dataRow.size()) {
     if (dEntry.d_type == DT_DIR && _dataRow[index].d_type != DT_DIR)
       break;
-    if (dEntry.d_type == _dataRow[index].d_type && dEntry.d_name.compare(_dataRow[index].d_name) < 0)
+    if (dEntry.d_type == _dataRow[index].d_type &&
+        dEntry.d_name.compare(_dataRow[index].d_name) < 0)
       break;
     ++index;
   }

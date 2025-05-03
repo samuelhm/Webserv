@@ -11,21 +11,21 @@
 /* ************************************************************************** */
 
 #include "Logger.hpp"
-#include <iostream>
 #include <cstdlib> // std::getenv
+#include <iostream>
 #include <string>
 
 DebugType Logger::currentLevel = INFO;
 
-#define RESET   "\033[0m"
-#define RED     "\033[31m"
+#define RESET "\033[0m"
+#define RED "\033[31m"
 #define BOLD_RED "\x1B[1m\033[31m"
-#define GREEN   "\033[32m"
-#define YELLOW  "\033[1;33m"
-#define BLUE    "\033[34m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[1;33m"
+#define BLUE "\033[34m"
 #define MAGENTA "\033[35m"
-#define CYAN    "\033[36m"
-#define WHITE   "\033[37m"
+#define CYAN "\033[36m"
+#define WHITE "\033[37m"
 
 #define BOLD "\x1B[1m"
 #define ITAL "\x1B[3m"
@@ -41,53 +41,58 @@ DebugType Logger::currentLevel = INFO;
 
 #define BOLDYLW "\x1B[1m\033[1;33m"
 
-
-void Logger::setLevel(DebugType level) {
-	currentLevel = level;
-}
+void Logger::setLevel(DebugType level) { currentLevel = level; }
 
 void Logger::initFromEnv() {
-	const char* env = std::getenv("DEBUG_LEVEL");
-	str lvl;
-	if (!env)
-		lvl = "WARNING";
-	else
-		lvl = env;
-	if (lvl == "INFO")         setLevel(INFO);
-	else if (lvl == "USER")    setLevel(USER);
-	else if (lvl == "WARNING") setLevel(WARNING);
-	else if (lvl == "ERROR")   setLevel(ERROR);
+  const char *env = std::getenv("DEBUG_LEVEL");
+  str lvl;
+  if (!env)
+    lvl = "WARNING";
+  else
+    lvl = env;
+  if (lvl == "INFO")
+    setLevel(INFO);
+  else if (lvl == "USER")
+    setLevel(USER);
+  else if (lvl == "WARNING")
+    setLevel(WARNING);
+  else if (lvl == "ERROR")
+    setLevel(ERROR);
 }
 
-void Logger::log(const str& msg, DebugType type) {
-	if (type < currentLevel)
-		return;
+void Logger::log(const str &msg, DebugType type) {
+  if (type < currentLevel)
+    return;
 
-	std::cerr << getColor(type) << getIcon(type) << msg << RESET << std::endl;
+  std::cerr << getColor(type) << getIcon(type) << msg << RESET << std::endl;
 }
 
-const char* Logger::getIcon(DebugType type) {
-	switch (type) {
-		case INFO:    return "🔵";
-		case USER:    return "🟢";
-		case WARNING: return "🟡";
-		case ERROR:   return "🔴";
-		default:                 return "";
-	}
+const char *Logger::getIcon(DebugType type) {
+  switch (type) {
+  case INFO:
+    return "🔵";
+  case USER:
+    return "🟢";
+  case WARNING:
+    return "🟡";
+  case ERROR:
+    return "🔴";
+  default:
+    return "";
+  }
 }
 
-
-const char* Logger::getColor(DebugType type) {
-	switch (type) {
-		case INFO:
-			return CYAN;
-		case WARNING:
-			return BOLDYLW;
-		case ERROR:
-			return BOLD_RED;
-		case USER:
-			return GREEN;
-		default:
-			return RESET;
-	}
+const char *Logger::getColor(DebugType type) {
+  switch (type) {
+  case INFO:
+    return CYAN;
+  case WARNING:
+    return BOLDYLW;
+  case ERROR:
+    return BOLD_RED;
+  case USER:
+    return GREEN;
+  default:
+    return RESET;
+  }
 }

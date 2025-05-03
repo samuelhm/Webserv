@@ -14,21 +14,20 @@
 #include "AutoIndexTable.hpp"
 #include "DirectoryEntry.hpp"
 #include <cstring>
+#include <ctime>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <ctime>
 
-str AutoIndex::getPrevPath(const str &path)
-{
-	if (path.empty())
-		return path;
-	str ruta = path;
-	if (ruta[ruta.size() - 1] == '/')
-		ruta.erase(ruta.size() - 1);
-	std::size_t pos = ruta.find_last_of('/');
-	if (pos == str::npos)
-		return "/";
-	return ruta.substr(0, pos + 1);
+str AutoIndex::getPrevPath(const str &path) {
+  if (path.empty())
+    return path;
+  str ruta = path;
+  if (ruta[ruta.size() - 1] == '/')
+    ruta.erase(ruta.size() - 1);
+  std::size_t pos = ruta.find_last_of('/');
+  if (pos == str::npos)
+    return "/";
+  return ruta.substr(0, pos + 1);
 }
 
 str AutoIndex::getAutoIndex(const Location &location, const str &uri) {
@@ -60,13 +59,16 @@ str AutoIndex::getAutoIndex(const Location &location, const str &uri) {
   return body;
 }
 
-DirectoryEntry AutoIndex::getDirectoryEntry(dirent *entry, const Location &location, const str &resourceDirectory) {
+DirectoryEntry AutoIndex::getDirectoryEntry(dirent *entry,
+                                            const Location &location,
+                                            const str &resourceDirectory) {
   DirectoryEntry current;
   struct stat sb;
 
   current.d_name = entry->d_name;
-  //current.href = locationUrlPath + "/" + entry->d_name;
-  current.href = location.getUriFromLocalPath(resourceDirectory + "/" + entry->d_name);
+  // current.href = locationUrlPath + "/" + entry->d_name;
+  current.href =
+      location.getUriFromLocalPath(resourceDirectory + "/" + entry->d_name);
   current.d_type = entry->d_type;
   if (current.d_type == DT_DIR)
     current.d_name.append("/");

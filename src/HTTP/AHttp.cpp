@@ -14,25 +14,22 @@
 
 AHttp::AHttp() {}
 
-AHttp::AHttp(str request) {
-	(void)request;
-}
+AHttp::AHttp(str request) { (void)request; }
 
 AHttp::AHttp(const AHttp &other) { *this = other; }
 
-AHttp& AHttp::operator=(const AHttp &other) {
+AHttp &AHttp::operator=(const AHttp &other) {
 
-	if (this != &other) {
-		_uri = other._uri ;
-		_header = other._header ;
-		_body = other._body ;
-	}
-	return *this;
+  if (this != &other) {
+    _uri = other._uri;
+    _header = other._header;
+    _body = other._body;
+  }
+  return *this;
 }
 
 AHttp::~AHttp() {}
 
-const strMap& AHttp::getHeader() const { return _header; }
-const str& AHttp::getBody() const { return _body; }
-const str& AHttp::getUri() const { return _uri; }
-
+const strMap &AHttp::getHeader() const { return _header; }
+const str &AHttp::getBody() const { return _body; }
+const str &AHttp::getUri() const { return _uri; }
