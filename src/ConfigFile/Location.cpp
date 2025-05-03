@@ -102,7 +102,7 @@ void	Location::setBodySize(const str &size){
 
 void Location::setLocalPath(const str &localPath) { _localPath = localPath; }
 
-const str Location::getLocalPathFromUri(const str &uri) {
+const str Location::getLocalPathFromUri(const str &uri) const {
   if (uri.find(_urlPath) == std::string::npos)
     return uri;
   //str localPath = uri.substr(_urlPath.size() - 1);
@@ -111,7 +111,7 @@ const str Location::getLocalPathFromUri(const str &uri) {
   return localPath;
 }
 
-const str Location::getUriFromLocalPath(const str &localPath) {
+const str Location::getUriFromLocalPath(const str &localPath) const {
   if (localPath.find(_localPath) == std::string::npos)
     return localPath;
   //str localPath = localPath.substr(_localPath.size() - 1);

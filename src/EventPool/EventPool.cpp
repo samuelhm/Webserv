@@ -357,7 +357,7 @@ HttpResponse			EventPool::stablishResponse(HttpRequest &request, Server *server)
   else if (request.getIsCgi() && !request.getResourceExists())
     return Utils::codeResponse(404, server);
 	else if (request.getLocation()->getAutoindex() && request.getReceivedMethod() == "GET" && !request.getResourceExists())
-    return HttpResponse(request, server, AutoIndex::getAutoIndex(request.getLocation(), request.getUri()));
+    return HttpResponse(request, server, AutoIndex::getAutoIndex(*(request.getLocation()), request.getUri()));
 	else
 		return HttpResponse(request, server);
 }
