@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/14 11:07:43 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/02 19:34:08 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,14 +148,14 @@ bool parseLocationBlock(str &line, std::istringstream &ss, Server *server)
 		Logger::log("Empty line inside Location block, ignoring...", WARNING);
 		return true;
 	}
-    Location *location = NULL;
-    try {
-    	location = getLocation(locationBlock);
-    } catch (BadSyntaxLocationBlockException const &e) {
-    	Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
+	Location *location = NULL;
+	try {
+		location = getLocation(locationBlock);
+	} catch (BadSyntaxLocationBlockException const &e) {
+		Logger::log(str("Location deleted and not included becouse line: ") + e.what(), ERROR);
 		if (location != NULL)
 			delete location;
-    return true;
+		return true;
 	}
 	if (server->locationExist(*location)) {
 		Logger::log(str("Location already exist: ") + location->getRoot(), WARNING);
@@ -167,6 +167,7 @@ bool parseLocationBlock(str &line, std::istringstream &ss, Server *server)
 	{
 		if (location->getBodySize() < 1)
 			location->setBodySize(Utils::intToStr(server->getBodySize()));
+		location->setLocalPath(server->getRoot() + location->getRoot());
 		server->getLocations().push_back(location);
 	}
 	return false;

@@ -89,7 +89,7 @@ void AutoIndexTable::addDataRow(DirectoryEntry const &dEntry) {
   while (index < _dataRow.size()) {
     if (dEntry.d_type == DT_DIR && _dataRow[index].d_type != DT_DIR)
       break;
-    if (dEntry.d_name.compare(_dataRow[index].d_name) < 0)
+    if (dEntry.d_type == _dataRow[index].d_type && dEntry.d_name.compare(_dataRow[index].d_name) < 0)
       break;
     ++index;
   }

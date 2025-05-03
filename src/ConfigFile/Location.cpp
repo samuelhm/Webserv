@@ -6,7 +6,7 @@
 /*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 13:46:04 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/05/02 19:59:55 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,3 +99,23 @@ void	Location::setBodySize(const str &size){
 			if (_bodySize == 0)
 				throw BadSyntaxLocationBlockException("Error on Body size");
 		}
+
+void Location::setLocalPath(const str &localPath) { _localPath = localPath; }
+
+const str Location::getLocalPathFromUri(const str &uri) const {
+  if (uri.find(_urlPath) == std::string::npos)
+    return uri;
+  //str localPath = uri.substr(_urlPath.size() - 1);
+  str localPath = uri.substr(_urlPath.size());
+  localPath.insert(0, _localPath);
+  return localPath;
+}
+
+const str Location::getUriFromLocalPath(const str &localPath) const {
+  if (localPath.find(_localPath) == std::string::npos)
+    return localPath;
+  //str localPath = localPath.substr(_localPath.size() - 1);
+  str uri = localPath.substr(_localPath.size());
+  uri.insert(0, _urlPath);
+  return uri;
+}

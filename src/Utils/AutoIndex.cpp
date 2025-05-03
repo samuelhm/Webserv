@@ -6,14 +6,13 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:21:03 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/27 14:49:07 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/02 20:15:45 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "AutoIndex.hpp"
 #include "AutoIndexTable.hpp"
 #include "DirectoryEntry.hpp"
-#include "Logger.hpp"
 #include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -32,19 +31,10 @@ str AutoIndex::getPrevPath(const str &path)
 	return ruta.substr(0, pos + 1);
 }
 
-std::string getDirectoryToOpen(const str &locationUrlPath, const str &uri, const str &localPathResourceconst) {
-  std::size_t start;
+str AutoIndex::getAutoIndex(const Location &location, const str &uri) {
 
-  start = uri.find(locationUrlPath);
-  start += locationUrlPath.size() + 1;
-
-  return std::string(localPathResourceconst + "/" + uri.substr(start));
-}
-
-str AutoIndex::getAutoIndex(const str &locationUrlPath, const str &uri, const str &localPathResource) {
-
-  std::string dirToOpen = getDirectoryToOpen(locationUrlPath, uri, localPathResource);
-  DIR *dir = opendir(dirToOpen.c_str());
+  std::string resourceDirectory = location.getLocalPathFromUri(uri);
+  DIR *dir = opendir(resourceDirectory.c_str());
   if (!dir)
     throw DirectoryNotAccesible();
 
@@ -55,8 +45,11 @@ str AutoIndex::getAutoIndex(const str &locationUrlPath, const str &uri, const st
   AutoIndexTable table(tHeaders);
 
   struct dirent *entry;
-  while ((entry = readdir(dir)) != NULL)
-    table.addDataRow(getDirectoryEntry(entry, locationUrlPath, localPathResource));
+  while ((entry = readdir(dir)) != NULL) {
+    if (entry->d_name == str("."))
+      continue;
+    table.addDataRow(getDirectoryEntry(entry, location, resourceDirectory));
+  }
 
   closedir(dir);
 
@@ -67,17 +60,17 @@ str AutoIndex::getAutoIndex(const str &locationUrlPath, const str &uri, const st
   return body;
 }
 
-DirectoryEntry AutoIndex::getDirectoryEntry(dirent *entry, const str &locationUrlPath, const str &localPathResource) {
+DirectoryEntry AutoIndex::getDirectoryEntry(dirent *entry, const Location &location, const str &resourceDirectory) {
   DirectoryEntry current;
-  str itemPath;
   struct stat sb;
 
   current.d_name = entry->d_name;
-  current.href = locationUrlPath + "/" + entry->d_name;
+  //current.href = locationUrlPath + "/" + entry->d_name;
+  current.href = location.getUriFromLocalPath(resourceDirectory + "/" + entry->d_name);
   current.d_type = entry->d_type;
   if (current.d_type == DT_DIR)
     current.d_name.append("/");
-  itemPath = localPathResource + entry->d_name;
+  str itemPath = location.getLocalPathFromUri(current.href);
   if (stat(itemPath.c_str(), &sb) != -1) {
     current.st_size = sb.st_size;
     current.st_mtim = sb.st_mtim;

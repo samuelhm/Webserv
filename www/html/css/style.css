@@ -1,0 +1,49 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  padding: 20px;
+}
+
+table {
+  width: 65%;
+  border-collapse: collapse;
+}
+
+thead th {
+  padding: 10px;
+  background-color: #f0f0f0;
+  text-align: left;
+}
+
+tbody td:first-child {
+  max-width: 265px;
+  overflow: hidden;
+  color: #007BFF;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+td a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #007BFF;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+td a:hover {
+  text-decoration: underline;
+}
+
+td:not(:first-child),
+th:not(:first-child) {
+  text-align: right;
+}
+
+td {
+  padding: 3px 10px;
+}
+
+
+
