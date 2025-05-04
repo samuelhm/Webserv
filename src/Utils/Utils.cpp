@@ -2,6 +2,7 @@
 #include "Utils.hpp"
 #include "../ConfigFile/ParseConfig.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "../WebSrv.hpp"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -362,4 +363,12 @@ bool Utils::atoi(const char *strmsg, int &out) {
   }
   out = static_cast<int>(val);
   return true;
+}
+
+void Utils::replaceCodeToSpaces(str &target) {
+  size_t pos = target.find("%20");
+  while (pos != str::npos) {
+    target.replace(pos, 3, " ");
+    pos = target.find("%20", pos + 1);
+  }
 }

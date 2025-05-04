@@ -178,6 +178,7 @@ void HttpRequest::checkHeaderMRP(const str &line) {
   if (path_end == str::npos)
     throw badHeaderException(DEFAULT_ERROR);
   _uri = line.substr(end, path_end - end);
+  Utils::replaceCodeToSpaces(_uri);
   if (line.substr(path_end + 1) !=
       "HTTP/1.1\r\n") // aqui no tinene \r\n porque ya lo quitamos en el
                       // constructor

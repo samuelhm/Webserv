@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:35 by erigonza          #+#    #+#             */
-/*   Updated: 2025/04/18 22:47:34 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/04 13:35:44 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ namespace Utils {
 	Location*			findLocation(Server* Server, const str &uri);
 	bool				appendPath(std::string &tmpPath, std::string const &uri);
 	bool				atoi(const char *str, int &out);
+	void				replaceCodeToSpaces(str &target);
 
 	template <typename K, typename V> //Definir aqui o crear tpp?
 	void print_map(const std::map<K, V>& m) {
