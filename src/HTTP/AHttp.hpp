@@ -13,23 +13,23 @@
 #pragma once
 
 #include "../WebSrv.hpp"
-#include <string>
 #include <map>
+#include <string>
 
 class AHttp {
-	protected:
-		str							_uri;
-		strMap						_header;
-		str							_body;
-	public:
-		AHttp();
-		AHttp(str request);
-		AHttp(const AHttp &other);
-		AHttp& operator=(const AHttp &other);
-		virtual ~AHttp() = 0;
-		
-		const str&		getUri() const;
-		const strMap&			getHeader() const;
-		const str&		getBody() const;
-};
+protected:
+  str _uri;
+  strMap _header;
+  str _body;
 
+public:
+  AHttp();
+  AHttp(str request);
+  AHttp(const AHttp &other);
+  AHttp &operator=(const AHttp &other);
+  virtual ~AHttp() = 0;
+
+  const str &getUri() const;
+  const strMap &getHeader() const;
+  const str &getBody() const;
+};

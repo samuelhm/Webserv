@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "DirectoryEntry.hpp"
 #include "../WebSrv.hpp"
+#include "DirectoryEntry.hpp"
 #include <string>
 #include <sys/time.h>
 #include <sys/types.h>

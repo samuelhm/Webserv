@@ -3,21 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   EventPool.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 14:47:03 by shurtado          #+#    #+#             */
-/*   Updated: 2025/05/02 20:03:49 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/04 19:39:34 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EventPool.hpp"
-#include "../Utils/AutoIndex.hpp"
-#include "../Utils/Utils.hpp"
-#include <cstring>
-#include <poll.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h> // We cant use getpid(). DELETE this line
 
 EventPool::EventPool(std::vector<Server *> &Servers) {
   _pollFd = epoll_create(1);

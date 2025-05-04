@@ -13,8 +13,8 @@
 #pragma once
 
 #include <string>
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 struct DirectoryEntry {
   std::string d_name;

@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   CgiExec.cpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/17 12:44:41 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/03 00:09:52 by shurtado         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../Utils/Utils.hpp"
 #include "HttpResponse.hpp"
 #include <csignal>
@@ -88,154 +76,147 @@ str HttpResponse::saveCgiHeader(const str cgiOutput) {
 }
 
 void HttpResponse::safeCloseCgiExec(Server *server, const str &msg) {
-  Logger::log(msg, ERROR);
+  Logger::log(msg, WARNING);
   cgiFree();
   setErrorCode(500, server);
 }
 
+void HttpResponse::childExec(int *pipeIn, int *pipeOut) {
+  close(pipeIn[1]);
+  dup2(pipeIn[0], STDIN_FILENO);
+  close(pipeIn[0]);
+  close(pipeOut[0]);
+  dup2(pipeOut[1], STDOUT_FILENO);
+  close(pipeOut[1]);
+
+  execve(_argv[0], _argv, _envp);
+  perror("execve");
+  exit(1);
+}
+
+void HttpResponse::fillEvents(bool &pipeInOpen, epoll_event &evIn,
+                              epoll_event &evOut, int epollFd, int *pipeIn,
+                              int *pipeOut) {
+  if (pipeInOpen) {
+    evIn.events = EPOLLOUT;
+    evIn.data.fd = pipeIn[1];
+    epoll_ctl(epollFd, EPOLL_CTL_ADD, pipeIn[1], &evIn);
+  } else {
+    close(pipeIn[1]);
+  }
+  evOut.events = EPOLLIN;
+  evOut.data.fd = pipeOut[0];
+  epoll_ctl(epollFd, EPOLL_CTL_ADD, pipeOut[0], &evOut);
+}
+
+void HttpResponse::writePipes(bool &pipeOutOpen, int epollFd, char *buffer,
+                              struct epoll_event &event, int *pipeOut) {
+  if (pipeOutOpen && event.data.fd == pipeOut[0]) {
+    ssize_t bytes = read(pipeOut[0], buffer, sizeof(buffer));
+    if (bytes > 0) {
+      _cgiOutput.append(buffer, bytes);
+    } else if (bytes == 0) {
+      epoll_ctl(epollFd, EPOLL_CTL_DEL, pipeOut[0], NULL);
+      close(pipeOut[0]);
+      pipeOutOpen = false;
+    }
+  }
+}
+
+void HttpResponse::readPipes(bool &pipeInOpen, size_t &totalWritten,
+                             size_t bodySize, int epollFd,
+                             struct epoll_event &event, int *pipeIn,
+                             const char *body) {
+  if (pipeInOpen && event.data.fd == pipeIn[1]) {
+    if (totalWritten < bodySize) {
+      ssize_t written =
+          write(pipeIn[1], body + totalWritten, bodySize - totalWritten);
+      if (written > 0) {
+        totalWritten += written;
+        if (totalWritten == bodySize) {
+          epoll_ctl(epollFd, EPOLL_CTL_DEL, pipeIn[1], NULL);
+          close(pipeIn[1]);
+          pipeInOpen = false;
+        }
+      }
+    }
+  }
+}
+
+void HttpResponse::workerExec(int *pipeIn, int *pipeOut, Server *server,
+                              const HttpRequest &request, pid_t &pid) {
+  close(pipeIn[0]);
+  close(pipeOut[1]);
+
+  int epollFd = epoll_create1(0);
+  if (epollFd == -1)
+    return safeCloseCgiExec(server, "Failed to create epoll");
+
+  struct epoll_event ev_in, ev_out;
+  size_t bodySize = request.getBody().size();
+  size_t totalWritten = 0;
+
+  bool pipeInOpen = (bodySize > 0);
+  bool pipeOutOpen = true;
+  fillEvents(pipeInOpen, ev_in, ev_out, epollFd, pipeIn, pipeOut);
+  char buffer[8192];
+
+  while (pipeInOpen || pipeOutOpen) {
+    struct epoll_event events[2];
+    int n = epoll_wait(epollFd, events, 2, 5000); // timeout de 5 segundos
+    if (n <= 0) {
+      kill(pid, SIGKILL);
+      if (pipeInOpen)
+        close(pipeIn[1]);
+      if (pipeOutOpen)
+        close(pipeOut[0]);
+      waitpid(pid, NULL, 0);
+      return safeCloseCgiExec(server, n == 0 ? "Timeout in CGI execution"
+                                             : "epoll_wait error");
+    }
+
+    for (int i = 0; i < n; ++i) {
+      readPipes(pipeInOpen, totalWritten, bodySize, epollFd, events[i], pipeIn,
+                request.getBody().c_str());
+      writePipes(pipeOutOpen, epollFd, buffer, events[i], pipeOut);
+    }
+  }
+
+  close(epollFd);
+
+  int status;
+  waitpid(pid, &status, 0);
+  cgiFree();
+
+  Logger::log("CGI raw output: \n" + _cgiOutput, INFO);
+
+  if ((WIFEXITED(status) && WEXITSTATUS(status)) || _cgiOutput.empty())
+    return setErrorCode(500, server);
+
+  _body = saveCgiHeader(_cgiOutput);
+  if (_line0.empty())
+    _line0 = "HTTP/1.1 200 OK\r\n";
+  if (_cgiSaveErr)
+    setErrorCode(500, server);
+}
+
 void HttpResponse::cgiExec(const HttpRequest &request, Server *server) {
   cgiSaveItems(request);
-  int pipe_in[2];
-  int pipe_out[2];
+  int pipeIn[2];
+  int pipeOut[2];
 
-  if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
+  if (pipe(pipeIn) == -1 || pipe(pipeOut) == -1)
     return safeCloseCgiExec(server, "Failed to create pipes");
 
-  fcntl(pipe_in[1], F_SETFL, O_NONBLOCK);
-  fcntl(pipe_out[0], F_SETFL, O_NONBLOCK);
+  fcntl(pipeIn[1], F_SETFL, O_NONBLOCK);
+  fcntl(pipeOut[0], F_SETFL, O_NONBLOCK);
 
   pid_t pid = fork();
   if (pid < 0)
     return safeCloseCgiExec(server, "Failed to fork");
   else if (pid == 0) {
-    close(pipe_in[1]);
-    dup2(pipe_in[0], STDIN_FILENO);
-    close(pipe_in[0]);
-    close(pipe_out[0]);
-    dup2(pipe_out[1], STDOUT_FILENO);
-    close(pipe_out[1]);
-
-    execve(_argv[0], _argv, _envp);
-    perror("execve");
-    exit(1);
+    childExec(pipeIn, pipeOut);
   } else {
-    close(pipe_in[0]);
-    close(pipe_out[1]);
-
-    int epoll_fd = epoll_create1(0);
-    if (epoll_fd == -1)
-      return safeCloseCgiExec(server, "Failed to create epoll");
-
-    struct epoll_event ev_in, ev_out;
-    const char *body_ptr = request.getBody().c_str();
-    size_t body_size = request.getBody().size();
-    size_t total_written = 0;
-
-    bool pipe_out_open = true;
-    bool pipe_in_open = (body_size > 0);
-
-    if (pipe_in_open) {
-      ev_in.events = EPOLLOUT | EPOLLET;
-      ev_in.data.fd = pipe_in[1];
-      epoll_ctl(epoll_fd, EPOLL_CTL_ADD, pipe_in[1], &ev_in);
-    } else {
-      close(pipe_in[1]);
-    }
-
-    ev_out.events = EPOLLIN | EPOLLET;
-    ev_out.data.fd = pipe_out[0];
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, pipe_out[0], &ev_out);
-
-    char buffer[8192];
-
-    while (pipe_in_open || pipe_out_open) {
-      struct epoll_event events[2];
-      int n = epoll_wait(epoll_fd, events, 2, 5000); // 5 sec timeout
-      if (n == -1) {
-        kill(pid, SIGKILL);
-        if (pipe_in_open)
-          close(pipe_in[1]);
-        if (pipe_out_open)
-          close(pipe_out[0]);
-        waitpid(pid, NULL, 0);
-        return safeCloseCgiExec(server, "epoll_wait error");
-      }
-      if (n == 0) {
-        kill(pid, SIGKILL);
-        if (pipe_in_open)
-          close(pipe_in[1]);
-        if (pipe_out_open)
-          close(pipe_out[0]);
-        waitpid(pid, NULL, 0);
-        return safeCloseCgiExec(server, "Timeout in CGI execution");
-      }
-      for (int i = 0; i < n; ++i) {
-        if (pipe_in_open && events[i].data.fd == pipe_in[1]) {
-          while (total_written < body_size) {
-            ssize_t written = write(pipe_in[1], body_ptr + total_written,
-                                    body_size - total_written);
-            if (written == -1) {
-              if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break;
-              if (errno == EPIPE) {
-                Logger::log("CGI cerró stdin prematuramente (EPIPE)", WARNING);
-                epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_in[1], NULL);
-                close(pipe_in[1]);
-                pipe_in_open = false;
-                break;
-              }
-              kill(pid, SIGKILL);
-              close(pipe_in[1]);
-              close(pipe_out[0]);
-              waitpid(pid, NULL, 0);
-              return safeCloseCgiExec(server, "Write to pipe_in failed");
-            }
-            total_written += written;
-          }
-          if (total_written == body_size) {
-            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_in[1], NULL);
-            close(pipe_in[1]);
-            pipe_in_open = false;
-          }
-        }
-        if (pipe_out_open && events[i].data.fd == pipe_out[0]) {
-          while (true) {
-            ssize_t bytes = read(pipe_out[0], buffer, sizeof(buffer));
-            if (bytes > 0)
-              _cgiOutput.append(buffer, bytes);
-            else if (bytes == 0) {
-              epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_out[0], NULL);
-              close(pipe_out[0]);
-              pipe_out_open = false;
-              break;
-            } else if (errno == EAGAIN || errno == EWOULDBLOCK)
-              break;
-            else {
-              epoll_ctl(epoll_fd, EPOLL_CTL_DEL, pipe_out[0], NULL);
-              close(pipe_out[0]);
-              pipe_out_open = false;
-              Logger::log("Error reading CGI output", WARNING);
-              break;
-            }
-          }
-        }
-      }
-    }
-    close(epoll_fd);
-
-    int status;
-    waitpid(pid, &status, 0);
-    cgiFree();
-
-    Logger::log("CGI raw output: \n" + _cgiOutput, INFO);
-
-    if ((WIFEXITED(status) && WEXITSTATUS(status)) || _cgiOutput.empty())
-      return setErrorCode(500, server);
-
-    _body = saveCgiHeader(_cgiOutput);
-    if (_line0.empty())
-      _line0 = "HTTP/1.1 200 OK\r\n";
-    if (_cgiSaveErr)
-      setErrorCode(500, server);
+    workerExec(pipeIn, pipeOut, server, request, pid);
   }
 }

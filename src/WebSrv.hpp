@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 #define LIMIT_HEADER_SIZE 1024
 #define NUMBER_OF_WORKERS 0
@@ -24,32 +24,16 @@ typedef std::vector<str> strVec;
 typedef strVec::iterator strVecIt;
 typedef std::map<str, str> strMap;
 
-enum	RequestType
-{
-	GET,
-	POST,
-	DELETE,
-	OPTIONS,
-	PUT,
-	HEAD,
-	TRACE,
-	CONNECT
+enum RequestType { GET, POST, DELETE, OPTIONS, PUT, HEAD, TRACE, CONNECT };
+
+enum OptionType {
+  SERVERNAME,
+  LISTEN,
+  ISDEFAULT,
+  ROOT,
+  BODYSIZE,
+  ERRORPAGE,
+  LOCATION
 };
 
-enum OptionType
-{
-	SERVERNAME,
-	LISTEN,
-	ISDEFAULT,
-	ROOT,
-	BODYSIZE,
-	ERRORPAGE,
-	LOCATION
-};
-
-enum EventType
-{
-	NEWCONNECTION,
-	RECIEVEREQUEST,
-	SENDRESPONSE
-};
+enum EventType { NEWCONNECTION, RECIEVEREQUEST, SENDRESPONSE };

@@ -14,25 +14,25 @@
 
 #include "../HTTP/HttpResponse.hpp"
 #include "../WebSrv.hpp"
-#include "ParseConfig.hpp"
 #include "Location.hpp"
+#include "ParseConfig.hpp"
 
-void		setLocationParams(Location *location, strMap const &options);
-bool 		isValidPath(str const &path);
+void setLocationParams(Location *location, strMap const &options);
+bool isValidPath(str const &path);
 str getlocationUri(str const &locationString);
-Location	*getLocation(const str &locationString);
+Location *getLocation(const str &locationString);
 RequestType strToRequest(const str &method);
 
-class BadOptionLocationException : public std::exception
-{
-	public:
-    virtual const char* what() const throw();
+class BadOptionLocationException : public std::exception {
+public:
+  virtual const char *what() const throw();
 };
 class BadSyntaxLocationBlockException : public std::exception {
-	private:
-		str _msg;
-	public:
-    virtual ~BadSyntaxLocationBlockException(void) throw() {}
-		BadSyntaxLocationBlockException(const str &msg);
-		virtual const char *what() const throw();
+private:
+  str _msg;
+
+public:
+  virtual ~BadSyntaxLocationBlockException(void) throw() {}
+  BadSyntaxLocationBlockException(const str &msg);
+  virtual const char *what() const throw();
 };

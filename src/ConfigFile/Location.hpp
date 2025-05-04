@@ -34,8 +34,8 @@ public:
   str getRedirectCode() const;
   int getBodySize() const;
   str getUrlPath() const;
-	const str getLocalPathFromUri(const str &uri) const;
-	const str getUriFromLocalPath(const str &localPath) const;
+  const str getLocalPathFromUri(const str &uri) const;
+  const str getUriFromLocalPath(const str &localPath) const;
 
   // Setters
   void setMethods(const str &methods);

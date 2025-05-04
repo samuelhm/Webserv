@@ -56,7 +56,7 @@ std::vector<Server *> parseConfigFile(const str &filepath) {
 void setValidOption(const str &line, OptionType &type) {
   if (line.find("server_name:") ==
       0) //== 0 para que la cadena justo empiece en el principio y no contenga
-         //caracteres invalidos. viene trimeada
+         // caracteres invalidos. viene trimeada
     type = SERVERNAME;
   else if (line.find("listen:") == 0)
     type = LISTEN;

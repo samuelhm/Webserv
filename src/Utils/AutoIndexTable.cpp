@@ -45,7 +45,7 @@ const std::string AutoIndexTable::getTableHeader(void) {
 }
 
 std::string AutoIndexTable::formatSize(off_t bytesSize) {
-  static const char* units[5] = {"B", "K", "M", "G", "T"};
+  static const char *units[5] = {"B", "K", "M", "G", "T"};
   int unitIndex = 0;
   double formatedSize = bytesSize;
 
