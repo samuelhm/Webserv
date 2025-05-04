@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/12 00:19:03 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/27 14:44:27 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/04 13:08:18 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ private:
   std::string getTimeString(struct timespec const &time);
   const std::string getTableHeader(void);
   const std::string getTableRows(void);
+  std::string formatSize(off_t bytesSize);
 
   AutoIndexTable(void);
   AutoIndexTable(AutoIndexTable const &other);

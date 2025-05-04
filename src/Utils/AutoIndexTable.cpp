@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcelona..>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/27 12:23:53 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/30 22:33:53 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/04 13:14:02 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,24 @@ const std::string AutoIndexTable::getTableHeader(void) {
   return oss.str();
 }
 
+std::string AutoIndexTable::formatSize(off_t bytesSize) {
+  static const char* units[5] = {"B", "K", "M", "G", "T"};
+  int unitIndex = 0;
+  double formatedSize = bytesSize;
+
+  while (formatedSize >= 1024 && unitIndex < 4) {
+    formatedSize /= 1024.0;
+    unitIndex++;
+  }
+
+  std::ostringstream oss;
+  oss.setf(std::ios::fixed);
+  oss.precision(1);
+  oss << formatedSize << units[unitIndex];
+
+  return oss.str();
+}
+
 const std::string AutoIndexTable::getTableRows(void) {
   std::ostringstream oss;
 
@@ -53,7 +71,7 @@ const std::string AutoIndexTable::getTableRows(void) {
     oss << "<tr>\n"
         << "<td>" << getHtmlLink(*it) << "</td>\n"
         << "<td>" << getTimeString(it->st_mtim) << "</td>\n"
-        << "<td>" << it->st_size << "</td>\n"
+        << "<td>" << formatSize(it->st_size) << "</td>\n"
         << "</tr>\n";
   }
   oss << "</tbody>\n";
