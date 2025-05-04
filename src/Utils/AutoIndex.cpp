@@ -6,7 +6,7 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:21:03 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/02 20:15:45 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/04 12:43:12 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,8 @@ DirectoryEntry AutoIndex::getDirectoryEntry(dirent *entry,
   struct stat sb;
 
   current.d_name = entry->d_name;
-  // current.href = locationUrlPath + "/" + entry->d_name;
   current.href =
-      location.getUriFromLocalPath(resourceDirectory + "/" + entry->d_name);
+      location.getUriFromLocalPath(resourceDirectory + entry->d_name);
   current.d_type = entry->d_type;
   if (current.d_type == DT_DIR)
     current.d_name.append("/");
