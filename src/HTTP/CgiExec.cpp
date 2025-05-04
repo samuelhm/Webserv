@@ -25,8 +25,10 @@ void HttpResponse::cgiSaveItems(const HttpRequest &request) {
   env_vec.push_back("SERVER_PROTOCOL=HTTP/1.1");
   env_vec.push_back("GATEWAY_INTERFACE=CGI/1.1");
   env_vec.push_back("QUERY_STRING=" + request.getQueryString());
+  env_vec.push_back("REDIRECT_STATUS=200");
   env_vec.push_back("PATH_INFO=" + request.getPathInfo());
   env_vec.push_back("SCRIPT_NAME=" + request.getResource());
+  env_vec.push_back("SCRIPT_FILENAME=" + request.getLocalPathResource());
   env_vec.push_back("CONTENT_LENGTH=" +
                     Utils::intToStr(request.getBody().length()));
   if (header.count("Content-Type"))
