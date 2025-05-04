@@ -6,7 +6,7 @@
 /*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:18:44 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/04 19:46:17 by shurtado         ###   ########.fr       */
+/*   Updated: 2025/05/04 20:06:59 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,10 @@
 #define AUTOINDEXHEADER                                                        \
   "<!DOCTYPE html>\n<html lang=\"es\">\n<head><title>AutoIndex</title><link "  \
   "rel=\"stylesheet\" "                                                        \
-  "href=\"http://localhost:8080/css/style.css\"></head>\n<body>\n"
+  "href=\"http://localhost:8080/css/style.css\">"                              \
+  "<meta charset=\"UTF-8\">"                                                   \
+  "<script src=\"http://localhost:8080/js/autoindex.js\"></script>\n"          \
+  "</head>\n<body>\n"
 #define AUTOINDEXFOOTER "</body>\n</html>"
 
 class Location;

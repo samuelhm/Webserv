@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndexTable.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcelona..>  +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/27 12:23:53 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/05/04 13:14:02 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/04 20:04:18 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,8 +71,14 @@ const std::string AutoIndexTable::getTableRows(void) {
     oss << "<tr>\n"
         << "<td>" << getHtmlLink(*it) << "</td>\n"
         << "<td>" << getTimeString(it->st_mtim) << "</td>\n"
-        << "<td>" << formatSize(it->st_size) << "</td>\n"
-        << "</tr>\n";
+        << "<td>" << formatSize(it->st_size) << "</td>\n";
+    if (it->d_type != DT_DIR) {
+      oss << "<td><button onclick=\"deleteFile('" << it->href
+          << "')\">❌</button></td>\n";
+    } else {
+      oss << "<td></td>\n";
+    }
+    oss << "</tr>\n";
   }
   oss << "</tbody>\n";
 

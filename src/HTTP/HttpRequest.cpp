@@ -1,6 +1,5 @@
 #include "HttpRequest.hpp"
 #include <sys/stat.h>
-#include <unistd.h> // for getpid()
 
 HttpRequest::HttpRequest(eventStructTmp *eventstrct)
     : AHttp(eventstrct->content), _badRequest(false), _resourceExists(false),

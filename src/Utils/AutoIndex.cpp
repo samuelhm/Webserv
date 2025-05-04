@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndex.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
+/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 13:21:03 by erigonza          #+#    #+#             */
-/*   Updated: 2025/05/04 12:43:12 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/04 20:00:56 by shurtado         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,11 @@ str AutoIndex::getAutoIndex(const Location &location, const str &uri) {
 
   str body(AUTOINDEXHEADER);
   body.append(table.getAutoIndexTable());
+  body.append("<form id=\"uploadForm\" action=\"" + uri +
+              "\" method=\"POST\" enctype=\"multipart/form-data\">\n"
+              "<input type=\"file\" name=\"file\" />\n"
+              "<button type=\"submit\">📤 Subir archivo</button>\n"
+              "</form>\n");
   body.append(AUTOINDEXFOOTER);
 
   return body;
