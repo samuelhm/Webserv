@@ -6,13 +6,13 @@
 #    By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/25 11:46:34 by shurtado          #+#    #+#              #
-#    Updated: 2025/04/17 12:44:28 by erigonza         ###   ########.fr        #
+#    Updated: 2025/05/05 12:18:57 by shurtado         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME		=	Web_Server
 CC			=	c++
-CPPFLAGS	=	-std=c++98 -g -MMD -MP -Wshadow
+CPPFLAGS	=	-std=c++98 -MMD -MP -Wshadow #-g
 CPPFLAGS	+=	-Wall -Werror -Wextra -MMD -MP -pedantic #-fsanitize=address
 
 SRC			=	src/main.cpp src/EventPool/EventPool.cpp \

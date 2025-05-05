@@ -24,7 +24,7 @@ EventPool::EventPool(std::vector<Server *> &Servers) {
   struct epoll_event ev;
   for (std::vector<Server *>::iterator it = Servers.begin();
        it != Servers.end(); ++it) {
-    ev.events = EPOLLIN | EPOLLET;
+    ev.events = EPOLLIN;
     struct eventStructTmp *serverStruct =
         createEventStruct((*it)->getServerFd(), *it, NEWCONNECTION);
     _structs.push_back(serverStruct);
@@ -189,7 +189,7 @@ void EventPool::saveResponse(HttpResponse &response,
   eventStrct->offset = 0;
   eventStrct->eventType = SENDRESPONSE;
   struct epoll_event ev;
-  ev.events = EPOLLOUT | EPOLLET;
+  ev.events = EPOLLOUT;
   ev.data.ptr = static_cast<void *>(eventStrct);
   if (epoll_ctl(_pollFd, EPOLL_CTL_MOD, eventStrct->client_fd, &ev) == -1) {
     Logger::log("Failed to modify event to EPOLLOUT", ERROR);
@@ -230,7 +230,7 @@ void EventPool::acceptConnection(int fdTmp, Server *server) {
                   server->getServerName() + " at port: " + server->getPort(),
               USER);
   struct epoll_event client_ev;
-  client_ev.events = EPOLLIN | EPOLLET;
+  client_ev.events = EPOLLIN;
   struct eventStructTmp *clientStruct =
       createEventStruct(client_fd, server, RECIEVEREQUEST);
   client_ev.data.ptr = static_cast<void *>(clientStruct);
