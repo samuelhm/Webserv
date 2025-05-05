@@ -190,8 +190,6 @@ void HttpResponse::workerExec(int *pipeIn, int *pipeOut, Server *server,
   waitpid(pid, &status, 0);
   cgiFree();
 
-  Logger::log("CGI raw output: \n" + _cgiOutput, INFO);
-
   if ((WIFEXITED(status) && WEXITSTATUS(status)) || _cgiOutput.empty())
     return setErrorCode(500, server);
 
