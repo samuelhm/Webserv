@@ -11,35 +11,6 @@ function deleteFile(path) {
   });
 }
 
-// document.addEventListener("DOMContentLoaded", function () {
-//   const uploadForm = document.getElementById("uploadForm");
-
-//   if (uploadForm) {
-//     uploadForm.addEventListener("submit", function (e) {
-//       e.preventDefault(); // Evita la recarga de página
-
-//       const formData = new FormData(uploadForm);
-//       const actionUrl = uploadForm.getAttribute("action");
-
-//       fetch(actionUrl, {
-//         method: "POST",
-//         body: formData
-//       })
-//         .then(response => {
-//           if (response.ok) {
-//             alert("Archivo subido con éxito");
-//             location.reload();
-//           } else {
-//             alert("Error al subir el archivo");
-//           }
-//         })
-//         .catch(error => {
-//           console.error("Error:", error);
-//           alert("Error en la subida del archivo");
-//         });
-//     });
-//   }
-// });
 document.addEventListener("DOMContentLoaded", function () {
   const uploadForm = document.getElementById("uploadForm");
 
@@ -60,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "POST",
         headers: {
           "Content-Type": file.type || "application/octet-stream",
-          "Content-Length": file.size // opcional, el navegador puede añadirlo solo
+          "Content-Length": file.size
         },
         body: file
       })

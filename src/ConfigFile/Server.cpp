@@ -3,20 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:50:47 by shurtado          #+#    #+#             */
-/*   Updated: 2025/04/12 13:39:13 by erigonza         ###   ########.fr       */
+/*   Updated: 2025/05/05 11:20:40 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "../Utils/Logger.hpp"
 #include <stdlib.h>
 
-#include <iostream> // cout, endl
-#include <string.h> // memset
+#include <string.h>
 #include <sys/socket.h>
-#include <unistd.h> // close
+#include <unistd.h>
 
 Server::Server() {
   _serverName = "server";
@@ -44,11 +44,7 @@ Server::~Server() {
     close(_serverFd);
 }
 
-// Getters
-std::vector<Location *> &Server::getLocations() {
-  return this->_locations;
-} // IMPORTANT es getter pero no puede ser const y debe devolver referencia para
-  // poder hacer push_back, hacer otro?
+std::vector<Location *> &Server::getLocations() { return this->_locations; }
 const str &Server::getErrorPage(int error) {
   if (_errorPages[error].empty())
     return createErrorPage(Utils::intToStr(error), Utils::_statusStr[error]);
@@ -62,7 +58,6 @@ bool Server::getIsdefault() const { return this->_isDefault; }
 size_t Server::getBodySize() const { return this->_bodySize; }
 int Server::getServerFd() const { return this->_serverFd; }
 
-// Setters
 void Server::setLocations(std::vector<Location *> locations) {
   this->_locations = locations;
 }
@@ -80,8 +75,6 @@ void Server::socketUp() {
   Logger::log(str("Setting up server: ") + this->_serverName, USER);
   _serverFd = socket(AF_INET, SOCK_STREAM, 0);
   _reuseOption = 1;
-  // Poder reutilizar el mismo puerto sin tener que esperar en caso de fallo del
-  // programa
   if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &_reuseOption,
                  sizeof(int)) == -1) {
     Logger::log(str("Fail setting SO_REUSEADDR on server: ") + _serverName,
@@ -102,27 +95,21 @@ void Server::socketUp() {
     close(_serverFd);
     throw std::exception();
   }
-  // carga el host name y port en el addrinfo
-  // hints -> asignamos opciones de config
   memset(&_hints, 0, sizeof(_hints));
-  _hints.ai_family = AF_INET;       // IPv4
-  _hints.ai_socktype = SOCK_STREAM; // TCP
-  _hints.ai_flags = AI_PASSIVE;     // Para bind() (escuchar)
-  // con las opciones dadas en hints configura res
+  _hints.ai_family = AF_INET;
+  _hints.ai_socktype = SOCK_STREAM;
+  _hints.ai_flags = AI_PASSIVE;
   int err = getaddrinfo(getHostName().c_str(), getPort().c_str(), &_hints,
                         &_response);
   if (err) {
     Logger::log(str("error: getaddrinfo: ") + gai_strerror(err), ERROR);
     throw std::exception();
-  }
-  // vincula fd del servidor al host name y port
-  else if (bind(_serverFd, _response->ai_addr, _response->ai_addrlen) == -1) {
+  } else if (bind(_serverFd, _response->ai_addr, _response->ai_addrlen) == -1) {
     Logger::log(str("Cannot bind server: ") + _serverName +
                     " to port: " + _port,
                 ERROR);
     throw std::exception();
   }
-  // habilitamos el fd para que se quede escuchando
   if (listen(_serverFd, SOMAXCONN) == -1) {
     Logger::log(str("Listen on port: ") + _port + " Failed.", ERROR);
     close(_serverFd);
@@ -163,14 +150,11 @@ void Server::setListenValue(const str &value) {
   size_t sep = value.find(":");
   if (sep == str::npos)
     throw ConfigFileException("LISTEN must be in format hostname:port " +
-                              value); // IMPORTANT check if this information is
-                                      // needeed (to continue or stop)
+                              value);
   str hostname = Utils::trim(value.substr(0, sep));
   str port = Utils::trim(value.substr(sep + 1));
   if (hostname.empty() || port.empty())
-    throw ConfigFileException("LISTEN has empty host or port: " +
-                              value); // IMPORTANT check if this information is
-                                      // needeed (to continue or stop)
+    throw ConfigFileException("LISTEN has empty host or port: " + value);
   this->setHostName(hostname);
   this->setPort(port);
 }

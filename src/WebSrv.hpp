@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 #define LIMIT_HEADER_SIZE 1024
-#define NUMBER_OF_WORKERS 0
+#define NUMBER_OF_WORKERS 5
 #define TIMEOUT_CGI 3
 
 typedef std::string str;

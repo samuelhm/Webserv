@@ -15,7 +15,6 @@
 #include "../ConfigFile/Server.hpp"
 #include "AHttp.hpp"
 #include "HttpRequest.hpp"
-#include <fstream>
 
 class Server;
 class HttpRequest;

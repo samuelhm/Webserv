@@ -46,7 +46,6 @@ public:
   bool checkFileExists(str fullResource);
   bool locationHasRedirection(const Location *loc);
 
-  // Getters
   RequestType getType() const;
   bool getBadRequest() const;
   bool getResourceExists() const;
@@ -68,7 +67,6 @@ public:
   str getSessionUser() const;
   bool getPayLoad() const;
 
-  // Setters
   void setType(RequestType type);
   void setBadRequest(bool badRequest);
   void setResorceExist(bool resorceExist);

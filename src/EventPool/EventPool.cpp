@@ -11,6 +11,9 @@
 /* ************************************************************************** */
 
 #include "EventPool.hpp"
+#include "../Utils/AutoIndex.hpp"
+#include "../Utils/Logger.hpp"
+#include <sstream>
 
 EventPool::EventPool(std::vector<Server *> &Servers) {
   _pollFd = epoll_create(1);
@@ -83,7 +86,7 @@ bool EventPool::processChunk(eventStructTmp *eventstrct, size_t &headerEnd) {
   while (true) {
     size_t pos = body.find("\r\n");
     if (pos == std::string::npos)
-      break; // aún no tenemos tamaño de chunk
+      break;
     std::string chunkSizeStr = body.substr(0, pos);
     int chunkSize;
     std::stringstream ss;
@@ -93,7 +96,7 @@ bool EventPool::processChunk(eventStructTmp *eventstrct, size_t &headerEnd) {
       return true;
     }
     if (body.size() < pos + 2 + chunkSize + 2)
-      return false; // falta parte del chunk
+      return false;
     std::string chunkData = body.substr(pos + 2, chunkSize);
     eventstrct->bodyDecoded.append(chunkData);
     body = body.substr(pos + 2 + chunkSize + 2);
@@ -121,8 +124,7 @@ bool EventPool::getRequest(int socketFd, eventStructTmp *eventstrct) {
       if (!eventstrct->headerParsed) {
         parseHeader(eventstrct);
       }
-      if (eventstrct->headerParsed) { // No else ya que parseHeader puede
-                                      // cambiar el estado.
+      if (eventstrct->headerParsed) {
         size_t headerEnd = eventstrct->content.find("\r\n\r\n");
         if (eventstrct->isChunked) {
           done = processChunk(eventstrct, headerEnd);
@@ -365,7 +367,7 @@ EventPool::socketReadException::socketReadException(int fd) {
 }
 const char *EventPool::socketReadException::what() const throw() {
   return this->message.c_str();
-} // checkUriSize();
+}
 
 EventPool::AcceptConnectionException::AcceptConnectionException(const str &msg)
     : message(msg) {}

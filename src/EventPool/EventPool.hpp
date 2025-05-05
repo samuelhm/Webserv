@@ -15,15 +15,13 @@
 #include "../ConfigFile/Server.hpp"
 #include "../HTTP/HttpRequest.hpp"
 #include "../HTTP/HttpResponse.hpp"
-#include "../Utils/AutoIndex.hpp"
 #include "../Utils/Utils.hpp"
+#include "../WebSrv.hpp"
 #include <cerrno>
 #include <csignal>
 #include <cstring>
 #include <exception>
 #include <poll.h>
-#include <sstream>
-#include <stack>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
@@ -42,8 +40,6 @@ struct eventStructTmp {
   EventType eventType;
   str content;
   size_t offset;
-
-  // chunks
   bool headerParsed;
   bool isChunked;
   size_t contentLength;

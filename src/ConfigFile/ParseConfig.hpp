@@ -14,7 +14,6 @@
 
 #include "../Utils/Utils.hpp"
 #include "../WebSrv.hpp"
-#include "Location.hpp"
 #include "Server.hpp"
 
 class Server;

@@ -17,12 +17,10 @@
 #include "../HTTP/HttpRequest.hpp"
 #include "../HTTP/HttpResponse.hpp"
 #include "../WebSrv.hpp"
-#include "Logger.hpp"
 #include <algorithm>
 #include <climits>
 #include <dirent.h>
 #include <iostream>
-#include <sstream>
 #include <string>
 
 class Server;
@@ -50,8 +48,7 @@ bool appendPath(std::string &tmpPath, std::string const &uri);
 bool atoi(const char *str, int &out);
 void replaceCodeToSpaces(str &target);
 
-template <typename K, typename V> // Definir aqui o crear tpp?
-void print_map(const std::map<K, V> &m) {
+template <typename K, typename V> void print_map(const std::map<K, V> &m) {
   typename std::map<K, V>::const_iterator it;
   if (m.empty())
     return;

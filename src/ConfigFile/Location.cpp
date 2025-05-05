@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erigonza <erigonza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:27:10 by shurtado          #+#    #+#             */
-/*   Updated: 2025/05/02 19:59:55 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/05 11:17:44 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
+#include "../Utils/Logger.hpp"
 #include "ParseLocation.hpp"
 #include <cctype>
 #include <cstdlib>
@@ -31,7 +32,6 @@ Location::Location(const str &path)
 
 Location::~Location() {}
 
-// Getters
 std::vector<RequestType> Location::getMethods() const { return this->_methods; }
 str Location::getRedirect() const { return this->_redirect; }
 bool Location::getUploadEnable() const { return this->_uploadEnable; }
@@ -46,7 +46,6 @@ str Location::getRedirectCode() const { return this->_redirect_code; }
 int Location::getBodySize() const { return this->_bodySize; }
 str Location::getUrlPath() const { return this->_urlPath; }
 
-// Setters
 void Location::setMethods(const str &Methods) {
 
   strVec allMethods = Utils::split(Methods, ' ');
@@ -105,7 +104,6 @@ void Location::setLocalPath(const str &localPath) { _localPath = localPath; }
 const str Location::getLocalPathFromUri(const str &uri) const {
   if (uri.find(_urlPath) == std::string::npos)
     return uri;
-  // str localPath = uri.substr(_urlPath.size() - 1);
   str localPath = uri.substr(_urlPath.size());
   localPath.insert(0, _localPath);
   return localPath;
@@ -114,7 +112,6 @@ const str Location::getLocalPathFromUri(const str &uri) const {
 const str Location::getUriFromLocalPath(const str &localPath) const {
   if (localPath.find(_localPath) == std::string::npos)
     return localPath;
-  // str localPath = localPath.substr(_localPath.size() - 1);
   str uri = localPath.substr(_localPath.size());
   uri.insert(0, _urlPath);
   return uri;

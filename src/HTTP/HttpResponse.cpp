@@ -1,7 +1,9 @@
 #include "HttpResponse.hpp"
 #include "../Utils/AutoIndex.hpp"
+#include "../Utils/Logger.hpp"
 #include "../Utils/Utils.hpp"
 #include <cstdlib>
+#include <fstream>
 
 HttpResponse::HttpResponse(int errorCode, Server *server) : AHttp() {
   setErrorCode(errorCode, server);
@@ -52,8 +54,7 @@ void HttpResponse::staticFilePost(const HttpRequest &request, Server *server) {
     setErrorCode(500, server);
     return;
   }
-  out << body; // IMPORTANT Sobreescribir por defecto? o detectar que existe y
-               // mandar error?
+  out << body;
   out.close();
   _status = 201;
   _line0 = "HTTP/1.1 201 Created\r\n";

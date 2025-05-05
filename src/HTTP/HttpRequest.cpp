@@ -1,5 +1,10 @@
 #include "HttpRequest.hpp"
+#include "../Utils/Logger.hpp"
+#include <sstream>
 #include <sys/stat.h>
+
+#define DEFAULT_ERROR                                                          \
+  "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"
 
 HttpRequest::HttpRequest(eventStructTmp *eventstrct)
     : AHttp(eventstrct->content), _badRequest(false), _resourceExists(false),
@@ -141,9 +146,6 @@ const str HttpRequest::saveHeader(const str &request) {
   return request;
 }
 
-#define DEFAULT_ERROR                                                          \
-  "Invalid request line: expected '<METHOD> <PATH> <VERSION>' format"
-
 void HttpRequest::checkHeaderMRP(const str &line) {
   Logger::log(str("Cheacking Heder: ") + line, INFO);
   if (line.empty())
@@ -171,16 +173,14 @@ void HttpRequest::checkHeaderMRP(const str &line) {
     _type = CONNECT;
   else
     throw badHeaderException("Bad Method.");
-  if (line.at(++end) != '/') // IMPORTANT probar si hay mas espacios
+  if (line.at(++end) != '/')
     _badRequest = true;
   size_t path_end = line.find(" ", end);
   if (path_end == str::npos)
     throw badHeaderException(DEFAULT_ERROR);
   _uri = line.substr(end, path_end - end);
   Utils::replaceCodeToSpaces(_uri);
-  if (line.substr(path_end + 1) !=
-      "HTTP/1.1\r\n") // aqui no tinene \r\n porque ya lo quitamos en el
-                      // constructor
+  if (line.substr(path_end + 1) != "HTTP/1.1\r\n")
     throw badHeaderException("Bad Protocol version");
 }
 
@@ -259,7 +259,6 @@ bool HttpRequest::locationHasRedirection(const Location *loc) {
 
 HttpRequest::~HttpRequest() {}
 
-// Getters
 RequestType HttpRequest::getType() const { return _type; }
 bool HttpRequest::getBadRequest() const { return _badRequest; }
 bool HttpRequest::getResourceExists() const { return _resourceExists; }
@@ -278,7 +277,6 @@ bool HttpRequest::getCanAccess() const { return _canAccess; }
 str HttpRequest::getSessionUser() const { return _sessionUser; }
 bool HttpRequest::getPayLoad() const { return _payLoad; }
 
-// Setters
 void HttpRequest::setType(RequestType type) { _type = type; }
 void HttpRequest::setBadRequest(bool badRequest) { _badRequest = badRequest; }
 void HttpRequest::setResorceExist(bool resorceExist) {

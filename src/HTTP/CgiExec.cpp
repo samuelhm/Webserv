@@ -1,3 +1,4 @@
+#include "../Utils/Logger.hpp"
 #include "../Utils/Utils.hpp"
 #include "HttpResponse.hpp"
 #include <csignal>
@@ -165,7 +166,7 @@ void HttpResponse::workerExec(int *pipeIn, int *pipeOut, Server *server,
 
   while (pipeInOpen || pipeOutOpen) {
     struct epoll_event events[2];
-    int n = epoll_wait(epollFd, events, 2, 5000); // timeout de 5 segundos
+    int n = epoll_wait(epollFd, events, 2, 5000);
     if (n <= 0) {
       kill(pid, SIGKILL);
       if (pipeInOpen)

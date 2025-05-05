@@ -14,7 +14,7 @@
 
 #include "Location.hpp"
 #include "ParseConfig.hpp"
-#include <fcntl.h> // fcntl, F_SETFL, O_NONBLOCK
+#include <fcntl.h>
 #include <netdb.h>
 
 class Location;
@@ -30,7 +30,6 @@ private:
   bool _isDefault;
   size_t _bodySize;
 
-  // SocketUp
   int _serverFd;
   int _reuseOption;
   struct addrinfo *_response;
@@ -43,12 +42,10 @@ public:
   ~Server();
   bool operator==(const Server &other);
 
-  // Methods
   void socketUp();
   bool locationExist(Location &loc) const;
   void setListenValue(const str &value);
 
-  // Getters
   std::vector<Location *> &getLocations();
   const str &getErrorPage(int error);
   str getServerName() const;
@@ -59,7 +56,6 @@ public:
   size_t getBodySize() const;
   int getServerFd() const;
 
-  // Setters
   void setLocations(std::vector<Location *> locationVector);
   void setErrorPages(int error, const str &page);
   void setServerName(str serverName);

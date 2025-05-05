@@ -11,11 +11,8 @@
 /* ************************************************************************** */
 
 #include "Logger.hpp"
-#include <cstdlib> // std::getenv
+#include <cstdlib>
 #include <iostream>
-#include <string>
-
-DebugType Logger::currentLevel = INFO;
 
 #define RESET "\033[0m"
 #define RED "\033[31m"
@@ -40,6 +37,8 @@ DebugType Logger::currentLevel = INFO;
 #define B_WHI "\x1B[47m"
 
 #define BOLDYLW "\x1B[1m\033[1;33m"
+
+DebugType Logger::currentLevel = INFO;
 
 void Logger::setLevel(DebugType level) { currentLevel = level; }
 

@@ -6,12 +6,14 @@
 /*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 18:53:28 by fcarranz          #+#    #+#             */
-/*   Updated: 2025/04/16 20:48:18 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/05 11:20:08 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ParseLocation.hpp"
-#include "ParseConfig.hpp"
+#include "../Utils/Logger.hpp"
+#include "Location.hpp"
+#include <sstream>
 
 Location *getLocation(const str &locationString) {
   std::istringstream locationBlock(locationString);
@@ -32,9 +34,9 @@ Location *getLocation(const str &locationString) {
     if (!line.compare("]")) {
       break;
     }
-    if (line.empty() || line.at(0) == '#') { // Se podria sacar
-      continue;                              // y pasar al parser
-    } // general
+    if (line.empty() || line.at(0) == '#') {
+      continue;
+    }
     std::istringstream buffer(line);
     if (std::getline(buffer, key, ':') && std::getline(buffer, value)) {
       options[key] = value;

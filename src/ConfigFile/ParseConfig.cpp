@@ -3,24 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   ParseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shurtado <shurtado@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fcarranz <fcarranz@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/03 14:48:46 by shurtado          #+#    #+#             */
-/*   Updated: 2025/05/02 19:34:08 by fcarranz         ###   ########.fr       */
+/*   Updated: 2025/05/05 11:19:35 by fcarranz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ParseConfig.hpp"
+#include "../Utils/Logger.hpp"
 #include "Location.hpp"
 #include "ParseLocation.hpp"
-#include <map>
+#include <sstream>
 #include <stdlib.h>
 #include <string>
 
 std::vector<Server *> parseConfigFile(const str &filepath) {
-  str content =
-      Utils::fileToStr(filepath); // si falla lanza una excepcion, creo que es
-                                  // mejor recogerla en el main
+  str content = Utils::fileToStr(filepath);
   strVec serverStrings = Utils::split(content, '}');
   if (serverStrings.empty())
     throw ConfigFileException("No Server found inside config file");
@@ -31,8 +30,7 @@ std::vector<Server *> parseConfigFile(const str &filepath) {
       if ((*it).empty())
         continue;
       Logger::log("Trying to parser a server", INFO);
-      Server *server = getServer(*it); // IMPORTANT no se puede push_back de
-                                       // una.
+      Server *server = getServer(*it);
       Logger::log("Server parsed, pushing it.", INFO);
       for (std::vector<Server *>::iterator ite = result.begin();
            ite != result.end(); ++ite) {
@@ -45,18 +43,14 @@ std::vector<Server *> parseConfigFile(const str &filepath) {
       }
       result.push_back(server);
     } catch (ConfigFileException &e) {
-      throw ConfigFileException(
-          e.what(), result); // ¿Return aqui y limpiamos memoria, o aceptamos el
-                             // resto de servers validos?
+      throw ConfigFileException(e.what(), result);
     }
   }
   return result;
 }
 
 void setValidOption(const str &line, OptionType &type) {
-  if (line.find("server_name:") ==
-      0) //== 0 para que la cadena justo empiece en el principio y no contenga
-         // caracteres invalidos. viene trimeada
+  if (line.find("server_name:") == 0)
     type = SERVERNAME;
   else if (line.find("listen:") == 0)
     type = LISTEN;
@@ -237,8 +231,7 @@ Server *getServer(const str &serverString) {
       continue;
   }
   if (server->getLocations().empty())
-    server->getLocations().push_back(
-        new Location("/")); // IMPORTANT ¿ Aceptamos config file sin locations ?
+    server->getLocations().push_back(new Location("/"));
   return (server);
 }
 

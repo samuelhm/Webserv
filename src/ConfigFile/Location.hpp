@@ -20,7 +20,6 @@ public:
   Location(const str &path);
   ~Location();
 
-  // Getters
   std::vector<RequestType> getMethods() const;
   str getRedirect() const;
   bool getUploadEnable() const;
@@ -37,7 +36,6 @@ public:
   const str getLocalPathFromUri(const str &uri) const;
   const str getUriFromLocalPath(const str &localPath) const;
 
-  // Setters
   void setMethods(const str &methods);
   void setRedirect(str redirect);
   void setUploadEnable(bool uploadEnable);

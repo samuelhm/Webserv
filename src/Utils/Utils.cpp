@@ -2,6 +2,7 @@
 #include "Utils.hpp"
 #include "../ConfigFile/ParseConfig.hpp"
 #include "../ConfigFile/Server.hpp"
+#include "../Utils/Logger.hpp"
 #include "../WebSrv.hpp"
 #include <algorithm>
 #include <cctype>
@@ -19,18 +20,15 @@ strVec split(const str &input, char delimiter) {
   str token;
   if (input.empty())
     return tokens;
-  for (str::size_type i = 0; i < input.length();
-       ++i) { // Usamos std::string::size_type porque lenght() y las demas
-              // devuelven este tipo, si usamos int el compilador da warnings.
+  for (str::size_type i = 0; i < input.length(); ++i) {
     if (input[i] == delimiter) {
-      tokens.push_back(token); // Cuandoo encuentra delimiter, pushea y limpia.
+      tokens.push_back(token);
       token.clear();
     } else {
-      token += input[i]; // No es delimiter, mete la letra en el str actual.
+      token += input[i];
     }
   }
-  tokens.push_back(token); // Aqui no ha encontrado mas delimiters mete el
-                           // resto.
+  tokens.push_back(token);
   return tokens;
 }
 
@@ -46,16 +44,7 @@ strVec split(const str &input, const str &delimiter) {
   tokens.push_back(input.substr(start));
   return tokens;
 }
-/* isspace() incluye:
- *	' ' (espacio)
- *	'\t' (tabulación)
- *	'\n' (salto de línea)
- *	'\r' (retorno de carro)
- *	'\v' (tab vertical)
- *	'\f' (form feed)
- *	Usa static_cast en c++98 para evitar errores con EOF
- *https://en.cppreference.com/w/cpp/string/byte/isspace
- */
+
 str trim(const str &s) {
   str::size_type start = 0;
   while (start < s.size() && std::isspace(static_cast<unsigned char>(s[start])))
@@ -66,8 +55,6 @@ str trim(const str &s) {
   return s.substr(start, end - start);
 }
 
-// File se cierra automaticamente al salir de su ambito con su destructor, no es
-// necesario usar close();
 str fileToStr(const str &filePath) {
   Logger::log(str("Trying to open file: ") + filePath, INFO);
   std::ifstream file(filePath.c_str());
@@ -91,12 +78,6 @@ str intToStr(std::size_t num) {
   return response;
 }
 
-// str intToStr(int num)
-// {
-// 	std::ostringstream result;
-// 	result << num;
-// 	return result.str();
-// }
 } // namespace Utils
 
 void Utils::fillStatusStr() {
@@ -256,7 +237,7 @@ HttpResponse &Utils::codeResponse(int errorCode, Server *server) {
     Logger::log("getStaticErrorResponse: código no soportado: " +
                     intToStr(errorCode),
                 WARNING);
-    return resp500; // fallback
+    return resp500;
   }
 }
 
@@ -337,7 +318,6 @@ bool Utils::appendPath(std::string &tmpPath, std::string const &uri) {
     tmpPath.append("/");
     return true;
   }
-  // /images/algomas
   size_t end = uri.find('/', tmpPath.size() + 1);
   if (end == std::string::npos)
     end = uri.size();

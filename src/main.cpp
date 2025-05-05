@@ -13,19 +13,19 @@
 #include "ConfigFile/ParseConfig.hpp"
 #include "ConfigFile/Server.hpp"
 #include "EventPool/EventPool.hpp"
+#include "Utils/Logger.hpp"
 
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
-#include <fcntl.h>  // fcntl, F_SETFL, O_NONBLOCK
-#include <iostream> // cout, endl
-#include <netdb.h>  // getaddrinfo, addrinfo
+#include <fcntl.h>
+#include <netdb.h>
 #include <stdio.h>
-#include <string.h>    // memset
-#include <sys/epoll.h> // epoll
-#include <sys/socket.h> // socket, SOL_SOCKET, SO_REUSEADDR, setsockopt, AF_INET, SOCK_STREAM
+#include <string.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
 #include <sys/wait.h>
-#include <unistd.h> // close
+#include <unistd.h>
 
 volatile sig_atomic_t epollRun = 1;
 
